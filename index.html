@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1728">
+  <title>Lender Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-0: #f3f3f4;
+      --bg-1: #fcfcfd;
+      --black-80: #333;
+      --black-60: #666;
+      --black-50: #808080;
+      --black-20: #ccc;
+      --black-12: #e0e0e0;
+      --black-10: #e6e6e6;
+      --black-8: #ebebeb;
+      --black-4: #f5f5f5;
+      --black-2: #fafafa;
+      --white: #fff;
+      --green-100: #34c759;
+      --green-20: #d6f4de;
+      --amber: #f59e0b;
+      --amber-12: rgba(245,158,11,0.12);
+    }
+
+    html, body {
+      width: 1728px;
+      height: 1117px;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: var(--bg-0);
+      display: flex;
+      flex-direction: row;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: 77px;
+      min-width: 77px;
+      height: 100%;
+      background: var(--bg-0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 52px 16px 12px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .sidebar-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .sidebar-icon-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+    }
+
+    .sidebar-icon-wrap.active {
+      background: var(--black-10);
+    }
+
+    .sidebar-label {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--black-80);
+      white-space: nowrap;
+    }
+
+    .sidebar-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 0.5px solid rgba(0,0,0,0.12);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .sidebar-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ===== RIGHT SECTION ===== */
+    .right-section {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 12px;
+      padding-right: 12px;
+      min-width: 0;
+    }
+
+    /* ===== TOP BAR ===== */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      padding-bottom: 8px;
+      flex-shrink: 0;
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .tab-pill {
+      height: 32px;
+      background: var(--bg-1);
+      border: 0.5px solid var(--black-8);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+      padding-right: 8px;
+      cursor: pointer;
+      width: 124px;
+      flex-shrink: 0;
+    }
+
+    .tab-pill.active {
+      box-shadow: 0px 26px 7px 0px rgba(0,0,0,0), 0px 17px 7px 0px rgba(0,0,0,0), 0px 10px 6px 0px rgba(0,0,0,0.01), 0px 4px 4px 0px rgba(0,0,0,0.02), 0px 1px 2px 0px rgba(0,0,0,0.02);
+      justify-content: space-between;
+    }
+
+    .tab-pill-text {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--black-80);
+      white-space: nowrap;
+    }
+
+    .top-bar-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 100px;
+      background: white;
+      border: 0.5px solid var(--black-12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .icon-btn-pill {
+      background: white;
+      border: 0.5px solid var(--black-12);
+      border-radius: 100px;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .icon-btn-inner {
+      width: 28px;
+      height: 28px;
+      border-radius: 160px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* wallet/card icon */
+    .wallet-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 160px;
+      background: white;
+      border: 0.444px solid var(--black-12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    /* ===== MAIN CARD CONTAINER ===== */
+    .main-card-container {
+      flex: 1;
+      min-height: 0;
+      background: var(--bg-1);
+      border: 0.5px solid var(--black-12);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ===== LEFT MAIN PANEL (1323px) ===== */
+    .main-panel {
+      width: 1323px;
+      flex-shrink: 0;
+      height: 100%;
+      background: var(--bg-1);
+      border: 0.5px solid var(--black-12);
+      border-radius: 0 20px 20px 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 70px 0px 20px 0px rgba(0,0,0,0), 45px 0px 18px 0px rgba(0,0,0,0), 25px 0px 15px 0px rgba(0,0,0,0.01), 11px 0px 11px 0px rgba(0,0,0,0.01), 3px 0px 6px 0px rgba(0,0,0,0.01);
+      z-index: 2;
+    }
+
+    .main-panel-inner {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+    }
+
+    /* ===== LOAN LIST PANEL (278px) ===== */
+    .loan-list-panel {
+      width: 278px;
+      min-width: 278px;
+      height: 100%;
+      background: var(--bg-1);
+      border-right: 0.5px solid var(--black-12);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .loan-list-top {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .loan-list-header {
+      background: var(--bg-1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    .loan-list-header-left {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      align-self: stretch;
+    }
+
+    .my-loans-pill {
+      background: white;
+      border: 0.5px solid var(--black-12);
+      border-radius: 100px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 8px 8px 12px;
+      height: 100%;
+    }
+
+    .my-loans-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--black-80);
+      white-space: nowrap;
+    }
+
+    .my-loans-count-group {
+      display: flex;
+      gap: 2px;
+      align-items: center;
+    }
+
+    .my-loans-count {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--black-60);
+      white-space: nowrap;
+    }
+
+    .sort-icon {
+      width: 16px;
+      height: 16px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .add-btn {
+      background: white;
+      border: 0.5px solid var(--black-12);
+      border-radius: 100px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .add-btn-inner {
+      width: 28px;
+      height: 28px;
+      border-radius: 160px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loan-list-scroll {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 0 12px 12px;
+    }
+
+    .loan-list-scroll::-webkit-scrollbar { display: none; }
+
+    /* Section group */
+    .loan-section {
+      background: var(--black-4);
+      border-radius: 16px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .loan-section.collapsed {
+      border-radius: 12px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 8px 12px 12px;
+      cursor: pointer;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--black-60);
+      white-space: nowrap;
+    }
+
+    .section-count-group {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .section-count {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--black-60);
+      white-space: nowrap;
+    }
+
+    .section-chevron {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .loan-items {
+      padding: 0 4px 4px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .loan-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      height: 92px;
+      border-bottom: 0.5px solid var(--black-12);
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .loan-item:last-child {
+      border-bottom: none;
+    }
+
+    .loan-item.selected {
+      background: var(--black-2);
+      border: 0.5px solid var(--black-12);
+      border-radius: 16px;
+      box-shadow: 0px 35px 10px 0px rgba(0,0,0,0), 0px 23px 9px 0px rgba(0,0,0,0.01), 0px 13px 8px 0px rgba(0,0,0,0.02), 0px 6px 6px 0px rgba(0,0,0,0.03), 0px 1px 3px 0px rgba(0,0,0,0.04);
+    }
+
+    .loan-left {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      align-self: stretch;
+    }
+
+    .loan-info {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+    }
+
+    .loan-name-section {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .loan-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--black-80);
+      white-space: nowrap;
+    }
+
+    .loan-meta {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--black-60);
+      white-space: nowrap;
+    }
+
+    .loan-meta-amount {
+      font-weight: 500;
+    }
+
+    .loan-meta-sep, .loan-meta-type {
+      font-weight: 400;
+    }
+
+    .loan-time {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--black-60);
+      white-space: nowrap;
+    }
+
+    .loan-right {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      align-self: stretch;
+    }
+
+    .loan-right-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 400;
+      white-space: nowrap;
+    }
+
+    .status-active {
+      background: var(--green-20);
+      color: var(--green-100);
+    }
+
+    .status-on-hold {
+      background: var(--amber-12);
+      color: var(--amber);
+    }
+
+    .loan-action-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Bottom bar */
+    .loan-list-bottom {
+      background: #fcfcfd;
+      border-top: 0.5px solid rgba(0,0,0,0.12);
+      padding: 12px;
+      flex-shrink: 0;
+    }
+
+    .bottom-bar-inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-btn {
+      flex: 1;
+      height: 36px;
+      background: white;
+      border: 0.5px solid var(--black-12);
+      border-radius: 180px;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .search-icon-wrap {
+      width: 28px;
+      height: 28px;
+      border-radius: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .search-text {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--black-60);
+      white-space: nowrap;
+      padding-left: 2px;
+    }
+
+    .filter-btn-group {
+      background: var(--black-8);
+      border-radius: 100px;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .filter-btn-item {
+      width: 28px;
+      height: 28px;
+      border-radius: 160px;
+      background: var(--black-8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* ===== DETAIL PANE ===== */
+    .detail-pane {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 0.5px solid var(--bg-1);
+    }
+
+    .detail-header-section {
+      background: var(--bg-1);
+      flex-shrink: 0;
+    }
+
+    .detail-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+    }
+
+    .detail-borrower-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-btn {
+      background: var(--bg-1);
+      border: 0.5px solid var(--black-12);
+      border-radius: 100px;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 2px 2px 2px 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .back-btn-icon {
+      width: 16px;
+      height: 16px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .back-btn-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 100px;
+      overflow: hidden;
+      position: relative;
+      flex-shrink: 0;
+      background: var(--black-8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .back-btn-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 100px;
+    }
+
+    .borrower-name-section {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .borrower-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--black-80);
+      white-space: nowrap;
+    }
+
+    .borrower-address {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--black-60);
+      white-space: nowrap;
+    }
+
+    .detail-header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Status chips */
+    .status-chips-row {
+      display: flex;
+      align-items: center;
+      position: relative;
+      height: 32px;
+    }
+
+    .chips-container {
+      display: flex;
+      gap: 2px;
+      align-items: center;
+      height: 100%;
+    }
+
+    .chip-active-pill {
+      background: var(--black-8);
+      border-radius: 100px 4px 4px 100px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+    }
+
+    .chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50px;
+      background: var(--green-100);
+      flex-shrink: 0;
+    }
+
+    .chip-text {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--black-80);
+      white-space: nowrap;
+    }
+
+    .chip-underwriting-pill {
+      background: var(--black-8);
+      border-radius: 4px 100px 100px 4px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 4px 4px 12px;
+    }
+
+    .chip-avatar {
+      background: var(--black-8);
+      border: 2px solid white;
+      border-radius: 100px;
+      width: 24px;
+      height: 24px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .chip-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Loan info bar */
+    .loan-info-bar {
+      padding: 0 12px 12px;
+      flex-shrink: 0;
+    }
+
+    .loan-info-bar-inner {
+      background: var(--black-4);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .info-field {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .info-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--black-80);
+      white-space: nowrap;
+    }
+
+    .info-label {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--black-50);
+      white-space: nowrap;
+    }
+
+    .detail-main {
+      flex: 1;
+      min-height: 0;
+      background: var(--bg-1);
+      border-radius: 20px 20px 0 0;
+    }
+
+    /* ===== ACTION PANEL ===== */
+    .action-panel {
+      width: 326px;
+      min-width: 326px;
+      height: 100%;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .action-panel-title {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--black-80);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <!-- Loans (active) -->
+      <div class="sidebar-item">
+        <div class="sidebar-icon-wrap active">
+          <img src="https://www.figma.com/api/mcp/asset/cf7a85e5-f449-438e-b003-6afd255a5322" alt="Loans" width="20" height="20" style="display:block;">
+        </div>
+        <span class="sidebar-label">Loans</span>
+      </div>
+      <!-- Worklist -->
+      <div class="sidebar-item">
+        <div class="sidebar-icon-wrap">
+          <img src="https://www.figma.com/api/mcp/asset/dd49ed10-f389-4166-a2d4-876fec7cf56b" alt="Worklist" width="20" height="20" style="display:block;">
+        </div>
+        <span class="sidebar-label">Worklist</span>
+      </div>
+    </nav>
+    <!-- Profile avatar -->
+    <div class="sidebar-avatar">
+      <img src="https://www.figma.com/api/mcp/asset/729c6c76-a3de-4620-88b5-09b432cb4ab7" alt="Profile">
+    </div>
+  </aside>
+
+  <!-- ===== RIGHT SECTION ===== -->
+  <div class="right-section">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <!-- Left: loan officer tabs -->
+      <div class="tab-group">
+        <!-- Laura Lee - active tab -->
+        <div class="tab-pill active">
+          <span class="tab-pill-text">Laura Lee</span>
+          <!-- close icon -->
+          <svg width="6" height="6" viewBox="0 0 6 6" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+            <path d="M1 1L5 5M5 1L1 5" stroke="#999" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <!-- Alex Johnson -->
+        <div class="tab-pill">
+          <span class="tab-pill-text">Alex Johnson</span>
+        </div>
+        <!-- Maria Smith -->
+        <div class="tab-pill">
+          <span class="tab-pill-text">Maria Smith</span>
+        </div>
+        <!-- James Williams -->
+        <div class="tab-pill">
+          <span class="tab-pill-text">James Williams</span>
+        </div>
+      </div>
+
+      <!-- Right: action buttons -->
+      <div class="top-bar-actions">
+        <!-- Back arrow button -->
+        <div class="icon-btn-pill">
+          <div class="icon-btn-inner">
+            <img src="https://www.figma.com/api/mcp/asset/be73cc36-ed9f-4003-9385-576736151078" alt="" width="16" height="16">
+          </div>
+        </div>
+        <!-- Bell/notification button -->
+        <div class="icon-btn-pill">
+          <div class="icon-btn-inner">
+            <img src="https://www.figma.com/api/mcp/asset/de8e4b0a-a128-4059-9bfa-cd14a5f38bea" alt="" width="16" height="16">
+          </div>
+        </div>
+        <!-- Wallet/card icon -->
+        <div class="wallet-icon">
+          <!-- Card icon SVG -->
+          <div style="position:absolute;width:20px;height:15px;left:5.56px;top:8.06px;">
+            <div style="width:15px;height:12.5px;border:1.2px solid #333;border-radius:3.75px;overflow:hidden;position:relative;margin:auto;">
+              <div style="position:absolute;top:50%;transform:translateY(-50%);left:41.67%;right:16.67%;height:7.5px;background:#333;border-radius:1.6px;"></div>
+            </div>
+          </div>
+          <svg width="20" height="15" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.6" y="0.6" width="14" height="11.8" rx="3.15" stroke="#333" stroke-width="1.2"/>
+            <rect x="7" y="4.75" width="5.5" height="6" rx="1.5" fill="#333"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CARD CONTAINER -->
+    <div class="main-card-container">
+
+      <!-- ===== LEFT MAIN PANEL (1323px) ===== -->
+      <div class="main-panel">
+        <div class="main-panel-inner">
+
+          <!-- LOAN LIST PANEL (278px) -->
+          <div class="loan-list-panel">
+            <div class="loan-list-top">
+
+              <!-- Loan list header -->
+              <div class="loan-list-header">
+                <div class="loan-list-header-left">
+                  <div class="my-loans-pill">
+                    <span class="my-loans-title">My Loans</span>
+                    <div class="my-loans-count-group">
+                      <span class="my-loans-count">52</span>
+                      <img src="https://www.figma.com/api/mcp/asset/8879bc79-14df-4af7-a315-740af72902ea" alt="" width="16" height="16">
+                    </div>
+                  </div>
+                </div>
+                <div class="add-btn">
+                  <div class="add-btn-inner">
+                    <img src="https://www.figma.com/api/mcp/asset/dfaf4a1f-439e-4ce3-87a9-e86372c6ab8b" alt="Add" width="16" height="16">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Loan list scroll area -->
+              <div class="loan-list-scroll">
+
+                <!-- APPLICATION section (expanded) -->
+                <div class="loan-section">
+                  <div class="section-header">
+                    <span class="section-title">Application</span>
+                    <div class="section-count-group">
+                      <span class="section-count">4</span>
+                      <div class="section-chevron" style="transform:rotate(-90deg)">
+                        <img src="https://www.figma.com/api/mcp/asset/a090f3f3-369e-4628-a96a-4213266adb12" alt="" width="16" height="16">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="loan-items">
+                    <!-- Laura Lee - Application -->
+                    <div class="loan-item">
+                      <div class="loan-left">
+                        <div class="loan-info">
+                          <div class="loan-name-section">
+                            <div style="display:flex;align-items:center;">
+                              <span class="loan-name">Laura Lee</span>
+                            </div>
+                            <div class="loan-meta">
+                              <span class="loan-meta-amount">$370,000</span>
+                              <span class="loan-meta-sep">·</span>
+                              <span class="loan-meta-type">Fix &amp; Flip</span>
+                            </div>
+                          </div>
+                          <span class="loan-time">5 mins ago</span>
+                        </div>
+                      </div>
+                      <div class="loan-right">
+                        <div class="loan-right-inner">
+                          <div class="status-badge status-active">Active</div>
+                          <div class="loan-action-icon">
+                            <img src="https://www.figma.com/api/mcp/asset/30c535c4-f2f1-4bff-90eb-2bb9531d3a06" alt="" width="16" height="16">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- James Wilson - Application -->
+                    <div class="loan-item">
+                      <div class="loan-left">
+                        <div class="loan-info">
+                          <div class="loan-name-section">
+                            <div style="display:flex;align-items:center;">
+                              <span class="loan-name">James Wilson</span>
+                            </div>
+                            <div class="loan-meta">
+                              <span class="loan-meta-amount">$450,000</span>
+                              <span class="loan-meta-sep">·</span>
+                              <span class="loan-meta-type">Fix &amp; Flip</span>
+                            </div>
+                          </div>
+                          <span class="loan-time">10 mins ago</span>
+                        </div>
+                      </div>
+                      <div class="loan-right">
+                        <div class="loan-right-inner">
+                          <div class="status-badge status-active">Active</div>
+                          <div class="loan-action-icon">
+                            <img src="https://www.figma.com/api/mcp/asset/d7878e53-4a76-4f74-8e10-56a5b705180c" alt="" width="16" height="16">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Emily Davis - Application -->
+                    <div class="loan-item">
+                      <div class="loan-left">
+                        <div class="loan-info">
+                          <div class="loan-name-section">
+                            <div style="display:flex;align-items:center;">
+                              <span class="loan-name">Emily Davis</span>
+                            </div>
+                            <div class="loan-meta">
+                              <span class="loan-meta-amount">$500,000</span>
+                              <span class="loan-meta-sep">·</span>
+                              <span class="loan-meta-type">Fix &amp; Flip</span>
+                            </div>
+                          </div>
+                          <span class="loan-time">15 mins ago</span>
+                        </div>
+                      </div>
+                      <div class="loan-right">
+                        <div class="loan-right-inner">
+                          <div class="status-badge status-active">Active</div>
+                          <div class="loan-action-icon">
+                            <img src="https://www.figma.com/api/mcp/asset/d7878e53-4a76-4f74-8e10-56a5b705180c" alt="" width="16" height="16">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Anna Martinez - Application (On Hold) -->
+                    <div class="loan-item">
+                      <div class="loan-left">
+                        <div class="loan-info">
+                          <div class="loan-name-section">
+                            <div style="display:flex;align-items:center;">
+                              <span class="loan-name">Anna Martinez</span>
+                            </div>
+                            <div class="loan-meta">
+                              <span class="loan-meta-amount">$280,000</span>
+                              <span class="loan-meta-sep">·</span>
+                              <span class="loan-meta-type">Fix &amp; Flip</span>
+                            </div>
+                          </div>
+                          <span class="loan-time">2 hours ago</span>
+                        </div>
+                      </div>
+                      <div class="loan-right">
+                        <div class="loan-right-inner">
+                          <div class="status-badge status-on-hold">On Hold</div>
+                          <div class="loan-action-icon">
+                            <img src="https://www.figma.com/api/mcp/asset/30c535c4-f2f1-4bff-90eb-2bb9531d3a06" alt="" width="16" height="16">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- UNDERWRITING section (expanded) -->
+                <div class="loan-section">
+                  <div class="section-header">
+                    <span class="section-title">Underwriting</span>
+                    <div class="section-count-group">
+                      <span class="section-count">4</span>
+                      <div class="section-chevron" style="transform:rotate(-90deg)">
+                        <img src="https://www.figma.com/api/mcp/asset/a090f3f3-369e-4628-a96a-4213266adb12" alt="" width="16" height="16">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="loan-items">
+                    <!-- Laura Lee - Underwriting (selected) -->
+                    <div class="loan-item selected">
+                      <div class="loan-left">
+                        <div class="loan-info">
+                          <div class="loan-name-section">
+                            <div style="display:flex;align-items:center;">
+                              <span class="loan-name">Laura Lee</span>
+                            </div>
+                            <div class="loan-meta">
+                              <span class="loan-meta-amount">$370,000</span>
+                              <span class="loan-meta-sep">·</span>
+                              <span class="loan-meta-type">Fix &amp; Flip</span>
+                            </div>
+                          </div>
+                          <span class="loan-time">5 mins ago</span>
+                        </div>
+                      </div>
+                      <div class="loan-right">
+                        <div class="loan-right-inner">
+                          <div class="status-badge status-active">Active</div>
+                          <div class="loan-action-icon">
+                            <img src="https://www.figma.com/api/mcp/asset/d7878e53-4a76-4f74-8e10-56a5b705180c" alt="" width="16" height="16">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- James Wilson - Underwriting -->
+                    <div class="loan-item">
+                      <div class="loan-left">
+                        <div class="loan-info">
+                          <div class="loan-name-section">
+                            <div style="display:flex;align-items:center;">
+                              <span class="loan-name">James Wilson</span>
+                            </div>
+                            <div class="loan-meta">
+                              <span class="loan-meta-amount">$450,000</span>
+                              <span class="loan-meta-sep">·</span>
+                              <span class="loan-meta-type">Fix &amp; Flip</span>
+                            </div>
+                          </div>
+                          <span class="loan-time">10 mins ago</span>
+                        </div>
+                      </div>
+                      <div class="loan-right">
+                        <div class="loan-right-inner">
+                          <div class="status-badge status-active">Active</div>
+                          <div class="loan-action-icon">
+                            <img src="https://www.figma.com/api/mcp/asset/30c535c4-f2f1-4bff-90eb-2bb9531d3a06" alt="" width="16" height="16">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Emily Davis - Underwriting -->
+                    <div class="loan-item">
+                      <div class="loan-left">
+                        <div class="loan-info">
+                          <div class="loan-name-section">
+                            <div style="display:flex;align-items:center;">
+                              <span class="loan-name">Emily Davis</span>
+                            </div>
+                            <div class="loan-meta">
+                              <span class="loan-meta-amount">$500,000</span>
+                              <span class="loan-meta-sep">·</span>
+                              <span class="loan-meta-type">Fix &amp; Flip</span>
+                            </div>
+                          </div>
+                          <span class="loan-time">15 mins ago</span>
+                        </div>
+                      </div>
+                      <div class="loan-right">
+                        <div class="loan-right-inner">
+                          <div class="status-badge status-active">Active</div>
+                          <div class="loan-action-icon">
+                            <img src="https://www.figma.com/api/mcp/asset/30c535c4-f2f1-4bff-90eb-2bb9531d3a06" alt="" width="16" height="16">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Anna Martinez - Underwriting (On Hold) -->
+                    <div class="loan-item">
+                      <div class="loan-left">
+                        <div class="loan-info">
+                          <div class="loan-name-section">
+                            <div style="display:flex;align-items:center;">
+                              <span class="loan-name">Anna Martinez</span>
+                            </div>
+                            <div class="loan-meta">
+                              <span class="loan-meta-amount">$280,000</span>
+                              <span class="loan-meta-sep">·</span>
+                              <span class="loan-meta-type">Fix &amp; Flip</span>
+                            </div>
+                          </div>
+                          <span class="loan-time">2 hours ago</span>
+                        </div>
+                      </div>
+                      <div class="loan-right">
+                        <div class="loan-right-inner">
+                          <div class="status-badge status-on-hold">On Hold</div>
+                          <div class="loan-action-icon">
+                            <img src="https://www.figma.com/api/mcp/asset/30c535c4-f2f1-4bff-90eb-2bb9531d3a06" alt="" width="16" height="16">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CLOSING section (collapsed) -->
+                <div class="loan-section collapsed">
+                  <div class="section-header">
+                    <span class="section-title">Closing</span>
+                    <div class="section-count-group">
+                      <span class="section-count">4</span>
+                      <div class="section-chevron">
+                        <img src="https://www.figma.com/api/mcp/asset/68d6bdf7-f9d1-4c20-beda-8664bc780e71" alt="" width="16" height="16">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- FUNDED section (collapsed) -->
+                <div class="loan-section collapsed">
+                  <div class="section-header">
+                    <span class="section-title">Funded</span>
+                    <div class="section-count-group">
+                      <span class="section-count">4</span>
+                      <div class="section-chevron">
+                        <img src="https://www.figma.com/api/mcp/asset/68d6bdf7-f9d1-4c20-beda-8664bc780e71" alt="" width="16" height="16">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- POST-CLOSE section (collapsed) -->
+                <div class="loan-section collapsed">
+                  <div class="section-header">
+                    <span class="section-title">Post-Close</span>
+                    <div class="section-count-group">
+                      <span class="section-count">4</span>
+                      <div class="section-chevron">
+                        <img src="https://www.figma.com/api/mcp/asset/68d6bdf7-f9d1-4c20-beda-8664bc780e71" alt="" width="16" height="16">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <!-- end scroll -->
+            </div>
+            <!-- end loan-list-top -->
+
+            <!-- BOTTOM BAR -->
+            <div class="loan-list-bottom">
+              <div class="bottom-bar-inner">
+                <div class="search-btn">
+                  <div class="search-icon-wrap">
+                    <img src="https://www.figma.com/api/mcp/asset/5414289f-ab3f-41b3-8cf9-cef89816e486" alt="" width="16" height="16">
+                  </div>
+                  <span class="search-text">Search</span>
+                </div>
+                <div class="filter-btn-group">
+                  <div class="filter-btn-item">
+                    <img src="https://www.figma.com/api/mcp/asset/4535d349-4b96-40d7-9fda-63c5486a51b2" alt="" width="16" height="16">
+                  </div>
+                  <div class="filter-btn-item">
+                    <img src="https://www.figma.com/api/mcp/asset/27fc5eae-0b6f-402e-9ea4-91efc37c139a" alt="" width="16" height="16">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- end loan-list-panel -->
+
+          <!-- DETAIL PANE -->
+          <div class="detail-pane">
+            <div class="detail-header-section">
+              <!-- Detail top bar -->
+              <div class="detail-top-bar">
+                <!-- Left: back button + borrower info -->
+                <div class="detail-borrower-left">
+                  <!-- Back/nav button with profile pic -->
+                  <button class="back-btn">
+                    <div class="back-btn-icon">
+                      <img src="https://www.figma.com/api/mcp/asset/a5a82314-b417-4f62-95b8-2828e4160588" alt="" width="16" height="16">
+                    </div>
+                    <div class="back-btn-avatar">
+                      <img src="https://www.figma.com/api/mcp/asset/cbd7a029-7e31-4c59-a0bd-4c746e9531c0" alt="Laura Lee">
+                    </div>
+                  </button>
+                  <!-- Borrower name + address -->
+                  <div class="borrower-name-section">
+                    <span class="borrower-name">Laura Lee</span>
+                    <div style="display:flex;align-items:center;">
+                      <span class="borrower-address">123 Main St, San Francisco CA</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right: share button + status chips -->
+                <div class="detail-header-actions">
+                  <!-- Share/export button -->
+                  <div class="icon-btn-pill">
+                    <div class="icon-btn-inner">
+                      <img src="https://www.figma.com/api/mcp/asset/8884295a-530b-4f57-a3fb-fbd460a4a196" alt="" width="16" height="16">
+                    </div>
+                  </div>
+                  <!-- Status chips: Active + Underwriting -->
+                  <div class="status-chips-row">
+                    <div class="chips-container">
+                      <!-- Active chip -->
+                      <div class="chip-active-pill">
+                        <div class="chip-dot"></div>
+                        <span class="chip-text">Active</span>
+                      </div>
+                      <!-- Underwriting chip with avatar -->
+                      <div class="chip-underwriting-pill">
+                        <span class="chip-text">Underwriting</span>
+                        <div class="chip-avatar">
+                          <img src="https://www.figma.com/api/mcp/asset/9791446c-6b19-43de-98f6-d5c979b95e55" alt="" width="16" height="16">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Loan info bar -->
+              <div class="loan-info-bar">
+                <div class="loan-info-bar-inner">
+                  <div class="info-field">
+                    <span class="info-value">Fix &amp; Flip</span>
+                    <span class="info-label">Product Type</span>
+                  </div>
+                  <div class="info-field">
+                    <span class="info-value">$100,000</span>
+                    <span class="info-label">Loan Amount</span>
+                  </div>
+                  <div class="info-field">
+                    <span class="info-value">SFR</span>
+                    <span class="info-label">Property Type</span>
+                  </div>
+                  <div class="info-field">
+                    <span class="info-value">$10,000</span>
+                    <span class="info-label">Down Payment</span>
+                  </div>
+                  <div class="info-field">
+                    <span class="info-value">$10,000</span>
+                    <span class="info-label">Down Payment</span>
+                  </div>
+                  <div class="info-field">
+                    <span class="info-value">19 March, 2026</span>
+                    <span class="info-label">Application Date</span>
+                  </div>
+                  <div class="info-field">
+                    <span class="info-value">5%</span>
+                    <span class="info-label">Interest Rate</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detail main content area (empty) -->
+            <div class="detail-main"></div>
+          </div>
+          <!-- end detail-pane -->
+
+        </div>
+        <!-- end main-panel-inner -->
+      </div>
+      <!-- end main-panel -->
+
+      <!-- ===== ACTION PANEL (326px) ===== -->
+      <div class="action-panel">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;">
+          <span class="action-panel-title">Action Panel</span>
+        </div>
+      </div>
+
+    </div>
+    <!-- end main-card-container -->
+
+  </div>
+  <!-- end right-section -->
+
+</body>
+</html>

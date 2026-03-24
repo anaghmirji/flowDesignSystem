@@ -1,0 +1,221 @@
+/* =============================================================================
+   LENDER PORTAL — Product-specific component styles
+   Source: Figma › Lender Exploration (PYHG9Pu8YLs4ACMPljBiSG)
+   All values use tokens from tokens.css — no hardcoded hex values.
+   ============================================================================= */
+
+/* ── Loans Pill ────────────────────────────────────────────────────────────────
+   Figma node: 270:1898
+   A pill chip showing a loan category label + count + sort icon.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.loans-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 12px;
+  background: var(--accent-white-100);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.loans-pill:hover {
+  background: var(--accent-black-2);
+}
+
+.loans-pill__label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+.loans-pill__badge {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.loans-pill__count {
+  font-size: 12px;
+  color: var(--accent-black-60);
+}
+
+.loans-pill__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loans-pill__icon img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* ── Loans Dropdown ────────────────────────────────────────────────────────────
+   Figma node: 114:301
+   Appears below the Loans Pill when clicked. Shows loan filter options.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.loans-dropdown {
+  background: var(--accent-bg-1);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 16px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 154px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.loans-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.loans-dropdown__item:hover {
+  background: var(--accent-black-4);
+}
+
+.loans-dropdown__item--hover {
+  background: var(--accent-black-4);
+}
+
+.loans-dropdown__item--active,
+.loans-dropdown__item--selected {
+  background: var(--accent-black-8);
+}
+
+.loans-dropdown__item-label {
+  font-size: 12px;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+.loans-dropdown__item-count {
+  font-size: 12px;
+  color: var(--accent-black-50);
+}
+
+/* ── LP Status ─────────────────────────────────────────────────────────────────
+   Figma node: 438:3508
+   Left pill — green dot + status label, left-rounded.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.lp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 8px 12px;
+  background: var(--accent-black-8);
+  border-radius: 100px 4px 4px 100px;
+  transition: background 0.1s;
+}
+
+.lp-status:hover {
+  background: var(--accent-black-12);
+}
+
+.lp-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lp-status__dot--green { background: var(--accent-green-100); }
+.lp-status__dot--amber { background: #f59e0b; }
+.lp-status__dot--red   { background: var(--accent-red-100); }
+
+.lp-status__label {
+  font-size: 12px;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+/* ── LP Stage ──────────────────────────────────────────────────────────────────
+   Figma node: 438:3509
+   Right pill — stage label + forward button circle, right-rounded.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.lp-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding-left: 12px;
+  background: var(--accent-black-8);
+  border-radius: 4px 100px 100px 4px;
+  overflow: hidden;
+  transition: background 0.1s;
+}
+
+.lp-stage:hover {
+  background: var(--accent-black-12);
+}
+
+.lp-stage__label {
+  font-size: 12px;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+/* Outer ring: white 2px border + 2px padding */
+.lp-stage__btn {
+  border-radius: 100px;
+  border: 2px solid var(--accent-white-100);
+  padding: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Inner circle: 28×28, holds the icon centered */
+.lp-stage__btn-inner {
+  width: 28px;
+  height: 28px;
+  border-radius: 100px;
+  background: var(--accent-black-8);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+}
+
+.lp-stage__btn:hover .lp-stage__btn-inner {
+  background: var(--accent-black-20);
+}
+
+/* ── LP Status Stage ───────────────────────────────────────────────────────────
+   Figma node: 438:3545
+   Composite — Status + Stage joined with 2px gap.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.lp-status-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+}
+
+/* ── Interactive pill wrapper (used in platform preview only) ─── */
+.loans-pill-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Static HTML Server",
+      "runtimeExecutable": "/usr/bin/ruby",
+      "runtimeArgs": ["-e", "require 'webrick'; WEBrick::HTTPServer.new(:Port=>3000,:DocumentRoot=>Dir.pwd).start"],
+      "port": 3000
+    }
+  ]
+}

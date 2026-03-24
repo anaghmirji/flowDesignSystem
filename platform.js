@@ -1,0 +1,2370 @@
+// =============================================================================
+// PLATFORM.js — Renderer
+// Reads from SYSTEM (system.js) and builds all UI.
+// No hardcoded data here — all data lives in system.js.
+// =============================================================================
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function iconUrl(name) {
+  const icon = SYSTEM.icons.find(i => i.name === name);
+  return icon ? icon.url : '';
+}
+
+function escHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// ─── Nav renderer ─────────────────────────────────────────────────────────────
+
+function renderNav() {
+  const navBody = document.getElementById('nav-body');
+  const { version, status } = SYSTEM.meta;
+
+  const statusLabel = {
+    'ready-for-dev': 'Ready for Dev',
+    'in-review':     'In Review',
+    'draft':         'Draft',
+  }[status] || status;
+
+  let html = `
+    <div class="nav-meta">
+      <span class="nav-version">${version}</span>
+      <span class="nav-status nav-status--${status}">
+        <span class="nav-status-dot"></span>${statusLabel}
+      </span>
+    </div>`;
+
+  const CHEVRON = `<svg class="nav-collapse-chevron" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  SYSTEM.nav.forEach((group, gi) => {
+    const isCollapsible = !!group.collapsible;
+    const startCollapsed = isCollapsible && group.collapsed;
+    const groupId = `nav-group-${gi}`;
+
+    if (isCollapsible) {
+      html += `
+        <div class="nav-group${gi > 0 ? ' nav-group--spaced' : ''}" id="${groupId}">
+          <div class="nav-section nav-section--collapsible" data-group="${groupId}">
+            <span>${group.section}</span>
+            <span class="nav-chevron-wrap${startCollapsed ? ' is-collapsed' : ''}">${CHEVRON}</span>
+          </div>
+          <div class="nav-group-items${startCollapsed ? ' nav-group-items--hidden' : ''}">`;
+      group.items.forEach(item => {
+        html += `<div class="nav-item" data-page="${item.id}">${item.icon}${item.label}</div>`;
+      });
+      html += `</div></div>`;
+    } else {
+      html += `<div class="nav-section"${gi > 0 ? ' style="margin-top:8px"' : ''}>${group.section}</div>`;
+      group.items.forEach((item, ii) => {
+        const isFirst = gi === 0 && ii === 0;
+        html += `<div class="nav-item${isFirst ? ' active' : ''}" data-page="${item.id}">${item.icon}${item.label}</div>`;
+      });
+    }
+  });
+
+  navBody.innerHTML = html;
+
+  // Wire collapsible toggles after render
+  navBody.querySelectorAll('.nav-section--collapsible').forEach(header => {
+    header.addEventListener('click', () => {
+      const grp    = document.getElementById(header.dataset.group);
+      const items  = grp.querySelector('.nav-group-items');
+      const chev   = header.querySelector('.nav-chevron-wrap');
+      const hidden = items.classList.toggle('nav-group-items--hidden');
+      chev.classList.toggle('is-collapsed', hidden);
+    });
+  });
+}
+
+// ─── Token page ───────────────────────────────────────────────────────────────
+
+function renderTokensPage() {
+  let html = `
+    <div class="section-header">
+      <div class="section-title">Tokens</div>
+      <div class="section-subtitle">Source: Figma › Current Design System · click a token for code</div>
+    </div>
+    <div class="token-grid">`;
+
+  SYSTEM.tokenGroups.forEach(group => {
+    html += `<div><div class="token-group-title">${group.label}</div><div class="token-list">`;
+    group.tokens.forEach(t => {
+      const swatchBorder = t.border ? ';border:0.5px solid #e0e0e0' : '';
+      html += `
+        <div class="token-row"
+             data-token="${t.id}"
+             data-figma="${t.figma}"
+             data-hex="${t.hex}">
+          <div class="token-swatch" style="background:${t.hex}${swatchBorder}"></div>
+          <div class="token-info">
+            <div class="token-figma-name">${t.figma}</div>
+            <div class="token-css-name">--${t.id}</div>
+          </div>
+          <div class="token-hex">${t.hex}</div>
+        </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+// ─── Icons page ───────────────────────────────────────────────────────────────
+
+function renderIconsPage() {
+  let html = `
+    <div class="section-header">
+      <div class="section-title">Icons</div>
+      <div class="section-subtitle">Source: Figma › Icons · 16×16px · click an icon for code</div>
+    </div>
+    <div class="ds-table">`;
+
+  SYSTEM.icons.forEach(icon => {
+    html += `
+      <div class="ds-row" data-icon="${icon.name}">
+        <div class="icon-row-preview">
+          <span class="icon icon--${icon.name}">
+            <span class="icon__vector">
+              <img src="${icon.url}" alt="">
+            </span>
+          </span>
+        </div>
+        <span class="ds-row-name">${icon.name}</span>
+      </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+// ─── Button preview HTML builder ──────────────────────────────────────────────
+// Builds the live preview HTML for a button variant row from variant config.
+
+function buildBtnPreviewHtml(v) {
+  const wrap = (name) =>
+    `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector"><img src="${iconUrl(name)}" alt=""></div></div></div>`;
+
+  const slot = (name) =>
+    `<div class="btn__icon-slot btn__icon-slot--${name}"><div class="btn__icon-vector"><img src="${iconUrl(name)}" alt=""></div></div>`;
+
+  if (v.id === 's1')
+    return `<button class="btn btn--s1" tabindex="-1">${wrap(v.icons[0])}</button>`;
+
+  if (v.id === 's2' || v.id === 's3')
+    return `<button class="btn btn--${v.id}" tabindex="-1"><div class="btn__icon-group">${v.icons.map(wrap).join('')}</div></button>`;
+
+  if (v.id === 'label')
+    return `<button class="btn btn--label" tabindex="-1">${slot(v.leadIcon)}<span class="btn__label">Label</span></button>`;
+
+  if (v.id === 'label-trail')
+    return `<button class="btn btn--label-trail" tabindex="-1">${slot(v.leadIcon)}<span class="btn__label">Label</span>${slot(v.trailIcon)}</button>`;
+
+  return '';
+}
+
+// ─── Buttons page ─────────────────────────────────────────────────────────────
+
+function renderButtonsPage() {
+  const comp = SYSTEM.components.buttons;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle}</div>
+    </div>
+    <div class="ds-table">`;
+
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:220px">${v.label}</span>
+        ${buildBtnPreviewHtml(v)}
+      </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+// ─── Lender Portal — preview builders ────────────────────────────────────────
+
+function buildDropdownHtml() {
+  const items = SYSTEM.products.lenderPortal.loans.variants
+    .find(v => v.id === 'loans-dropdown')?.items || [];
+  return `<div class="loans-dropdown">${items.map(item =>
+    `<div class="loans-dropdown__item${item.active ? ' loans-dropdown__item--active' : ''}">
+      <span class="loans-dropdown__item-label">${item.label}</span>
+      <span class="loans-dropdown__item-count">${item.count}</span>
+    </div>`
+  ).join('')}</div>`;
+}
+
+function buildLoansPillInteractivePreview(v) {
+  return `
+    <div class="loans-pill-wrap">
+      <div class="loans-pill" style="cursor:pointer">
+        <span class="loans-pill__label">${v.defaultText}</span>
+        <div class="loans-pill__badge">
+          <span class="loans-pill__count">${v.defaultCount}</span>
+          <div class="loans-pill__icon"><img src="${v.iconUrl}" alt="" style="width:16px;height:16px;display:block"></div>
+        </div>
+      </div>
+      <div class="loans-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:10">
+        ${buildDropdownHtml().replace(/<div class="loans-dropdown"[^>]*>|<\/div>$/, '').trim()}
+      </div>
+    </div>`;
+}
+
+// ─── Lender Portal — Loans page ───────────────────────────────────────────────
+
+function renderLenderLoansPage() {
+  const data = SYSTEM.products.lenderPortal.loans;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${data.title}</div>
+      <div class="section-subtitle">${data.subtitle} · <a href="${data.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table">`;
+
+  data.variants.forEach(v => {
+    let rowPreview = '';
+    if (v.id === 'loans-pill') {
+      rowPreview = `
+        <div class="loans-pill">
+          <span class="loans-pill__label">${v.defaultText}</span>
+          <div class="loans-pill__badge">
+            <span class="loans-pill__count">${v.defaultCount}</span>
+            <div class="loans-pill__icon"><img src="${v.iconUrl}" alt="" style="width:16px;height:16px;display:block"></div>
+          </div>
+        </div>`;
+    } else if (v.id === 'loans-dropdown') {
+      rowPreview = buildDropdownHtml();
+    }
+    html += `
+      <div class="ds-row" data-lender-variant="${v.id}" data-product="loans">
+        <span class="ds-row-name" style="min-width:200px">${v.label}</span>
+        ${rowPreview}
+      </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function lenderLoansTabs(variant) {
+  if (variant === 'loans-dropdown') return lenderDropdownTabs();
+  const v = SYSTEM.products.lenderPortal.loans.variants.find(x => x.id === variant);
+  if (!v) return {};
+
+  return {
+    'HTML': `<!-- Include lender-portal.css -->
+<div class="loans-pill">
+  <span class="loans-pill__label">My Loans</span>
+  <div class="loans-pill__badge">
+    <span class="loans-pill__count">52</span>
+    <div class="loans-pill__icon">
+      <img src="[sort-icon]" alt="" />
+    </div>
+  </div>
+</div>`,
+
+    'CSS': `/* lender-portal.css */
+/* Tokens used: accent-white-100, accent-black-12, accent-black-80, accent-black-60 */
+
+.loans-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 12px;
+  background: var(--accent-white-100);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.loans-pill:hover {
+  background: var(--accent-black-2);
+}
+.loans-pill__label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+.loans-pill__badge {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.loans-pill__count {
+  font-size: 12px;
+  color: var(--accent-black-60);
+}
+.loans-pill__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}`,
+
+    'React': `import 'lender-portal.css';
+
+interface LoansPillProps {
+  label?: string;
+  count?: number;
+  icon: string; // icon asset URL
+  onClick?: () => void;
+}
+
+export function LoansPill({
+  label = 'My Loans',
+  count = 0,
+  icon,
+  onClick,
+}: LoansPillProps) {
+  return (
+    <div className="loans-pill" onClick={onClick} role="button">
+      <span className="loans-pill__label">{label}</span>
+      <div className="loans-pill__badge">
+        <span className="loans-pill__count">{count}</span>
+        <div className="loans-pill__icon">
+          <img src={icon} alt="" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Usage
+<LoansPill label="My Loans" count={52} icon={sortIcon} />`,
+
+    'Vue': `<!-- LoansPill.vue -->
+<template>
+  <div class="loans-pill" @click="$emit('click')">
+    <span class="loans-pill__label">{{ label }}</span>
+    <div class="loans-pill__badge">
+      <span class="loans-pill__count">{{ count }}</span>
+      <div class="loans-pill__icon">
+        <img :src="icon" alt="" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+defineProps<{
+  label?: string;
+  count?: number;
+  icon: string;
+}>();
+defineEmits(['click']);
+</script>
+
+<!-- Usage -->
+<LoansPill label="My Loans" :count="52" :icon="sortIcon" />`,
+
+    'Tailwind': `<!-- Using Tailwind arbitrary values with token CSS vars -->
+<div class="inline-flex items-center gap-3 pl-3 pr-2 py-2
+            bg-[var(--accent-white-100)]
+            border border-[0.5px] border-[var(--accent-black-12)]
+            rounded-full cursor-pointer
+            hover:bg-[var(--accent-black-2)]
+            transition-colors">
+  <span class="text-[15px] font-medium
+               text-[var(--accent-black-80)] whitespace-nowrap">
+    My Loans
+  </span>
+  <div class="flex items-center gap-0.5">
+    <span class="text-xs text-[var(--accent-black-60)]">52</span>
+    <img src="[sort-icon]" alt="" class="w-4 h-4 block" />
+  </div>
+</div>`,
+  };
+}
+
+function lenderDropdownTabs() {
+  return {
+    'HTML': `<!-- Include lender-portal.css -->
+<div class="loans-dropdown">
+  <div class="loans-dropdown__item loans-dropdown__item--active">
+    <span class="loans-dropdown__item-label">My Loans</span>
+    <span class="loans-dropdown__item-count">52</span>
+  </div>
+  <div class="loans-dropdown__item">
+    <span class="loans-dropdown__item-label">All Loans</span>
+    <span class="loans-dropdown__item-count">101</span>
+  </div>
+  <div class="loans-dropdown__item">
+    <span class="loans-dropdown__item-label">Unassigned Loans</span>
+    <span class="loans-dropdown__item-count">49</span>
+  </div>
+</div>`,
+
+    'CSS': `/* lender-portal.css */
+/* Tokens: accent-bg-1, accent-black-12, accent-black-8,
+           accent-black-80, accent-black-50, accent-black-4 */
+
+.loans-dropdown {
+  background: var(--accent-bg-1);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 16px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 154px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+.loans-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.loans-dropdown__item:hover { background: var(--accent-black-4); }
+.loans-dropdown__item--active { background: var(--accent-black-8); }
+.loans-dropdown__item-label {
+  font-size: 12px;
+  color: var(--accent-black-80);
+}
+.loans-dropdown__item-count {
+  font-size: 12px;
+  color: var(--accent-black-50);
+}`,
+
+    'React': `import { useState } from 'react';
+import 'lender-portal.css';
+
+interface DropdownItem {
+  label: string;
+  count: number;
+}
+
+interface LoansDropdownProps {
+  items: DropdownItem[];
+  activeIndex?: number;
+  onSelect?: (index: number) => void;
+}
+
+export function LoansDropdown({
+  items,
+  activeIndex = 0,
+  onSelect,
+}: LoansDropdownProps) {
+  return (
+    <div className="loans-dropdown">
+      {items.map((item, i) => (
+        <div
+          key={i}
+          className={\`loans-dropdown__item\${i === activeIndex ? ' loans-dropdown__item--active' : ''}\`}
+          onClick={() => onSelect?.(i)}
+        >
+          <span className="loans-dropdown__item-label">{item.label}</span>
+          <span className="loans-dropdown__item-count">{item.count}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Usage — typically paired with LoansPill
+const [activeIdx, setActiveIdx] = useState(0);
+<LoansDropdown
+  items={[
+    { label: 'My Loans', count: 52 },
+    { label: 'All Loans', count: 101 },
+    { label: 'Unassigned Loans', count: 49 },
+  ]}
+  activeIndex={activeIdx}
+  onSelect={setActiveIdx}
+/>`,
+
+    'Vue': `<!-- LoansDropdown.vue -->
+<template>
+  <div class="loans-dropdown">
+    <div
+      v-for="(item, i) in items"
+      :key="i"
+      :class="['loans-dropdown__item', { 'loans-dropdown__item--active': i === modelValue }]"
+      @click="$emit('update:modelValue', i)"
+    >
+      <span class="loans-dropdown__item-label">{{ item.label }}</span>
+      <span class="loans-dropdown__item-count">{{ item.count }}</span>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+defineProps<{ items: { label: string; count: number }[]; modelValue?: number }>();
+defineEmits(['update:modelValue']);
+</script>
+
+<!-- Usage -->
+<LoansDropdown :items="loanItems" v-model="activeIdx" />`,
+
+    'Tailwind': `<div class="bg-[var(--accent-bg-1)] border border-[0.5px]
+         border-[var(--accent-black-12)] rounded-2xl p-1
+         flex flex-col gap-1 w-[154px]
+         shadow-[0_4px_16px_rgba(0,0,0,0.07)]">
+  <!-- Active item -->
+  <div class="flex items-center justify-between px-2 py-2
+              rounded-xl bg-[var(--accent-black-8)] cursor-pointer">
+    <span class="text-xs text-[var(--accent-black-80)]">My Loans</span>
+    <span class="text-xs text-[var(--accent-black-50)]">52</span>
+  </div>
+  <!-- Default item -->
+  <div class="flex items-center justify-between px-2 py-2
+              rounded-xl hover:bg-[var(--accent-black-4)] cursor-pointer transition-colors">
+    <span class="text-xs text-[var(--accent-black-80)]">All Loans</span>
+    <span class="text-xs text-[var(--accent-black-50)]">101</span>
+  </div>
+  <div class="flex items-center justify-between px-2 py-2
+              rounded-xl hover:bg-[var(--accent-black-4)] cursor-pointer transition-colors">
+    <span class="text-xs text-[var(--accent-black-80)]">Unassigned Loans</span>
+    <span class="text-xs text-[var(--accent-black-50)]">49</span>
+  </div>
+</div>`,
+  };
+}
+
+// ─── Page registry ────────────────────────────────────────────────────────────
+// Maps page id → render function.
+// To add a new section: add a renderer here and a new key in SYSTEM.
+
+// ─── Dropdown Item page ───────────────────────────────────────────────────────
+
+function renderDropdownItemPage() {
+  const comp = SYSTEM.components.dropdownItem;
+  const stateClass = { default: '', hover: ' loans-dropdown__item--hover', selected: ' loans-dropdown__item--selected' };
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle}</div>
+    </div>
+    <div class="ds-table" style="max-width:640px">`;
+
+  comp.variants.forEach(v => {
+    const cls = stateClass[v.state] || '';
+    const itemHtml = `
+      <div class="loans-dropdown__item${cls}" style="width:200px">
+        <span class="loans-dropdown__item-label">My Loans</span>
+        <span class="loans-dropdown__item-count">12</span>
+      </div>`;
+    html += `
+      <div class="ds-row" data-dropdown-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:180px">${v.label}</span>
+        ${itemHtml}
+      </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function dropdownItemTabs(variantId) {
+  const state = variantId.replace('dropdown-item-', ''); // 'default' | 'hover' | 'selected'
+  const modClass = state === 'hover' ? ' loans-dropdown__item--hover'
+                 : state === 'selected' ? ' loans-dropdown__item--selected'
+                 : '';
+  const stateComment = state === 'hover'    ? '<!-- hover state -->'
+                     : state === 'selected' ? '<!-- selected state -->'
+                     : '<!-- default state -->';
+  return {
+    'HTML': `<!-- Include lender-portal.css -->
+${stateComment}
+<div class="loans-dropdown__item${modClass}">
+  <span class="loans-dropdown__item-label">My Loans</span>
+  <span class="loans-dropdown__item-count">12</span>
+</div>`,
+
+    'CSS': `/* lender-portal.css — source of truth */
+/* Tokens: accent-black-80, accent-black-50, accent-black-8, accent-black-4 */
+
+/* Base */
+.loans-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+/* Hover state — applied on :hover or .--hover modifier */
+.loans-dropdown__item:hover,
+.loans-dropdown__item--hover {
+  background: var(--accent-black-4);   /* #f5f5f5 */
+}
+
+/* Selected state */
+.loans-dropdown__item--selected {
+  background: var(--accent-black-8);   /* #ebebeb */
+}
+
+.loans-dropdown__item-label { font-size: 12px; color: var(--accent-black-80); }
+.loans-dropdown__item-count { font-size: 12px; color: var(--accent-black-50); }`,
+
+    'React': `import 'lender-portal.css';
+
+type DropdownItemState = 'default' | 'hover' | 'selected';
+
+interface DropdownItemProps {
+  label: string;
+  count?: number;
+  state?: DropdownItemState;
+  onClick?: () => void;
+}
+
+export function DropdownItem({
+  label,
+  count,
+  state = 'default',
+  onClick,
+}: DropdownItemProps) {
+  return (
+    <div
+      className={\`loans-dropdown__item\${
+        state === 'selected' ? ' loans-dropdown__item--selected' : ''
+      }\`}
+      onClick={onClick}
+    >
+      <span className="loans-dropdown__item-label">{label}</span>
+      {count !== undefined && (
+        <span className="loans-dropdown__item-count">{count}</span>
+      )}
+    </div>
+  );
+}
+
+// Usage
+<DropdownItem label="My Loans" count={12} state="selected" />
+<DropdownItem label="All Loans" count={101} />`,
+
+    'Vue': `<!-- DropdownItem.vue -->
+<template>
+  <div
+    :class="['loans-dropdown__item', { 'loans-dropdown__item--selected': state === 'selected' }]"
+    @click="$emit('click')"
+  >
+    <span class="loans-dropdown__item-label">{{ label }}</span>
+    <span v-if="count !== undefined" class="loans-dropdown__item-count">
+      {{ count }}
+    </span>
+  </div>
+</template>
+
+<script setup lang="ts">
+defineProps<{
+  label: string;
+  count?: number;
+  state?: 'default' | 'hover' | 'selected';
+}>();
+defineEmits(['click']);
+</script>
+
+<!-- Usage -->
+<DropdownItem label="My Loans" :count="12" state="selected" />`,
+
+    'Tailwind': `<!-- Default -->
+<div class="flex items-center justify-between p-2
+            rounded-xl hover:bg-[var(--accent-black-4)]
+            cursor-pointer transition-colors">
+  <span class="text-xs text-[var(--accent-black-80)]">My Loans</span>
+  <span class="text-xs text-[var(--accent-black-50)]">12</span>
+</div>
+
+<!-- Hover (force-show) -->
+<div class="flex items-center justify-between p-2
+            rounded-xl bg-[var(--accent-black-4)] cursor-pointer">
+  <span class="text-xs text-[var(--accent-black-80)]">My Loans</span>
+  <span class="text-xs text-[var(--accent-black-50)]">12</span>
+</div>
+
+<!-- Selected -->
+<div class="flex items-center justify-between p-2
+            rounded-xl bg-[var(--accent-black-8)] cursor-pointer">
+  <span class="text-xs text-[var(--accent-black-80)]">My Loans</span>
+  <span class="text-xs text-[var(--accent-black-50)]">12</span>
+</div>`,
+  };
+}
+
+// ─── Lender Portal — Status / Stage / Status Stage ────────────────────────────
+
+function buildLpStatusHtml(v) {
+  return `<div class="lp-status">
+  <div class="lp-status__dot lp-status__dot--${v.dot}"></div>
+  <span class="lp-status__label">${v.statusLabel}</span>
+</div>`;
+}
+
+function buildLpStageHtml(v, fwdUrl) {
+  return `<div class="lp-stage">
+  <span class="lp-stage__label">${v.stageLabel}</span>
+  <div class="lp-stage__btn">
+    <div class="lp-stage__btn-inner">
+      <span class="icon icon--forward"><span class="icon__vector"><img src="${fwdUrl}" alt=""></span></span>
+    </div>
+  </div>
+</div>`;
+}
+
+function buildLpStatusStageHtml(v, fwdUrl) {
+  return `<div class="lp-status-stage">
+  <div class="lp-status">
+    <div class="lp-status__dot lp-status__dot--${v.status.dot}"></div>
+    <span class="lp-status__label">${v.status.label}</span>
+  </div>
+  <div class="lp-stage">
+    <span class="lp-stage__label">${v.stage.label}</span>
+    <div class="lp-stage__btn">
+      <div class="lp-stage__btn-inner">
+        <span class="icon icon--forward"><span class="icon__vector"><img src="${fwdUrl}" alt=""></span></span>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function renderLenderStatusPage() {
+  const comp = SYSTEM.products.lenderPortal.status;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table" style="max-width:640px">`;
+
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-lp-status-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:120px">${v.label}</span>
+        ${buildLpStatusHtml(v)}
+      </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function renderLenderStagePage() {
+  const comp = SYSTEM.products.lenderPortal.stage;
+  const fwdUrl = comp.forwardIconUrl;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table" style="max-width:640px">`;
+
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-lp-stage-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:120px">${v.label}</span>
+        ${buildLpStageHtml(v, fwdUrl)}
+      </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function renderLenderStatusStagePage() {
+  const comp = SYSTEM.products.lenderPortal.statusStage;
+  const fwdUrl = SYSTEM.products.lenderPortal.stage.forwardIconUrl;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table" style="max-width:640px">`;
+
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-lp-status-stage-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:160px">${v.label}</span>
+        ${buildLpStatusStageHtml(v, fwdUrl)}
+      </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function lpStatusTabs(variantId) {
+  const v = SYSTEM.products.lenderPortal.status.variants.find(x => x.id === variantId);
+  if (!v) return {};
+  return {
+    'HTML': `<!-- Include lender-portal.css -->
+${buildLpStatusHtml(v)}`,
+
+    'CSS': `/* lender-portal.css */
+/* Tokens: accent-black-8, accent-black-12, accent-black-80, accent-green-100 */
+
+.lp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 8px 12px;
+  background: var(--accent-black-8);
+  border-radius: 100px 4px 4px 100px;
+  transition: background 0.1s;
+}
+.lp-status:hover { background: var(--accent-black-12); }
+.lp-status__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.lp-status__dot--green { background: var(--accent-green-100); }
+.lp-status__label { font-size: 12px; color: var(--accent-black-80); white-space: nowrap; }`,
+
+    'React': `import 'lender-portal.css';
+
+interface LpStatusProps {
+  dot?: 'green' | 'amber' | 'red';
+  label: string;
+}
+
+export function LpStatus({ dot = 'green', label }: LpStatusProps) {
+  return (
+    <div className="lp-status">
+      <div className={\`lp-status__dot lp-status__dot--\${dot}\`} />
+      <span className="lp-status__label">{label}</span>
+    </div>
+  );
+}
+
+// Usage
+<LpStatus dot="green" label="Active" />`,
+
+    'Vue': `<!-- LpStatus.vue -->
+<template>
+  <div class="lp-status">
+    <div :class="['lp-status__dot', \`lp-status__dot--\${dot}\`]" />
+    <span class="lp-status__label">{{ label }}</span>
+  </div>
+</template>
+
+<script setup lang="ts">
+defineProps<{ dot?: 'green' | 'amber' | 'red'; label: string }>();
+</script>
+
+<!-- Usage -->
+<LpStatus dot="green" label="Active" />`,
+
+    'Tailwind': `<div class="inline-flex items-center gap-2 h-8 px-3 py-2
+            bg-[var(--accent-black-8)]
+            rounded-[100px_4px_4px_100px]
+            hover:bg-[var(--accent-black-12)] transition-colors">
+  <div class="w-2 h-2 rounded-full shrink-0 bg-[var(--accent-green-100)]"></div>
+  <span class="text-xs text-[var(--accent-black-80)] whitespace-nowrap">Active</span>
+</div>`,
+  };
+}
+
+function lpStageTabs(variantId) {
+  const comp = SYSTEM.products.lenderPortal.stage;
+  const v = comp.variants.find(x => x.id === variantId);
+  if (!v) return {};
+  const fwdUrl = comp.forwardIconUrl;
+  return {
+    'HTML': `<!-- Include lender-portal.css -->
+${buildLpStageHtml(v, fwdUrl)}`,
+
+    'CSS': `/* lender-portal.css */
+/* Tokens: accent-black-8, accent-black-12, accent-black-20, accent-black-80, accent-white-100 */
+
+.lp-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding-left: 12px;
+  background: var(--accent-black-8);
+  border-radius: 4px 100px 100px 4px;
+  overflow: hidden;
+  transition: background 0.1s;
+}
+.lp-stage:hover { background: var(--accent-black-12); }
+.lp-stage__label { font-size: 12px; color: var(--accent-black-80); white-space: nowrap; }
+/* Outer ring */
+.lp-stage__btn {
+  border-radius: 100px;
+  border: 2px solid var(--accent-white-100);
+  padding: 2px;
+  flex-shrink: 0; cursor: pointer;
+}
+/* Inner circle — 28×28, holds icon */
+.lp-stage__btn-inner {
+  width: 28px; height: 28px; border-radius: 100px;
+  background: var(--accent-black-8); overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.1s;
+}
+.lp-stage__btn:hover .lp-stage__btn-inner { background: var(--accent-black-20); }`,
+
+    'React': `import 'lender-portal.css';
+
+interface LpStageProps {
+  label: string;
+  forwardIconUrl: string;
+  onForward?: () => void;
+}
+
+export function LpStage({ label, forwardIconUrl, onForward }: LpStageProps) {
+  return (
+    <div className="lp-stage">
+      <span className="lp-stage__label">{label}</span>
+      <button className="lp-stage__btn" onClick={onForward}>
+        <div className="lp-stage__btn-inner">
+          <span className="icon icon--forward"><span className="icon__vector"><img src={forwardIconUrl} alt="" /></span></span>
+        </div>
+      </button>
+    </div>
+  );
+}
+
+// Usage
+<LpStage label="Underwriting" forwardIconUrl={fwdIcon} onForward={handleForward} />`,
+
+    'Vue': `<!-- LpStage.vue -->
+<template>
+  <div class="lp-stage">
+    <span class="lp-stage__label">{{ label }}</span>
+    <button class="lp-stage__btn" @click="$emit('forward')">
+      <img :src="forwardIconUrl" alt="forward" />
+    </button>
+  </div>
+</template>
+
+<script setup lang="ts">
+defineProps<{ label: string; forwardIconUrl: string }>();
+defineEmits(['forward']);
+</script>
+
+<!-- Usage -->
+<LpStage label="Underwriting" :forwardIconUrl="fwdIcon" @forward="handleForward" />`,
+
+    'Tailwind': `<div class="inline-flex items-center gap-[10px] h-8 pl-3
+            bg-[var(--accent-black-8)]
+            rounded-[4px_100px_100px_4px] overflow-hidden
+            hover:bg-[var(--accent-black-12)] transition-colors">
+  <span class="text-xs text-[var(--accent-black-80)] whitespace-nowrap">Underwriting</span>
+  <button class="w-8 h-8 rounded-full shrink-0 flex items-center justify-center
+                 border-2 border-white bg-[var(--accent-black-8)]
+                 hover:bg-[var(--accent-black-20)] transition-colors cursor-pointer">
+    <img src="[forward-icon]" alt="forward" class="w-4 h-4 block" />
+  </button>
+</div>`,
+  };
+}
+
+function statusStageTabs(variantId) {
+  const comp = SYSTEM.products.lenderPortal.statusStage;
+  const v = comp.variants.find(x => x.id === variantId);
+  if (!v) return {};
+  const fwdUrl = SYSTEM.products.lenderPortal.stage.forwardIconUrl;
+  return {
+    'HTML': `<!-- Include lender-portal.css -->
+${buildLpStatusStageHtml(v, fwdUrl)}`,
+
+    'CSS': `/* lender-portal.css */
+/* Tokens: accent-black-8, accent-black-12, accent-black-20, accent-black-80, accent-green-100, accent-white-100 */
+
+/* Composite wrapper */
+.lp-status-stage { display: inline-flex; align-items: center; gap: 2px; height: 32px; }
+
+/* Left pill — Status */
+.lp-status {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 32px; padding: 8px 12px;
+  background: var(--accent-black-8);
+  border-radius: 100px 4px 4px 100px; transition: background 0.1s;
+}
+.lp-status:hover { background: var(--accent-black-12); }
+.lp-status__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.lp-status__dot--green { background: var(--accent-green-100); }
+.lp-status__label { font-size: 12px; color: var(--accent-black-80); white-space: nowrap; }
+
+/* Right pill — Stage */
+.lp-stage {
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 32px; padding-left: 12px;
+  background: var(--accent-black-8);
+  border-radius: 4px 100px 100px 4px; overflow: hidden; transition: background 0.1s;
+}
+.lp-stage:hover { background: var(--accent-black-12); }
+.lp-stage__label { font-size: 12px; color: var(--accent-black-80); white-space: nowrap; }
+/* Outer ring */
+.lp-stage__btn {
+  border-radius: 100px;
+  border: 2px solid var(--accent-white-100);
+  padding: 2px; flex-shrink: 0; cursor: pointer;
+}
+/* Inner circle — 28×28, holds icon */
+.lp-stage__btn-inner {
+  width: 28px; height: 28px; border-radius: 100px;
+  background: var(--accent-black-8); overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.1s;
+}
+.lp-stage__btn:hover .lp-stage__btn-inner { background: var(--accent-black-20); }`,
+
+    'React': `import 'lender-portal.css';
+
+interface LpStatusStageProps {
+  status: { dot: 'green' | 'amber' | 'red'; label: string };
+  stage: { label: string };
+  forwardIconUrl: string;
+  onForward?: () => void;
+}
+
+export function LpStatusStage({ status, stage, forwardIconUrl, onForward }: LpStatusStageProps) {
+  return (
+    <div className="lp-status-stage">
+      <div className="lp-status">
+        <div className={\`lp-status__dot lp-status__dot--\${status.dot}\`} />
+        <span className="lp-status__label">{status.label}</span>
+      </div>
+      <div className="lp-stage">
+        <span className="lp-stage__label">{stage.label}</span>
+        <button className="lp-stage__btn" onClick={onForward}>
+          <img src={forwardIconUrl} alt="forward" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Usage
+<LpStatusStage
+  status={{ dot: 'green', label: 'Active' }}
+  stage={{ label: 'Underwriting' }}
+  forwardIconUrl={fwdIcon}
+  onForward={handleForward}
+/>`,
+
+    'Vue': `<!-- LpStatusStage.vue -->
+<template>
+  <div class="lp-status-stage">
+    <div class="lp-status">
+      <div :class="['lp-status__dot', \`lp-status__dot--\${status.dot}\`]" />
+      <span class="lp-status__label">{{ status.label }}</span>
+    </div>
+    <div class="lp-stage">
+      <span class="lp-stage__label">{{ stage.label }}</span>
+      <button class="lp-stage__btn" @click="$emit('forward')">
+        <img :src="forwardIconUrl" alt="forward" />
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+defineProps<{
+  status: { dot: 'green' | 'amber' | 'red'; label: string };
+  stage: { label: string };
+  forwardIconUrl: string;
+}>();
+defineEmits(['forward']);
+</script>`,
+
+    'Tailwind': `<!-- Status Stage — node 438:3545 -->
+<div class="inline-flex items-center gap-0.5 h-8">
+  <!-- Status pill -->
+  <div class="inline-flex items-center gap-2 h-8 px-3 py-2
+              bg-[var(--accent-black-8)] rounded-[100px_4px_4px_100px]
+              hover:bg-[var(--accent-black-12)] transition-colors">
+    <div class="w-2 h-2 rounded-full shrink-0 bg-[var(--accent-green-100)]"></div>
+    <span class="text-xs text-[var(--accent-black-80)] whitespace-nowrap">Active</span>
+  </div>
+  <!-- Stage pill -->
+  <div class="inline-flex items-center gap-[10px] h-8 pl-3
+              bg-[var(--accent-black-8)] rounded-[4px_100px_100px_4px] overflow-hidden
+              hover:bg-[var(--accent-black-12)] transition-colors">
+    <span class="text-xs text-[var(--accent-black-80)] whitespace-nowrap">Underwriting</span>
+    <button class="w-8 h-8 rounded-full shrink-0 flex items-center justify-center
+                   border-2 border-white bg-[var(--accent-black-8)]
+                   hover:bg-[var(--accent-black-20)] transition-colors cursor-pointer">
+      <img src="[forward-icon]" alt="forward" class="w-4 h-4 block" />
+    </button>
+  </div>
+</div>`,
+  };
+}
+
+function bindLpStatusRows() {
+  document.querySelectorAll('[data-lp-status-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.lpStatusVariant;
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
+      const v = SYSTEM.products.lenderPortal.status.variants.find(x => x.id === variantId);
+      openPanel({
+        type: 'Lender Portal · Status',
+        name: v?.label || variantId,
+        preview: buildLpStatusHtml(v),
+        tabs: lpStatusTabs(variantId),
+        defaultLang: 'HTML',
+      });
+    });
+  });
+}
+
+function bindLpStageRows() {
+  document.querySelectorAll('[data-lp-stage-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.lpStageVariant;
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
+      const comp = SYSTEM.products.lenderPortal.stage;
+      const v = comp.variants.find(x => x.id === variantId);
+      openPanel({
+        type: 'Lender Portal · Stage',
+        name: v?.label || variantId,
+        preview: buildLpStageHtml(v, comp.forwardIconUrl),
+        tabs: lpStageTabs(variantId),
+        defaultLang: 'HTML',
+      });
+    });
+  });
+}
+
+function bindStatusStageRows() {
+  document.querySelectorAll('[data-lp-status-stage-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.lpStatusStageVariant;
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
+      const comp = SYSTEM.products.lenderPortal.statusStage;
+      const v = comp.variants.find(x => x.id === variantId);
+      const fwdUrl = SYSTEM.products.lenderPortal.stage.forwardIconUrl;
+      openPanel({
+        type: 'Lender Portal · Status Stage',
+        name: v?.label || variantId,
+        preview: buildLpStatusStageHtml(v, fwdUrl),
+        tabs: statusStageTabs(variantId),
+        defaultLang: 'HTML',
+        relations: comp.relations || null,
+      });
+    });
+  });
+}
+
+const PAGE_RENDERERS = {
+  tokens:                renderTokensPage,
+  icons:                 renderIconsPage,
+  buttons:               renderButtonsPage,
+  'dropdown-item':       renderDropdownItemPage,
+  'lender-loans':        renderLenderLoansPage,
+  'lender-status':       renderLenderStatusPage,
+  'lender-stage':        renderLenderStagePage,
+  'lender-status-stage': renderLenderStatusStagePage,
+};
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+
+function init() {
+  renderNav();
+
+  const container = document.getElementById('pages-container');
+  const allPageIds = SYSTEM.nav.flatMap(g => g.items.map(i => i.id));
+  const firstPageId = allPageIds[0];
+
+  allPageIds.forEach((id, idx) => {
+    const renderer = PAGE_RENDERERS[id];
+    if (!renderer) return;
+    const div = document.createElement('div');
+    div.className = 'page' + (idx === 0 ? ' active' : '');
+    div.id = 'page-' + id;
+    div.innerHTML = renderer();
+    container.appendChild(div);
+  });
+
+  bindNav();
+  bindTokenRows();
+  bindIconRows();
+  bindButtonRows();
+  bindDropdownItemRows();
+  bindLenderRows();
+  bindLpStatusRows();
+  bindLpStageRows();
+  bindStatusStageRows();
+  initSearch();
+}
+
+// ─── Global search ────────────────────────────────────────────────────────────
+
+function buildSearchIndex() {
+  const idx = [];
+
+  // Tokens — searchable by Figma name, CSS var, and hex
+  SYSTEM.tokenGroups.forEach(group => {
+    group.tokens.forEach(t => {
+      idx.push({ type: 'Token', label: t.figma, sub: `--${t.id}  ${t.hex}`, pageId: 'tokens', sel: `[data-token="${t.id}"]` });
+    });
+  });
+
+  // Icons
+  SYSTEM.icons.forEach(icon => {
+    idx.push({ type: 'Icon', label: icon.name, pageId: 'icons', sel: `[data-icon="${icon.name}"]` });
+  });
+
+  // Buttons
+  SYSTEM.components.buttons.variants.forEach(v => {
+    idx.push({ type: 'Button', label: v.label, pageId: 'buttons', sel: `[data-variant="${v.id}"]` });
+  });
+
+  // Dropdown Item
+  SYSTEM.components.dropdownItem.variants.forEach(v => {
+    idx.push({ type: 'Dropdown Item', label: v.label, pageId: 'dropdown-item', sel: `[data-dropdown-variant="${v.id}"]` });
+  });
+
+  // Products — Lender Portal loans
+  SYSTEM.products.lenderPortal.loans.variants.forEach(v => {
+    idx.push({ type: 'Loans', label: v.label, pageId: 'lender-loans', sel: `[data-lender-variant="${v.id}"]` });
+  });
+
+  // Products — Lender Portal status
+  SYSTEM.products.lenderPortal.status.variants.forEach(v => {
+    idx.push({ type: 'Status', label: v.label, pageId: 'lender-status', sel: `[data-lp-status-variant="${v.id}"]` });
+  });
+
+  // Products — Lender Portal stage
+  SYSTEM.products.lenderPortal.stage.variants.forEach(v => {
+    idx.push({ type: 'Stage', label: v.label, pageId: 'lender-stage', sel: `[data-lp-stage-variant="${v.id}"]` });
+  });
+
+  // Products — Lender Portal status stage
+  SYSTEM.products.lenderPortal.statusStage.variants.forEach(v => {
+    idx.push({ type: 'Status Stage', label: v.label, pageId: 'lender-status-stage', sel: `[data-lp-status-stage-variant="${v.id}"]` });
+  });
+
+  return idx;
+}
+
+function navigateTo(pageId, rowSel) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+  if (navItem) {
+    navItem.classList.add('active');
+    // Expand collapsible group if needed
+    const grpItems = navItem.closest('.nav-group-items');
+    if (grpItems && grpItems.classList.contains('nav-group-items--hidden')) {
+      grpItems.classList.remove('nav-group-items--hidden');
+      const chev = grpItems.closest('[id]')?.previousElementSibling?.querySelector('.nav-chevron-wrap');
+      if (chev) chev.classList.remove('is-collapsed');
+    }
+  }
+  const page = document.getElementById('page-' + pageId);
+  if (page) page.classList.add('active');
+  if (rowSel) {
+    const row = document.querySelector(rowSel);
+    if (row) { row.scrollIntoView({ block: 'nearest' }); row.click(); }
+  }
+}
+
+function initSearch() {
+  const searchIndex = buildSearchIndex();
+  const input   = document.getElementById('nav-search-input');
+  const results = document.getElementById('nav-search-results');
+  let focusedIdx = -1;
+
+  function showResults(matches) {
+    if (!matches.length) {
+      results.innerHTML = `<div class="nav-search-empty">No results</div>`;
+    } else {
+      results.innerHTML = matches.map((item, i) =>
+        `<div class="nav-search-result" data-idx="${i}">
+          <span class="nav-search-result-type">${item.type}</span>
+          <span class="nav-search-result-label">${item.label}</span>
+        </div>`
+      ).join('');
+      results.querySelectorAll('.nav-search-result').forEach((el, i) => {
+        el.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          selectResult(matches[i]);
+        });
+      });
+    }
+    results.style.display = '';
+    focusedIdx = -1;
+  }
+
+  function hideResults() {
+    results.style.display = 'none';
+    focusedIdx = -1;
+  }
+
+  function selectResult(item) {
+    input.value = '';
+    hideResults();
+    navigateTo(item.pageId, item.sel);
+  }
+
+  function updateFocus(dir) {
+    const items = results.querySelectorAll('.nav-search-result');
+    if (!items.length) return;
+    items[focusedIdx]?.classList.remove('focused');
+    focusedIdx = (focusedIdx + dir + items.length) % items.length;
+    items[focusedIdx].classList.add('focused');
+    items[focusedIdx].scrollIntoView({ block: 'nearest' });
+  }
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { hideResults(); return; }
+    const matches = searchIndex.filter(item =>
+      item.label.toLowerCase().includes(q) ||
+      item.type.toLowerCase().includes(q) ||
+      (item.sub && item.sub.toLowerCase().includes(q))
+    ).slice(0, 10);
+    showResults(matches);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    const items = results.querySelectorAll('.nav-search-result');
+    if (e.key === 'ArrowDown')  { e.preventDefault(); updateFocus(1); }
+    if (e.key === 'ArrowUp')    { e.preventDefault(); updateFocus(-1); }
+    if (e.key === 'Enter' && focusedIdx >= 0) {
+      const q = input.value.trim().toLowerCase();
+      const matches = searchIndex.filter(item =>
+        item.label.toLowerCase().includes(q) || item.type.toLowerCase().includes(q) ||
+        (item.sub && item.sub.toLowerCase().includes(q))
+      ).slice(0, 10);
+      if (matches[focusedIdx]) selectResult(matches[focusedIdx]);
+    }
+    if (e.key === 'Escape') { input.value = ''; hideResults(); input.blur(); }
+  });
+
+  input.addEventListener('blur', () => setTimeout(hideResults, 150));
+}
+
+// ─── Nav binding ──────────────────────────────────────────────────────────────
+
+function bindNav() {
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('page-' + item.dataset.page).classList.add('active');
+      closePanel();
+    });
+  });
+}
+
+// ─── Row bindings ─────────────────────────────────────────────────────────────
+
+function bindTokenRows() {
+  document.querySelectorAll('.token-row').forEach(row => {
+    row.addEventListener('click', () => {
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
+      const { token, figma, hex } = row.dataset;
+      openPanel({
+        type: 'Token',
+        name: figma,
+        preview: `<div style="width:48px;height:48px;border-radius:12px;background:${hex};border:0.5px solid #e0e0e0"></div>`,
+        tabs: tokenTabs(token, figma, hex),
+        defaultLang: 'CSS',
+      });
+    });
+  });
+}
+
+function bindIconRows() {
+  document.querySelectorAll('[data-icon]').forEach(row => {
+    row.addEventListener('click', () => {
+      const name = row.dataset.icon;
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
+      const iconDef = SYSTEM.icons.find(i => i.name === name);
+      openPanel({
+        type: 'Icon',
+        name,
+        preview: `<span class="icon icon--${name}" style="width:24px;height:24px;overflow:hidden;position:relative;display:inline-block"><span class="icon__vector" style="position:absolute;top:12.5%;left:12.5%;right:12.5%;bottom:12.5%"><img src="${iconUrl(name)}" style="position:absolute;top:-5%;left:-5%;width:110%;height:110%" alt=""></span></span>`,
+        tabs: iconTabs(name),
+        defaultLang: 'HTML',
+        relations: iconDef?.relations || null,
+      });
+    });
+  });
+}
+
+function bindButtonRows() {
+  document.querySelectorAll('[data-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const v = row.dataset.variant;
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
+      const btn = row.querySelector('.btn');
+      const variantDef = SYSTEM.components.buttons.variants.find(x => x.id === v);
+      openPanel({
+        type: 'Button / Primary',
+        name: variantDef ? variantDef.label : v,
+        preview: btn ? btn.outerHTML : '',
+        tabs: btnTabs(v),
+        defaultLang: 'HTML',
+        relations: SYSTEM.components.buttons.relations || null,
+      });
+    });
+  });
+}
+
+// ─── Tailwind helpers ─────────────────────────────────────────────────────────
+
+// Builds the full colors block for tailwind.config.js from SYSTEM.tokenGroups
+function tailwindColorsBlock() {
+  const lines = [];
+  SYSTEM.tokenGroups.forEach(group => {
+    lines.push(`        // ${group.label}`);
+    group.tokens.forEach(t => {
+      lines.push(`        '${t.id}': 'var(--${t.id})',`);
+    });
+  });
+  return lines.join('\n');
+}
+
+function bindDropdownItemRows() {
+  const stateClass = { default: '', hover: ' loans-dropdown__item--hover', selected: ' loans-dropdown__item--selected' };
+  document.querySelectorAll('[data-dropdown-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.dropdownVariant;
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
+      const variantDef = SYSTEM.components.dropdownItem.variants.find(v => v.id === variantId);
+      const cls = stateClass[variantDef?.state || 'default'];
+      openPanel({
+        type: 'Component · Global',
+        name: variantDef?.label || variantId,
+        preview: `<div class="loans-dropdown__item${cls}" style="width:200px"><span class="loans-dropdown__item-label">My Loans</span><span class="loans-dropdown__item-count">12</span></div>`,
+        tabs: dropdownItemTabs(variantId),
+        defaultLang: 'HTML',
+        relations: SYSTEM.components.dropdownItem.relations || null,
+      });
+    });
+  });
+}
+
+function bindLenderRows() {
+  document.querySelectorAll('[data-lender-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.lenderVariant;
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
+
+      const variantDef = SYSTEM.products.lenderPortal.loans.variants.find(v => v.id === variantId);
+
+      // Build preview — pill gets interactive dropdown, dropdown shows static
+      let previewHtml = '';
+      let onMount = null;
+
+      if (variantId === 'loans-pill') {
+        previewHtml = buildLoansPillInteractivePreview(variantDef);
+        onMount = (el) => {
+          const pill     = el.querySelector('.loans-pill');
+          const dropdown = el.querySelector('.loans-dropdown');
+          if (!pill || !dropdown) return;
+          pill.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = dropdown.style.display !== 'none';
+            dropdown.style.display = isOpen ? 'none' : 'flex';
+          });
+          document.addEventListener('click', function handler() {
+            dropdown.style.display = 'none';
+            document.removeEventListener('click', handler);
+          });
+        };
+      } else if (variantId === 'loans-dropdown') {
+        previewHtml = buildDropdownHtml();
+      }
+
+      openPanel({
+        type: 'Lender Portal · Loans',
+        name: variantDef?.label || variantId,
+        preview: previewHtml,
+        onPreviewMount: onMount,
+        tabs: lenderLoansTabs(variantId),
+        defaultLang: 'HTML',
+        relations: variantDef?.relations || null,
+      });
+    });
+  });
+}
+
+// ─── Code generators ──────────────────────────────────────────────────────────
+
+function tokenTabs(token, figma, hex) {
+  return {
+    'CSS': `/* Figma: ${figma} */
+.element {
+  color: var(--${token});
+  background: var(--${token});
+  border-color: var(--${token});
+}
+
+/* Definition in tokens.css */
+:root {
+  --${token}: ${hex};
+}`,
+    'SCSS': `// Figma: ${figma}
+$${token.replace(/-/g, '_')}: ${hex};
+
+// Usage
+.element {
+  color: $${token.replace(/-/g, '_')};
+  background: $${token.replace(/-/g, '_')};
+  border-color: $${token.replace(/-/g, '_')};
+}`,
+    'JS / TS': `// tokens.ts
+export const tokens = {
+  '${figma}': '${hex}',
+} as const;
+
+// Usage
+import { tokens } from './tokens';
+element.style.color = tokens['${figma}'];`,
+    'React': `// Inline style
+<div style={{ color: 'var(--${token})' }} />
+
+// CSS Module
+import styles from './Component.module.css';
+// In Component.module.css:
+// .element { color: var(--${token}); }
+<div className={styles.element} />
+
+// Tailwind arbitrary value
+<div className="text-[var(--${token})]" />`,
+
+    'Tailwind': `// tailwind.config.js
+// Map all design tokens → Tailwind theme so you get
+// class autocomplete for every token (text-*, bg-*, border-*)
+//
+// Requires tokens.css imported in your global CSS.
+
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+${tailwindColorsBlock()}
+      },
+    },
+  },
+};
+
+// ── Usage for ${figma} ──────────────────────────
+// Text colour
+<p class="text-${token}">...</p>
+
+// Background
+<div class="bg-${token}">...</div>
+
+// Border
+<div class="border border-${token}">...</div>
+
+// Arbitrary value (no config needed)
+<div class="text-[var(--${token})]">...</div>`,
+  };
+}
+
+function iconTabs(name) {
+  const url = iconUrl(name);
+  return {
+    'HTML': `<!-- Include icons.css in <head> -->
+<link rel="stylesheet" href="icons.css">
+
+<span class="icon icon--${name}">
+  <span class="icon__vector">
+    <img src="${url}" alt="${name}" />
+  </span>
+</span>`,
+    'CSS': `/* icons.css — from Figma */
+.icon {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.icon--${name} .icon__vector {
+  position: absolute;
+  top: 12.5%; left: 12.5%;
+  right: 12.5%; bottom: 12.5%;
+}
+.icon--${name} .icon__vector img {
+  position: absolute;
+  top: -5%; left: -5%;
+  width: 110%; height: 110%;
+  display: block;
+}`,
+    'React': `// Icon.tsx
+type IconName =
+  | 'magnifying-glass' | 'plus' | 'funnel'
+  | 'archive-box' | 'bell' | 'star'
+  | 'star-filled' | 'chevron-down' | 'document';
+
+interface IconProps {
+  name: IconName;
+  size?: number;
+  className?: string;
+}
+
+export function Icon({ name, size = 16, className }: IconProps) {
+  return (
+    <span
+      className={\`icon icon--\${name}\${className ? ' ' + className : ''}\`}
+      style={{ width: size, height: size }}
+    >
+      <span className="icon__vector">
+        <img src={iconAssets[name]} alt={name} />
+      </span>
+    </span>
+  );
+}
+
+// Usage
+<Icon name="${name}" />
+<Icon name="${name}" size={24} />`,
+    'Vue': `<!-- Icon.vue -->
+<template>
+  <span
+    :class="\`icon icon--\${name}\`"
+    :style="{ width: size + 'px', height: size + 'px' }"
+  >
+    <span class="icon__vector">
+      <img :src="iconAssets[name]" :alt="name" />
+    </span>
+  </span>
+</template>
+
+<script setup lang="ts">
+import { iconAssets } from './iconAssets';
+const props = defineProps<{ name: string; size?: number }>();
+</script>
+
+<!-- Usage -->
+<Icon name="${name}" />`,
+
+    'Tailwind': `<!-- Icons use .icon classes from icons.css — pair with Tailwind utilities -->
+<!-- Import icons.css globally, then use Tailwind for layout/spacing -->
+
+<!-- Basic usage (icons.css handles size + position) -->
+<span class="icon icon--${name}">
+  <span class="icon__vector">
+    <img src="${url}" alt="${name}" />
+  </span>
+</span>
+
+<!-- With Tailwind layout utilities -->
+<div class="flex items-center gap-2">
+  <span class="icon icon--${name}">
+    <span class="icon__vector">
+      <img src="${url}" alt="${name}" />
+    </span>
+  </span>
+  <span class="text-sm text-[var(--accent-black-80)]">Label</span>
+</div>
+
+<!-- Larger size via Tailwind arbitrary -->
+<span class="icon icon--${name} !w-6 !h-6">
+  <span class="icon__vector">
+    <img src="${url}" alt="${name}" />
+  </span>
+</span>
+
+/* In your global CSS — add icons to @layer components */
+@layer components {
+  .icon--${name} {
+    @apply inline-block relative overflow-hidden flex-shrink-0;
+  }
+}`,
+  };
+}
+
+function btnHtml(variant) {
+  const map = {
+    s1: `<!-- buttons.css required -->
+<button class="btn btn--s1" aria-label="magnifying-glass">
+  <div class="btn__icon-wrap">
+    <div class="btn__icon-inner">
+      <div class="btn__icon-vector">
+        <img src="[magnifying-glass]" alt="" />
+      </div>
+    </div>
+  </div>
+</button>`,
+    s2: `<!-- buttons.css required -->
+<button class="btn btn--s2">
+  <div class="btn__icon-group">
+    <div class="btn__icon-wrap">
+      <div class="btn__icon-inner">
+        <div class="btn__icon-vector">
+          <img src="[icon-1]" alt="" />
+        </div>
+      </div>
+    </div>
+    <div class="btn__icon-wrap">
+      <div class="btn__icon-inner">
+        <div class="btn__icon-vector">
+          <img src="[icon-2]" alt="" />
+        </div>
+      </div>
+    </div>
+  </div>
+</button>`,
+    s3: `<!-- buttons.css required -->
+<button class="btn btn--s3">
+  <div class="btn__icon-group">
+    <div class="btn__icon-wrap">
+      <div class="btn__icon-inner">
+        <div class="btn__icon-vector">
+          <img src="[icon-1]" alt="" />
+        </div>
+      </div>
+    </div>
+    <div class="btn__icon-wrap">
+      <div class="btn__icon-inner">
+        <div class="btn__icon-vector">
+          <img src="[icon-2]" alt="" />
+        </div>
+      </div>
+    </div>
+    <div class="btn__icon-wrap">
+      <div class="btn__icon-inner">
+        <div class="btn__icon-vector">
+          <img src="[icon-3]" alt="" />
+        </div>
+      </div>
+    </div>
+  </div>
+</button>`,
+    label: `<!-- buttons.css required -->
+<button class="btn btn--label">
+  <div class="btn__icon-slot btn__icon-slot--magnifying-glass">
+    <div class="btn__icon-vector">
+      <img src="[magnifying-glass]" alt="" />
+    </div>
+  </div>
+  <span class="btn__label">Label</span>
+</button>`,
+    'label-trail': `<!-- buttons.css required -->
+<button class="btn btn--label-trail">
+  <div class="btn__icon-slot btn__icon-slot--magnifying-glass">
+    <div class="btn__icon-vector">
+      <img src="[magnifying-glass]" alt="" />
+    </div>
+  </div>
+  <span class="btn__label">Label</span>
+  <div class="btn__icon-slot btn__icon-slot--chevron-down">
+    <div class="btn__icon-vector">
+      <img src="[chevron-down]" alt="" />
+    </div>
+  </div>
+</button>`,
+  };
+  return map[variant];
+}
+
+function btnCss(variant) {
+  const specific = {
+    s1: `/* Variant — Symbol 1 */
+.btn.btn--s1 { padding: 2px; }
+.btn__icon-wrap {
+  width: 28px; height: 28px;
+  border-radius: 160px;
+  background: var(--accent-white-100);
+  overflow: hidden; position: relative;
+}
+.btn__icon-wrap:hover {
+  background: var(--accent-black-4);
+}`,
+    s2: `/* Variant — Symbol 2 */
+.btn.btn--s2 { padding: 2px; }
+.btn__icon-group { display: flex; align-items: center; }
+/* Hover targets individual icon-wrap only */
+.btn__icon-wrap:hover {
+  background: var(--accent-black-4);
+}`,
+    s3: `/* Variant — Symbol 3 */
+.btn.btn--s3 { padding: 2px; }
+.btn__icon-group { display: flex; align-items: center; }
+.btn__icon-wrap:hover {
+  background: var(--accent-black-4);
+}`,
+    label: `/* Variant — Symbol + Text */
+.btn.btn--label {
+  padding: 8px 12px 8px 8px;
+  gap: 8px;
+}
+.btn__label {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+.btn--label:hover {
+  background: var(--accent-black-2);
+}`,
+    'label-trail': `/* Variant — Symbol + Text + Symbol */
+.btn.btn--label-trail {
+  padding: 8px;
+  gap: 8px;
+}
+.btn__label {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+.btn--label-trail:hover {
+  background: var(--accent-black-2);
+}`,
+  };
+
+  return `/* ── Tokens used ─────────────────────────────── */
+/* @import 'tokens.css';  @import 'buttons.css'; */
+
+/* Accent/White/100  → background   */
+/* Accent/Black/12   → border       */
+/* Accent/Black/80   → label text   */
+/* Accent/Black/4    → icon hover   */
+/* Accent/Black/2    → btn hover    */
+
+/* ── Shared base ────────────────────────────── */
+.btn {
+  background: var(--accent-white-100);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 100px;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* ── Variant ─────────────────────────────────── */
+${specific[variant]}`;
+}
+
+function btnReact(variant) {
+  const map = {
+    s1: `import { Icon } from './Icon';
+import 'buttons.css';
+
+export function Button() {
+  return (
+    <button className="btn btn--s1" aria-label="magnifying-glass">
+      <div className="btn__icon-wrap">
+        <div className="btn__icon-inner">
+          <div className="btn__icon-vector">
+            <Icon name="magnifying-glass" />
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+}`,
+    s2: `import { Icon } from './Icon';
+import 'buttons.css';
+
+interface Props {
+  icons: [string, string];
+}
+
+export function Button({ icons }: Props) {
+  return (
+    <button className="btn btn--s2">
+      <div className="btn__icon-group">
+        {icons.map((name, i) => (
+          <div className="btn__icon-wrap" key={i}>
+            <div className="btn__icon-inner">
+              <div className="btn__icon-vector">
+                <Icon name={name} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </button>
+  );
+}`,
+    s3: `import { Icon } from './Icon';
+import 'buttons.css';
+
+interface Props {
+  icons: [string, string, string];
+}
+
+export function Button({ icons }: Props) {
+  return (
+    <button className="btn btn--s3">
+      <div className="btn__icon-group">
+        {icons.map((name, i) => (
+          <div className="btn__icon-wrap" key={i}>
+            <div className="btn__icon-inner">
+              <div className="btn__icon-vector">
+                <Icon name={name} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </button>
+  );
+}`,
+    label: `import { Icon } from './Icon';
+import 'buttons.css';
+
+interface Props {
+  label: string;
+  leadIcon?: string;
+  onClick?: () => void;
+}
+
+export function Button({
+  label,
+  leadIcon = 'magnifying-glass',
+  onClick,
+}: Props) {
+  return (
+    <button className="btn btn--label" onClick={onClick}>
+      <div className={\`btn__icon-slot btn__icon-slot--\${leadIcon}\`}>
+        <div className="btn__icon-vector">
+          <Icon name={leadIcon} />
+        </div>
+      </div>
+      <span className="btn__label">{label}</span>
+    </button>
+  );
+}`,
+    'label-trail': `import { Icon } from './Icon';
+import 'buttons.css';
+
+interface Props {
+  label: string;
+  leadIcon?: string;
+  trailIcon?: string;
+  onClick?: () => void;
+}
+
+export function Button({
+  label,
+  leadIcon = 'magnifying-glass',
+  trailIcon = 'chevron-down',
+  onClick,
+}: Props) {
+  return (
+    <button className="btn btn--label-trail" onClick={onClick}>
+      <div className={\`btn__icon-slot btn__icon-slot--\${leadIcon}\`}>
+        <div className="btn__icon-vector">
+          <Icon name={leadIcon} />
+        </div>
+      </div>
+      <span className="btn__label">{label}</span>
+      <div className={\`btn__icon-slot btn__icon-slot--\${trailIcon}\`}>
+        <div className="btn__icon-vector">
+          <Icon name={trailIcon} />
+        </div>
+      </div>
+    </button>
+  );
+}`,
+  };
+  return map[variant];
+}
+
+function btnVue(variant) {
+  const map = {
+    s1: `<template>
+  <button class="btn btn--s1" :aria-label="icon">
+    <div class="btn__icon-wrap">
+      <div class="btn__icon-inner">
+        <div class="btn__icon-vector">
+          <Icon :name="icon" />
+        </div>
+      </div>
+    </div>
+  </button>
+</template>
+
+<script setup lang="ts">
+import Icon from './Icon.vue';
+defineProps<{ icon?: string }>();
+</script>`,
+    s2: `<template>
+  <button class="btn btn--s2">
+    <div class="btn__icon-group">
+      <div v-for="(name, i) in icons" :key="i" class="btn__icon-wrap">
+        <div class="btn__icon-inner">
+          <div class="btn__icon-vector">
+            <Icon :name="name" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </button>
+</template>
+
+<script setup lang="ts">
+import Icon from './Icon.vue';
+defineProps<{ icons: [string, string] }>();
+</script>`,
+    s3: `<template>
+  <button class="btn btn--s3">
+    <div class="btn__icon-group">
+      <div v-for="(name, i) in icons" :key="i" class="btn__icon-wrap">
+        <div class="btn__icon-inner">
+          <div class="btn__icon-vector">
+            <Icon :name="name" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </button>
+</template>
+
+<script setup lang="ts">
+import Icon from './Icon.vue';
+defineProps<{ icons: [string, string, string] }>();
+</script>`,
+    label: `<template>
+  <button class="btn btn--label" @click="$emit('click')">
+    <div :class="\`btn__icon-slot btn__icon-slot--\${leadIcon}\`">
+      <div class="btn__icon-vector">
+        <Icon :name="leadIcon" />
+      </div>
+    </div>
+    <span class="btn__label">{{ label }}</span>
+  </button>
+</template>
+
+<script setup lang="ts">
+import Icon from './Icon.vue';
+defineProps<{ label: string; leadIcon?: string }>();
+defineEmits(['click']);
+</script>`,
+    'label-trail': `<template>
+  <button class="btn btn--label-trail" @click="$emit('click')">
+    <div :class="\`btn__icon-slot btn__icon-slot--\${leadIcon}\`">
+      <div class="btn__icon-vector">
+        <Icon :name="leadIcon" />
+      </div>
+    </div>
+    <span class="btn__label">{{ label }}</span>
+    <div :class="\`btn__icon-slot btn__icon-slot--\${trailIcon}\`">
+      <div class="btn__icon-vector">
+        <Icon :name="trailIcon" />
+      </div>
+    </div>
+  </button>
+</template>
+
+<script setup lang="ts">
+import Icon from './Icon.vue';
+defineProps<{ label: string; leadIcon?: string; trailIcon?: string }>();
+defineEmits(['click']);
+</script>`,
+  };
+  return map[variant] || map['label'];
+}
+
+function btnTailwind(variant) {
+  const base = `<!-- buttons.css + tokens.css must be imported globally   -->
+<!-- Recommended: use .btn classes as-is — they're already   -->
+<!-- token-based. Tailwind utilities add layout/spacing only. -->
+
+/* tailwind.config.js — register btn classes as safe-listed */
+module.exports = {
+  content: ['./src/**/*.{html,js,ts,jsx,tsx,vue}'],
+  safelist: ['btn', 'btn--s1', 'btn--s2', 'btn--s3', 'btn--label', 'btn--label-trail'],
+  theme: {
+    extend: {
+      colors: {
+${tailwindColorsBlock()}
+      },
+    },
+  },
+};`;
+
+  const usage = {
+    s1: `
+<!-- Usage with Tailwind layout -->
+<div class="flex items-center gap-2">
+  <button class="btn btn--s1">
+    <div class="btn__icon-wrap">
+      <div class="btn__icon-inner">
+        <div class="btn__icon-vector">
+          <img src="[icon]" alt="" />
+        </div>
+      </div>
+    </div>
+  </button>
+</div>
+
+<!-- Tailwind-only equivalent (no btn classes) -->
+<button class="inline-flex items-center overflow-hidden rounded-full
+               border border-[var(--accent-black-12)]
+               bg-[var(--accent-white-100)] p-0.5 cursor-pointer">
+  <div class="w-7 h-7 rounded-[160px] bg-[var(--accent-white-100)]
+              hover:bg-[var(--accent-black-4)] overflow-hidden relative">
+    <img class="absolute inset-0 w-full h-full object-contain p-1" src="[icon]" alt="" />
+  </div>
+</button>`,
+
+    s2: `
+<!-- Usage with Tailwind layout -->
+<div class="flex items-center gap-2">
+  <button class="btn btn--s2">
+    <div class="btn__icon-group">
+      <div class="btn__icon-wrap">...</div>
+      <div class="btn__icon-wrap">...</div>
+    </div>
+  </button>
+</div>
+
+<!-- Tailwind-only equivalent -->
+<button class="inline-flex items-center overflow-hidden rounded-full
+               border border-[var(--accent-black-12)]
+               bg-[var(--accent-white-100)] p-0.5 cursor-pointer">
+  <div class="flex items-center">
+    <div class="w-7 h-7 rounded-[160px] overflow-hidden relative
+                hover:bg-[var(--accent-black-4)]">
+      <img class="absolute inset-0 w-full h-full object-contain p-1" src="[icon-1]" alt="" />
+    </div>
+    <div class="w-7 h-7 rounded-[160px] overflow-hidden relative
+                hover:bg-[var(--accent-black-4)]">
+      <img class="absolute inset-0 w-full h-full object-contain p-1" src="[icon-2]" alt="" />
+    </div>
+  </div>
+</button>`,
+
+    s3: `
+<!-- Usage with Tailwind layout -->
+<button class="btn btn--s3">
+  <div class="btn__icon-group">
+    <div class="btn__icon-wrap">...</div>
+    <div class="btn__icon-wrap">...</div>
+    <div class="btn__icon-wrap">...</div>
+  </div>
+</button>
+
+<!-- Tailwind-only equivalent -->
+<button class="inline-flex items-center overflow-hidden rounded-full
+               border border-[var(--accent-black-12)]
+               bg-[var(--accent-white-100)] p-0.5 cursor-pointer">
+  <div class="flex items-center">
+    <div class="w-7 h-7 rounded-[160px] overflow-hidden relative
+                hover:bg-[var(--accent-black-4)]">
+      <img class="absolute inset-0 w-full h-full object-contain p-1" src="[icon-1]" alt="" />
+    </div>
+    <div class="w-7 h-7 rounded-[160px] overflow-hidden relative
+                hover:bg-[var(--accent-black-4)]">
+      <img class="absolute inset-0 w-full h-full object-contain p-1" src="[icon-2]" alt="" />
+    </div>
+    <div class="w-7 h-7 rounded-[160px] overflow-hidden relative
+                hover:bg-[var(--accent-black-4)]">
+      <img class="absolute inset-0 w-full h-full object-contain p-1" src="[icon-3]" alt="" />
+    </div>
+  </div>
+</button>`,
+
+    label: `
+<!-- Usage with Tailwind utilities for spacing/layout -->
+<button class="btn btn--label">
+  <div class="btn__icon-slot btn__icon-slot--magnifying-glass">...</div>
+  <span class="btn__label">Label</span>
+</button>
+
+<!-- Tailwind-only equivalent -->
+<button class="inline-flex items-center gap-2 overflow-hidden rounded-full
+               border border-[var(--accent-black-12)]
+               bg-[var(--accent-white-100)]
+               hover:bg-[var(--accent-black-2)]
+               py-2 pl-2 pr-3 cursor-pointer">
+  <span class="w-4 h-4 flex-shrink-0"><!-- icon --></span>
+  <span class="text-xs text-[var(--accent-black-80)]">Label</span>
+</button>`,
+
+    'label-trail': `
+<!-- Usage with Tailwind utilities -->
+<button class="btn btn--label-trail">
+  <div class="btn__icon-slot btn__icon-slot--magnifying-glass">...</div>
+  <span class="btn__label">Label</span>
+  <div class="btn__icon-slot btn__icon-slot--chevron-down">...</div>
+</button>
+
+<!-- Tailwind-only equivalent -->
+<button class="inline-flex items-center gap-2 overflow-hidden rounded-full
+               border border-[var(--accent-black-12)]
+               bg-[var(--accent-white-100)]
+               hover:bg-[var(--accent-black-2)]
+               p-2 cursor-pointer">
+  <span class="w-4 h-4 flex-shrink-0"><!-- lead icon --></span>
+  <span class="text-xs text-[var(--accent-black-80)]">Label</span>
+  <span class="w-4 h-4 flex-shrink-0"><!-- trail icon --></span>
+</button>`,
+  };
+
+  return base + (usage[variant] || usage['label']);
+}
+
+function btnTabs(variant) {
+  return {
+    'HTML':     btnHtml(variant),
+    'CSS':      btnCss(variant),
+    'React':    btnReact(variant),
+    'Vue':      btnVue(variant),
+    'Tailwind': btnTailwind(variant),
+  };
+}
+
+// ─── Panel logic ──────────────────────────────────────────────────────────────
+
+const panel     = document.getElementById('panel');
+const panelType = document.getElementById('panel-type');
+const panelName = document.getElementById('panel-name');
+const panelPrev = document.getElementById('panel-preview');
+const panelTabs = document.getElementById('panel-tabs');
+const codeWrap  = document.getElementById('panel-code-wrap');
+const panelCopy = document.getElementById('panel-copy');
+const mainEl    = document.getElementById('main');
+let activeRow   = null;
+let activeLang  = null;
+let currentTabs = {};
+
+function renderTabs(tabs, defaultLang) {
+  const lang = (activeLang && tabs[activeLang]) ? activeLang : defaultLang;
+  activeLang = lang;
+
+  panelTabs.innerHTML = Object.keys(tabs).map(l =>
+    `<button class="tab-btn${l === lang ? ' active' : ''}" data-lang="${l}">${l}</button>`
+  ).join('');
+
+  codeWrap.innerHTML = Object.entries(tabs).map(([l, code]) => {
+    const langClass = l === 'CSS' || l === 'SCSS' ? 'language-css'
+                    : l === 'JS / TS' ? 'language-typescript'
+                    : l === 'Vue' ? 'language-html'
+                    : 'language-jsx';
+    return `<div class="tab-pane${l === lang ? ' active' : ''}" data-lang="${l}">
+      <pre><code class="${langClass}">${escHtml(code)}</code></pre>
+    </div>`;
+  }).join('');
+
+  codeWrap.querySelectorAll('code').forEach(el => hljs.highlightElement(el));
+
+  panelTabs.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeLang = btn.dataset.lang;
+      panelTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+      codeWrap.querySelectorAll('.tab-pane').forEach(p =>
+        p.classList.toggle('active', p.dataset.lang === activeLang)
+      );
+      resetCopy();
+    });
+  });
+}
+
+// ─── Relationship graph ────────────────────────────────────────────────────────
+// To add a connection: edit system.js only — add `relations: { uses: [...], usedBy: [...] }`
+// to any component, variant, or icon. platform.js reads it automatically.
+
+function buildRelationsHtml(name, relations) {
+  if (!relations) return '';
+  const { uses = [], usedBy = [] } = relations;
+  if (!uses.length && !usedBy.length) return '';
+
+  const arrow = `<svg width="16" height="8" viewBox="0 0 16 8" fill="none"><path d="M0 4h13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M9.5 1l3 3-3 3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const extIcon = `<svg width="8" height="8" viewBox="0 0 8 8" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M1 7 7 1M7 1H3M7 1v4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  const selfNode = (label) =>
+    `<div class="rel-node"><div class="rel-chip rel-chip--self">${label}</div><span class="rel-role rel-role--self">this component</span></div>`;
+
+  const linkNode = (label, role, pageId) =>
+    `<div class="rel-node"><button class="rel-chip rel-chip--link" data-nav-page="${pageId}">${label}${extIcon}</button><span class="rel-role">${role}</span></div>`;
+
+  const arrowEl = `<div class="rel-arrow">${arrow}</div>`;
+
+  const parts = [];
+  uses.forEach(dep => { parts.push(linkNode(dep.name, 'feeds in', dep.pageId)); parts.push(arrowEl); });
+  parts.push(selfNode(name));
+  usedBy.forEach(parent => { parts.push(arrowEl); parts.push(linkNode(parent.name, 'used by', parent.pageId)); });
+
+  return `<div class="panel-relations">
+    <div class="rel-header"><span class="rel-section-label">Relationships</span><span class="rel-section-desc">click a node to navigate</span></div>
+    <div class="rel-graph">${parts.join('')}</div>
+  </div>`;
+}
+
+function openPanel({ type, name, preview, tabs, defaultLang, onPreviewMount, relations }) {
+  panelType.textContent = type;
+  panelName.textContent = name;
+
+  const relEl = document.getElementById('panel-relations');
+  const relHtml = buildRelationsHtml(name, relations);
+  if (relHtml) {
+    relEl.innerHTML = relHtml;
+    relEl.style.display = '';
+    relEl.querySelectorAll('[data-nav-page]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pid = btn.dataset.navPage;
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const navItem = document.querySelector(`.nav-item[data-page="${pid}"]`);
+        if (navItem) navItem.classList.add('active');
+        const page = document.getElementById('page-' + pid);
+        if (page) page.classList.add('active');
+        closePanel();
+      });
+    });
+  } else {
+    relEl.style.display = 'none';
+    relEl.innerHTML = '';
+  }
+
+  panelPrev.innerHTML   = preview;
+  if (onPreviewMount) onPreviewMount(panelPrev);
+  currentTabs = tabs;
+  renderTabs(tabs, defaultLang || Object.keys(tabs)[0]);
+  panel.classList.add('open');
+  mainEl.classList.add('panel-open');
+  resetCopy();
+}
+
+function closePanel() {
+  panel.classList.remove('open');
+  mainEl.classList.remove('panel-open');
+  if (activeRow) { activeRow.classList.remove('active'); activeRow = null; }
+}
+
+function setActive(row) {
+  if (activeRow) activeRow.classList.remove('active');
+  activeRow = row;
+  row.classList.add('active');
+}
+
+function resetCopy() {
+  panelCopy.innerHTML = `<svg class="copy-icon" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5" stroke="#808080" stroke-width="1"/><path d="M4.5 9.5H3A1.5 1.5 0 0 1 1.5 8V3A1.5 1.5 0 0 1 3 1.5H8A1.5 1.5 0 0 1 9.5 3v1.5" stroke="#808080" stroke-width="1" stroke-linecap="round"/></svg> Copy code`;
+  panelCopy.className = 'panel-copy';
+}
+
+panelCopy.addEventListener('click', () => {
+  const code = currentTabs[activeLang] || '';
+  navigator.clipboard.writeText(code).then(() => {
+    panelCopy.innerHTML = `<svg class="copy-icon" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied!`;
+    panelCopy.className = 'panel-copy copied';
+    setTimeout(resetCopy, 2000);
+  });
+});
+
+document.getElementById('panel-close').addEventListener('click', closePanel);
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+init();

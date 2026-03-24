@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Environment / secrets (if you add any later)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.Python
+venv/
+.venv/
+
+# Editor / local-only (machine-specific permissions)
+.claude/settings.local.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Optional: local Cursor/VS Code user settings (keep shared .vscode/ if present)
+# .vscode/settings.json

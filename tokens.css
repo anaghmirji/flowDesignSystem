@@ -1,0 +1,128 @@
+/* ============================================================
+   DESIGN TOKENS — Current Design System
+   Source of truth: Figma › Current Design System
+   Variable export: Light.tokens 2
+   Naming: Figma path Accent/Black/80 → --accent-black-80
+   ============================================================ */
+
+/* ── Typography — Circular Std ────────────────────────────────────────────────
+   Circular Std is a licensed font. Load it via one of:
+     A) Adobe Fonts (Typekit) — add your kit <script> in <head>
+     B) Self-hosted — place font files in /fonts/ and use @font-face below
+     C) Fontshare CDN — https://api.fontshare.com (free, closest match)
+   The --font-sans token is the single reference point across all components.
+   Update the stack here and every component picks it up automatically.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Option B — self-hosted @font-face (fill in src paths when files are available) */
+/*
+@font-face {
+  font-family: 'Circular Std';
+  src: url('/fonts/CircularStd-Book.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Circular Std';
+  src: url('/fonts/CircularStd-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Circular Std';
+  src: url('/fonts/CircularStd-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+:root {
+
+  /* ── Font family ──────────────────────────────────────────────────────────
+     Primary stack: Circular Std → system UI fallback → generic sans-serif
+     Use var(--font-sans) everywhere — never hardcode the font name.        */
+  --font-sans: 'Circular Std', -apple-system, BlinkMacSystemFont,
+               'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+
+  /* ── Font weights — map to Circular Std named cuts ───────────────────────
+     Book = 400, Medium = 500, Bold = 700                                   */
+  --font-book:   400;  /* Circular Std Book   */
+  --font-medium: 500;  /* Circular Std Medium */
+  --font-bold:   700;  /* Circular Std Bold   */
+
+  /* ── Accent / White ──────────────────────────────────────── */
+  --accent-white-100: #ffffff;
+
+  /* ── Accent / Black ──────────────────────────────────────── */
+  --accent-black-2:   #fafafa;
+  --accent-black-4:   #f5f5f5;
+  --accent-black-8:   #ebebeb;
+  --accent-black-10:  #e6e6e6;
+  --accent-black-12:  #e0e0e0;
+  --accent-black-20:  #cccccc;
+  --accent-black-30:  #b2b2b2;
+  --accent-black-40:  #999999;
+  --accent-black-50:  #808080;
+  --accent-black-60:  #666666;
+  --accent-black-70:  #4d4d4d;
+  --accent-black-80:  #333333;
+  --accent-black-90:  #1a1a1a;
+  --accent-black-100: #000000;
+
+  /* ── Accent / Blue ───────────────────────────────────────── */
+  --accent-blue-2:   #fafdff;
+  --accent-blue-4:   #f5faff;
+  --accent-blue-8:   #ebf5ff;
+  --accent-blue-10:  #e6f3ff;
+  --accent-blue-12:  #e0f0ff;
+  --accent-blue-20:  #cce7ff;
+  --accent-blue-30:  #b2dcff;
+  --accent-blue-40:  #99d0ff;
+  --accent-blue-50:  #80c4ff;
+  --accent-blue-60:  #66b8ff;
+  --accent-blue-70:  #4dacff;
+  --accent-blue-80:  #33a0ff;
+  --accent-blue-90:  #1a94ff;
+  --accent-blue-100: #0088ff;
+
+  /* ── Accent / Red ────────────────────────────────────────── */
+  --accent-red-2:   #fffafa;
+  --accent-red-4:   #fff5f5;
+  --accent-red-8:   #ffebeb;
+  --accent-red-10:  #ffe6e6;
+  --accent-red-12:  #ffe0e0;
+  --accent-red-20:  #ffcccc;
+  --accent-red-30:  #ffb2b2;
+  --accent-red-40:  #ff9999;
+  --accent-red-50:  #ff8080;
+  --accent-red-60:  #ff6666;
+  --accent-red-70:  #ff4d4d;
+  --accent-red-80:  #ff6b6f;
+  --accent-red-90:  #ff3b3d;
+  --accent-red-100: #ff383c;
+
+  /* ── Accent / Green ──────────────────────────────────────── */
+  --accent-green-2:   #fbfefc;
+  --accent-green-4:   #f7fdf8;
+  --accent-green-8:   #effbf2;
+  --accent-green-10:  #ebf9ee;
+  --accent-green-12:  #e7f8eb;
+  --accent-green-20:  #d6f4de;
+  --accent-green-30:  #c2eecd;
+  --accent-green-40:  #aee9bd;
+  --accent-green-50:  #9ae3ac;
+  --accent-green-60:  #85dd9b;
+  --accent-green-70:  #71d88b;
+  --accent-green-80:  #5dd27a;
+  --accent-green-90:  #48cd6a;
+  --accent-green-100: #34c759;
+
+  /* ── Background ──────────────────────────────────────────── */
+  --accent-bg-0: #f3f3f4;
+  --accent-bg-1: #fcfcfd;
+
+}
