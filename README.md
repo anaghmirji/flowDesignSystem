@@ -27,6 +27,12 @@ python3 -m http.server 8080
 
 Then open `http://localhost:8080/platform.html`.
 
+## Comments (free real-time)
+
+- Each item in the right-hand panel has a **Comments** block at the bottom.
+- **Without setup:** notes are saved in **this browser** and update **live across tabs** on the same computer (via `localStorage` + `BroadcastChannel`).
+- **Team-wide live sync (free):** use **[Firebase Spark](https://firebase.google.com/pricing)** ($0): create a project, enable **Firestore**, copy the web config into `firebase-config.js` (see `firebase-config.example.js`), and deploy the rules in `firestore.rules.example`. The UI shows a green **Live** badge when Firestore is connected. The first query may prompt you to create a **composite index** (link appears in the browser console).
+
 ## GitHub: first-time setup (do this once)
 
 ### 1. Fix your name on commits (optional but recommended)

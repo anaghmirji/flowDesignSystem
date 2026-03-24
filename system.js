@@ -12,12 +12,8 @@
 window.SYSTEM = {
 
   // ── Meta ────────────────────────────────────────────────────────────────────
-  // version → shown in the nav below the title
-  // status  → 'ready-for-dev' | 'in-review' | 'draft'
-  meta: {
-    version: 'v1.0',
-    status: 'ready-for-dev',
-  },
+  // Reserved for future use (release notes, exports, etc.)
+  meta: {},
 
   // ── Navigation ──────────────────────────────────────────────────────────────
   // Each item's `id` must match a renderer in platform.js renderPage(id).
@@ -302,6 +298,17 @@ window.SYSTEM = {
         subtitle: 'Source: Figma › Lender Exploration · node 438-3508 · click a variant for code',
         figmaFile: 'PYHG9Pu8YLs4ACMPljBiSG',
         figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=438-3508',
+        // Menu under the pill uses the global .loans-dropdown / .loans-dropdown__item pattern
+        relations: {
+          uses: [{ name: 'Dropdown Item', pageId: 'dropdown-item' }],
+        },
+        statusMenuItems: [
+          { id: 'active',     label: 'Active',     dot: 'green' },
+          { id: 'on-hold',    label: 'On Hold',    dot: 'amber' },
+          { id: 'withdrawn',  label: 'Withdrawn',  dot: 'red' },
+          { id: 'cancelled',  label: 'Cancelled',  dot: 'red' },
+          { id: 'denied',     label: 'Denied',     dot: 'red' },
+        ],
         variants: [
           {
             id: 'lp-status-active',
@@ -338,7 +345,8 @@ window.SYSTEM = {
         relations: {
           uses: [
             { name: 'Status', pageId: 'lender-status' },
-            { name: 'Stage',  pageId: 'lender-stage'  },
+            { name: 'Stage', pageId: 'lender-stage' },
+            { name: 'Dropdown Item', pageId: 'dropdown-item' },
           ],
         },
         variants: [

@@ -18,25 +18,18 @@ function escHtml(str) {
     .replace(/>/g, '&gt;');
 }
 
+function escAttr(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;');
+}
+
 // ─── Nav renderer ─────────────────────────────────────────────────────────────
 
 function renderNav() {
   const navBody = document.getElementById('nav-body');
-  const { version, status } = SYSTEM.meta;
-
-  const statusLabel = {
-    'ready-for-dev': 'Ready for Dev',
-    'in-review':     'In Review',
-    'draft':         'Draft',
-  }[status] || status;
-
-  let html = `
-    <div class="nav-meta">
-      <span class="nav-version">${version}</span>
-      <span class="nav-status nav-status--${status}">
-        <span class="nav-status-dot"></span>${statusLabel}
-      </span>
-    </div>`;
+  let html = '';
 
   const CHEVRON = `<svg class="nav-collapse-chevron" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
@@ -705,6 +698,92 @@ function buildLpStatusHtml(v) {
 </div>`;
 }
 
+function getStatusMenuItems() {
+  return SYSTEM.products.lenderPortal.status.statusMenuItems || [];
+}
+
+function buildStatusMenuInnerHtml(selectedLabel) {
+  return getStatusMenuItems()
+    .map(
+      item => `
+    <div class="loans-dropdown__item${item.label === selectedLabel ? ' loans-dropdown__item--active' : ''}" data-status-dot="${item.dot}">
+      <span class="loans-dropdown__item-label">${item.label}</span>
+    </div>`
+    )
+    .join('');
+}
+
+/** Interactive row + panel preview: click pill → loans-dropdown menu (design system pattern). */
+function buildLpStatusInteractiveHtml(v) {
+  return `<div class="lp-status-dropdown-wrap">
+    <div class="lp-status lp-status--clickable" data-lp-status-trigger role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+      <div class="lp-status__dot lp-status__dot--${v.dot}"></div>
+      <span class="lp-status__label">${v.statusLabel}</span>
+    </div>
+    <div class="loans-dropdown loans-dropdown--status-menu" data-lp-status-menu style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:30">
+      ${buildStatusMenuInnerHtml(v.statusLabel)}
+    </div>
+  </div>`;
+}
+
+function mountLpStatusDropdown(root) {
+  const trigger = root.querySelector('[data-lp-status-trigger]');
+  const menu = root.querySelector('[data-lp-status-menu]');
+  if (!trigger || !menu) return;
+
+  function closeAllMenus() {
+    document.querySelectorAll('[data-lp-status-menu]').forEach(m => {
+      m.style.display = 'none';
+    });
+    document.querySelectorAll('[data-lp-status-trigger]').forEach(t => {
+      t.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function closeMenu() {
+    menu.style.display = 'none';
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  function openMenu() {
+    closeAllMenus();
+    menu.style.display = 'flex';
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = menu.style.display === 'flex';
+    if (isOpen) closeMenu();
+    else openMenu();
+  });
+
+  trigger.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    e.stopPropagation();
+    const isOpen = menu.style.display === 'flex';
+    if (isOpen) closeMenu();
+    else openMenu();
+  });
+
+  menu.querySelectorAll('.loans-dropdown__item').forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const labelSpan = opt.querySelector('.loans-dropdown__item-label');
+      const dot = opt.dataset.statusDot;
+      const text = labelSpan ? labelSpan.textContent : '';
+      const dotEl = trigger.querySelector('.lp-status__dot');
+      const statusLabel = trigger.querySelector('.lp-status__label');
+      if (dotEl && dot) dotEl.className = `lp-status__dot lp-status__dot--${dot}`;
+      if (statusLabel) statusLabel.textContent = text;
+      menu.querySelectorAll('.loans-dropdown__item').forEach(x => x.classList.remove('loans-dropdown__item--active'));
+      opt.classList.add('loans-dropdown__item--active');
+      closeMenu();
+    });
+  });
+}
+
 function buildLpStageHtml(v, fwdUrl) {
   return `<div class="lp-stage">
   <span class="lp-stage__label">${v.stageLabel}</span>
@@ -733,6 +812,22 @@ function buildLpStatusStageHtml(v, fwdUrl) {
 </div>`;
 }
 
+/** Status Stage with clickable left pill → same status menu as Status page. */
+function buildLpStatusStageInteractiveHtml(v, fwdUrl) {
+  const statusAsVariant = { dot: v.status.dot, statusLabel: v.status.label };
+  return `<div class="lp-status-stage">
+    ${buildLpStatusInteractiveHtml(statusAsVariant)}
+    <div class="lp-stage">
+      <span class="lp-stage__label">${v.stage.label}</span>
+      <div class="lp-stage__btn">
+        <div class="lp-stage__btn-inner">
+          <span class="icon icon--forward"><span class="icon__vector"><img src="${fwdUrl}" alt=""></span></span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderLenderStatusPage() {
   const comp = SYSTEM.products.lenderPortal.status;
   let html = `
@@ -746,7 +841,7 @@ function renderLenderStatusPage() {
     html += `
       <div class="ds-row" data-lp-status-variant="${v.id}">
         <span class="ds-row-name" style="min-width:120px">${v.label}</span>
-        ${buildLpStatusHtml(v)}
+        ${buildLpStatusInteractiveHtml(v)}
       </div>`;
   });
 
@@ -790,7 +885,7 @@ function renderLenderStatusStagePage() {
     html += `
       <div class="ds-row" data-lp-status-stage-variant="${v.id}">
         <span class="ds-row-name" style="min-width:160px">${v.label}</span>
-        ${buildLpStatusStageHtml(v, fwdUrl)}
+        ${buildLpStatusStageInteractiveHtml(v, fwdUrl)}
       </div>`;
   });
 
@@ -803,7 +898,8 @@ function lpStatusTabs(variantId) {
   if (!v) return {};
   return {
     'HTML': `<!-- Include lender-portal.css -->
-${buildLpStatusHtml(v)}`,
+<!-- Click pill to open. Menu rows = same .loans-dropdown__item pattern as Dropdown Item. -->
+${buildLpStatusInteractiveHtml(v)}`,
 
     'CSS': `/* lender-portal.css */
 /* Tokens: accent-black-8, accent-black-12, accent-black-80, accent-green-100 */
@@ -821,26 +917,85 @@ ${buildLpStatusHtml(v)}`,
 .lp-status:hover { background: var(--accent-black-12); }
 .lp-status__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .lp-status__dot--green { background: var(--accent-green-100); }
-.lp-status__label { font-size: 12px; color: var(--accent-black-80); white-space: nowrap; }`,
+.lp-status__dot--amber { background: #f59e0b; }
+.lp-status__dot--red   { background: var(--accent-red-100); }
+.lp-status__label { font-size: 12px; color: var(--accent-black-80); white-space: nowrap; }
 
-    'React': `import 'lender-portal.css';
+.lp-status-dropdown-wrap { position: relative; display: inline-block; }
+.lp-status--clickable { cursor: pointer; }
+.loans-dropdown--status-menu { width: auto; min-width: 168px; }`,
 
-interface LpStatusProps {
-  dot?: 'green' | 'amber' | 'red';
-  label: string;
-}
+    'React': `import { useState, useRef, useEffect } from 'react';
+import 'lender-portal.css';
 
-export function LpStatus({ dot = 'green', label }: LpStatusProps) {
+const STATUS_OPTIONS = [
+  { label: 'Active', dot: 'green' as const },
+  { label: 'On Hold', dot: 'amber' as const },
+  { label: 'Withdrawn', dot: 'red' as const },
+  { label: 'Cancelled', dot: 'red' as const },
+  { label: 'Denied', dot: 'red' as const },
+];
+
+export function LpStatusWithMenu() {
+  const [open, setOpen] = useState(false);
+  const [label, setLabel] = useState('Active');
+  const [dot, setDot] = useState<'green' | 'amber' | 'red'>('green');
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('click', onDoc);
+    return () => document.removeEventListener('click', onDoc);
+  }, []);
+
   return (
-    <div className="lp-status">
-      <div className={\`lp-status__dot lp-status__dot--\${dot}\`} />
-      <span className="lp-status__label">{label}</span>
+    <div className="lp-status-dropdown-wrap" ref={wrapRef}>
+      <div
+        role="button"
+        tabIndex={0}
+        className="lp-status lp-status--clickable"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setOpen((o) => !o);
+          }
+        }}
+      >
+        <div className={\`lp-status__dot lp-status__dot--\${dot}\`} />
+        <span className="lp-status__label">{label}</span>
+      </div>
+      {open && (
+        <div
+          className="loans-dropdown loans-dropdown--status-menu"
+          style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 30 }}
+          role="listbox"
+        >
+          {STATUS_OPTIONS.map((opt) => (
+            <div
+              key={opt.label}
+              role="option"
+              aria-selected={opt.label === label}
+              className={\`loans-dropdown__item\${opt.label === label ? ' loans-dropdown__item--active' : ''}\`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setLabel(opt.label);
+                setDot(opt.dot);
+                setOpen(false);
+              }}
+            >
+              <span className="loans-dropdown__item-label">{opt.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
-}
-
-// Usage
-<LpStatus dot="green" label="Active" />`,
+}`,
 
     'Vue': `<!-- LpStatus.vue -->
 <template>
@@ -971,7 +1126,8 @@ function statusStageTabs(variantId) {
   const fwdUrl = SYSTEM.products.lenderPortal.stage.forwardIconUrl;
   return {
     'HTML': `<!-- Include lender-portal.css -->
-${buildLpStatusStageHtml(v, fwdUrl)}`,
+<!-- Click the left status pill to open the menu (.loans-dropdown pattern). -->
+${buildLpStatusStageInteractiveHtml(v, fwdUrl)}`,
 
     'CSS': `/* lender-portal.css */
 /* Tokens: accent-black-8, accent-black-12, accent-black-20, accent-black-80, accent-green-100, accent-white-100 */
@@ -1100,17 +1256,26 @@ defineEmits(['forward']);
 
 function bindLpStatusRows() {
   document.querySelectorAll('[data-lp-status-variant]').forEach(row => {
+    const wrap = row.querySelector('.lp-status-dropdown-wrap');
+    if (wrap) mountLpStatusDropdown(wrap);
+
     row.addEventListener('click', () => {
       const variantId = row.dataset.lpStatusVariant;
       if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
       setActive(row);
-      const v = SYSTEM.products.lenderPortal.status.variants.find(x => x.id === variantId);
+      const comp = SYSTEM.products.lenderPortal.status;
+      const v = comp.variants.find(x => x.id === variantId);
       openPanel({
         type: 'Lender Portal · Status',
         name: v?.label || variantId,
-        preview: buildLpStatusHtml(v),
+        preview: buildLpStatusInteractiveHtml(v),
+        onPreviewMount: (el) => {
+          el.querySelectorAll('.lp-status-dropdown-wrap').forEach(mountLpStatusDropdown);
+        },
         tabs: lpStatusTabs(variantId),
         defaultLang: 'HTML',
+        relations: comp.relations || null,
+        commentKey: `lender-status:${variantId}`,
       });
     });
   });
@@ -1130,6 +1295,7 @@ function bindLpStageRows() {
         preview: buildLpStageHtml(v, comp.forwardIconUrl),
         tabs: lpStageTabs(variantId),
         defaultLang: 'HTML',
+        commentKey: `lender-stage:${variantId}`,
       });
     });
   });
@@ -1137,6 +1303,8 @@ function bindLpStageRows() {
 
 function bindStatusStageRows() {
   document.querySelectorAll('[data-lp-status-stage-variant]').forEach(row => {
+    row.querySelectorAll('.lp-status-dropdown-wrap').forEach(mountLpStatusDropdown);
+
     row.addEventListener('click', () => {
       const variantId = row.dataset.lpStatusStageVariant;
       if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
@@ -1147,10 +1315,14 @@ function bindStatusStageRows() {
       openPanel({
         type: 'Lender Portal · Status Stage',
         name: v?.label || variantId,
-        preview: buildLpStatusStageHtml(v, fwdUrl),
+        preview: buildLpStatusStageInteractiveHtml(v, fwdUrl),
+        onPreviewMount: (el) => {
+          el.querySelectorAll('.lp-status-dropdown-wrap').forEach(mountLpStatusDropdown);
+        },
         tabs: statusStageTabs(variantId),
         defaultLang: 'HTML',
         relations: comp.relations || null,
+        commentKey: `lender-status-stage:${variantId}`,
       });
     });
   });
@@ -1195,7 +1367,21 @@ function init() {
   bindLpStatusRows();
   bindLpStageRows();
   bindStatusStageRows();
+  initLpStatusOutsideClose();
   initSearch();
+}
+
+/** Close status dropdowns when clicking outside any .lp-status-dropdown-wrap (one listener). */
+function initLpStatusOutsideClose() {
+  document.addEventListener('click', (ev) => {
+    document.querySelectorAll('.lp-status-dropdown-wrap').forEach(wrap => {
+      if (wrap.contains(ev.target)) return;
+      const m = wrap.querySelector('[data-lp-status-menu]');
+      const t = wrap.querySelector('[data-lp-status-trigger]');
+      if (m) m.style.display = 'none';
+      if (t) t.setAttribute('aria-expanded', 'false');
+    });
+  });
 }
 
 // ─── Global search ────────────────────────────────────────────────────────────
@@ -1374,6 +1560,7 @@ function bindTokenRows() {
         preview: `<div style="width:48px;height:48px;border-radius:12px;background:${hex};border:0.5px solid #e0e0e0"></div>`,
         tabs: tokenTabs(token, figma, hex),
         defaultLang: 'CSS',
+        commentKey: `token:${token}`,
       });
     });
   });
@@ -1393,6 +1580,7 @@ function bindIconRows() {
         tabs: iconTabs(name),
         defaultLang: 'HTML',
         relations: iconDef?.relations || null,
+        commentKey: `icon:${name}`,
       });
     });
   });
@@ -1413,6 +1601,7 @@ function bindButtonRows() {
         tabs: btnTabs(v),
         defaultLang: 'HTML',
         relations: SYSTEM.components.buttons.relations || null,
+        commentKey: `button:${v}`,
       });
     });
   });
@@ -1448,6 +1637,7 @@ function bindDropdownItemRows() {
         tabs: dropdownItemTabs(variantId),
         defaultLang: 'HTML',
         relations: SYSTEM.components.dropdownItem.relations || null,
+        commentKey: `dropdown-item:${variantId}`,
       });
     });
   });
@@ -1494,6 +1684,7 @@ function bindLenderRows() {
         tabs: lenderLoansTabs(variantId),
         defaultLang: 'HTML',
         relations: variantDef?.relations || null,
+        commentKey: `lender-loans:${variantId}`,
       });
     });
   });
@@ -2239,6 +2430,105 @@ const mainEl    = document.getElementById('main');
 let activeRow   = null;
 let activeLang  = null;
 let currentTabs = {};
+let panelCommentsUnsub = null;
+
+function formatCommentAt(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  } catch {
+    return String(iso);
+  }
+}
+
+function commentsApi() {
+  return (
+    window.DesignSystemComments || {
+      isCloud: false,
+      subscribe: (_k, cb) => {
+        cb([]);
+        return () => {};
+      },
+      add: () => Promise.resolve(),
+      getAuthor: () => '',
+      setAuthor: () => {},
+    }
+  );
+}
+
+function mountPanelComments(commentKey) {
+  const host = document.getElementById('panel-comments');
+  if (!host) return;
+
+  if (panelCommentsUnsub) {
+    panelCommentsUnsub();
+    panelCommentsUnsub = null;
+  }
+
+  if (!commentKey) {
+    host.innerHTML = '';
+    host.classList.add('is-hidden');
+    return;
+  }
+
+  host.classList.remove('is-hidden');
+  const DSC = commentsApi();
+  const authorDefault = DSC.getAuthor();
+  const modeHint = DSC.isCloud
+    ? '<span class="panel-comments-live">Live</span>'
+    : '<span class="panel-comments-local">This browser · syncs across your tabs. Add Firebase (free) for team-wide live comments.</span>';
+
+  host.innerHTML = `
+    <div class="panel-comments-inner">
+      <div class="panel-comments-header">
+        <span class="rel-section-label">Comments</span>
+        ${modeHint}
+      </div>
+      <div class="panel-comments-thread" id="panel-comments-thread"></div>
+      <form class="panel-comments-form" id="panel-comments-form">
+        <input type="text" class="panel-comments-name" name="author" placeholder="Name" value="${escAttr(authorDefault)}" maxlength="80" autocomplete="name">
+        <textarea class="panel-comments-text" name="text" placeholder="Add a note…" rows="2" maxlength="4000" required></textarea>
+        <button type="submit" class="panel-comments-submit">Post</button>
+      </form>
+    </div>`;
+
+  const thread = host.querySelector('#panel-comments-thread');
+  const form = host.querySelector('#panel-comments-form');
+
+  function renderList(items) {
+    thread.innerHTML =
+      items.length > 0
+        ? items
+            .map(
+              c => `
+        <div class="panel-comment" data-id="${escAttr(c.id)}">
+          <div class="panel-comment-meta"><span class="panel-comment-author">${escHtml(c.author)}</span><span class="panel-comment-at">${escHtml(formatCommentAt(c.at))}</span></div>
+          <div class="panel-comment-text">${escHtml(c.text)}</div>
+        </div>`
+            )
+            .join('')
+        : '<div class="panel-comments-empty">No comments yet.</div>';
+  }
+
+  panelCommentsUnsub = DSC.subscribe(commentKey, renderList);
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const author = fd.get('author');
+    const text = fd.get('text');
+    if (!String(text || '').trim()) return;
+    DSC.setAuthor(String(author || '').trim());
+    try {
+      await DSC.add(commentKey, author, text);
+      form.querySelector('[name="text"]').value = '';
+    } catch (err) {
+      console.error(err);
+      alert('Could not post comment. Check the browser console.');
+    }
+  });
+}
 
 function renderTabs(tabs, defaultLang) {
   const lang = (activeLang && tabs[activeLang]) ? activeLang : defaultLang;
@@ -2303,7 +2593,7 @@ function buildRelationsHtml(name, relations) {
   </div>`;
 }
 
-function openPanel({ type, name, preview, tabs, defaultLang, onPreviewMount, relations }) {
+function openPanel({ type, name, preview, tabs, defaultLang, onPreviewMount, relations, commentKey }) {
   panelType.textContent = type;
   panelName.textContent = name;
 
@@ -2336,9 +2626,19 @@ function openPanel({ type, name, preview, tabs, defaultLang, onPreviewMount, rel
   panel.classList.add('open');
   mainEl.classList.add('panel-open');
   resetCopy();
+  mountPanelComments(commentKey);
 }
 
 function closePanel() {
+  if (panelCommentsUnsub) {
+    panelCommentsUnsub();
+    panelCommentsUnsub = null;
+  }
+  const pch = document.getElementById('panel-comments');
+  if (pch) {
+    pch.innerHTML = '';
+    pch.classList.add('is-hidden');
+  }
   panel.classList.remove('open');
   mainEl.classList.remove('panel-open');
   if (activeRow) { activeRow.classList.remove('active'); activeRow = null; }
