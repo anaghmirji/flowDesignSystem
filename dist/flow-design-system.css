@@ -1,0 +1,583 @@
+/* Global design-system stylesheet (generated — do not edit by hand)
+ * Paths: design-system/css/global.css · dist/flow-design-system.css
+ * Order: tokens.css → icons.css → buttons.css → lender-portal.css
+ * Regenerate: npm run build  OR  sh scripts/build-css-bundle.sh
+ */
+
+/* ============================================================
+   DESIGN TOKENS — Current Design System
+   Source of truth: Figma › Current Design System
+   Variable export: Light.tokens 2
+   Naming: Figma path Accent/Black/80 → --accent-black-80
+   ============================================================ */
+
+/* ── Typography — Circular Std ────────────────────────────────────────────────
+   Circular Std is a licensed font. Load it via one of:
+     A) Adobe Fonts (Typekit) — add your kit <script> in <head>
+     B) Self-hosted — place font files in /fonts/ and use @font-face below
+     C) Fontshare CDN — https://api.fontshare.com (free, closest match)
+   The --font-sans token is the single reference point across all components.
+   Update the stack here and every component picks it up automatically.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Option B — self-hosted @font-face (fill in src paths when files are available) */
+/*
+@font-face {
+  font-family: 'Circular Std';
+  src: url('/fonts/CircularStd-Book.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Circular Std';
+  src: url('/fonts/CircularStd-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Circular Std';
+  src: url('/fonts/CircularStd-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+:root {
+
+  /* ── Font family ──────────────────────────────────────────────────────────
+     Primary stack: Circular Std → system UI fallback → generic sans-serif
+     Use var(--font-sans) everywhere — never hardcode the font name.        */
+  --font-sans: 'Circular Std', -apple-system, BlinkMacSystemFont,
+               'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+
+  /* ── Font weights — map to Circular Std named cuts ───────────────────────
+     Book = 400, Medium = 500, Bold = 700                                   */
+  --font-book:   400;  /* Circular Std Book   */
+  --font-medium: 500;  /* Circular Std Medium */
+  --font-bold:   700;  /* Circular Std Bold   */
+
+  /* ── Accent / White ──────────────────────────────────────── */
+  --accent-white-100: #ffffff;
+
+  /* ── Accent / Black ──────────────────────────────────────── */
+  --accent-black-2:   #fafafa;
+  --accent-black-4:   #f5f5f5;
+  --accent-black-8:   #ebebeb;
+  --accent-black-10:  #e6e6e6;
+  --accent-black-12:  #e0e0e0;
+  --accent-black-20:  #cccccc;
+  --accent-black-30:  #b2b2b2;
+  --accent-black-40:  #999999;
+  --accent-black-50:  #808080;
+  --accent-black-60:  #666666;
+  --accent-black-70:  #4d4d4d;
+  --accent-black-80:  #333333;
+  --accent-black-90:  #1a1a1a;
+  --accent-black-100: #000000;
+
+  /* ── Accent / Blue ───────────────────────────────────────── */
+  --accent-blue-2:   #fafdff;
+  --accent-blue-4:   #f5faff;
+  --accent-blue-8:   #ebf5ff;
+  --accent-blue-10:  #e6f3ff;
+  --accent-blue-12:  #e0f0ff;
+  --accent-blue-20:  #cce7ff;
+  --accent-blue-30:  #b2dcff;
+  --accent-blue-40:  #99d0ff;
+  --accent-blue-50:  #80c4ff;
+  --accent-blue-60:  #66b8ff;
+  --accent-blue-70:  #4dacff;
+  --accent-blue-80:  #33a0ff;
+  --accent-blue-90:  #1a94ff;
+  --accent-blue-100: #0088ff;
+
+  /* ── Accent / Red ────────────────────────────────────────── */
+  --accent-red-2:   #fffafa;
+  --accent-red-4:   #fff5f5;
+  --accent-red-8:   #ffebeb;
+  --accent-red-10:  #ffe6e6;
+  --accent-red-12:  #ffe0e0;
+  --accent-red-20:  #ffcccc;
+  --accent-red-30:  #ffb2b2;
+  --accent-red-40:  #ff9999;
+  --accent-red-50:  #ff8080;
+  --accent-red-60:  #ff6666;
+  --accent-red-70:  #ff4d4d;
+  --accent-red-80:  #ff6b6f;
+  --accent-red-90:  #ff3b3d;
+  --accent-red-100: #ff383c;
+
+  /* ── Accent / Green ──────────────────────────────────────── */
+  --accent-green-2:   #fbfefc;
+  --accent-green-4:   #f7fdf8;
+  --accent-green-8:   #effbf2;
+  --accent-green-10:  #ebf9ee;
+  --accent-green-12:  #e7f8eb;
+  --accent-green-20:  #d6f4de;
+  --accent-green-30:  #c2eecd;
+  --accent-green-40:  #aee9bd;
+  --accent-green-50:  #9ae3ac;
+  --accent-green-60:  #85dd9b;
+  --accent-green-70:  #71d88b;
+  --accent-green-80:  #5dd27a;
+  --accent-green-90:  #48cd6a;
+  --accent-green-100: #34c759;
+
+  /* ── Background ──────────────────────────────────────────── */
+  --accent-bg-0: #f3f3f4;
+  --accent-bg-1: #fcfcfd;
+
+}
+
+
+/* ========== next file ========== */
+
+/* ============================================================
+   ICON COMPONENT — Current Design System
+   Source of truth: Figma › Icons page
+   Usage: <span class="icon icon--magnifying-glass"></span>
+   ============================================================ */
+
+.icon {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.icon__vector {
+  position: absolute;
+}
+
+.icon__vector img {
+  position: absolute;
+  display: block;
+  max-width: none;
+}
+
+/* ── Per-icon vector positions (from Figma) ── */
+
+/* magnifying-glass */
+.icon--magnifying-glass .icon__vector { top: 12.5%; left: 12.5%; right: 12.5%; bottom: 12.5%; }
+.icon--magnifying-glass .icon__vector img { top: -5%; left: -5%; width: 110%; height: 110%; }
+
+/* plus */
+.icon--plus .icon__vector { top: 12.5%; left: 12.5%; right: 12.5%; bottom: 12.5%; }
+.icon--plus .icon__vector img { top: -5%; left: -5%; width: 110%; height: 110%; }
+
+/* funnel */
+.icon--funnel .icon__vector { top: 12.5%; left: 12.5%; right: 12.5%; bottom: 12.5%; }
+.icon--funnel .icon__vector img { top: -5%; left: -5%; width: 110%; height: 110%; }
+
+/* archive-box */
+.icon--archive-box .icon__vector { top: 15.63%; left: 9.38%; right: 9.38%; bottom: 15.63%; }
+.icon--archive-box .icon__vector img { top: -5.45%; left: -4.62%; width: 109.24%; height: 110.9%; }
+
+/* bell */
+.icon--bell .icon__vector { top: 9.39%; left: 12.5%; right: 12.5%; bottom: 9.41%; }
+.icon--bell .icon__vector img { top: -4.45%; left: -4.81%; width: 109.62%; height: 108.9%; }
+
+/* star */
+.icon--star .icon__vector { top: 13.13%; left: 11.85%; right: 11.85%; bottom: 14.07%; }
+.icon--star .icon__vector img { top: -5.15%; left: -4.91%; width: 109.82%; height: 110.3%; }
+
+/* star-filled (direct img, no inner offset) */
+.icon--star-filled .icon__vector { top: 10.01%; left: 8.72%; right: 8.72%; bottom: 10.93%; }
+.icon--star-filled .icon__vector img { top: 0; left: 0; width: 100%; height: 100%; }
+
+/* chevron-down */
+.icon--chevron-down .icon__vector { top: 34.38%; left: 18.75%; right: 18.75%; bottom: 34.38%; }
+.icon--chevron-down .icon__vector img { top: -10%; left: -5%; width: 110%; height: 120%; }
+
+/* document */
+.icon--document .icon__vector { top: 9.37%; left: 15.63%; right: 15.63%; bottom: 9.38%; }
+.icon--document .icon__vector img { top: -4.62%; left: -5.45%; width: 110.9%; height: 109.24%; }
+
+/* forward */
+.icon--forward .icon__vector { top: 31.51%; left: 12.5%; right: 7.88%; bottom: 25.27%; }
+.icon--forward .icon__vector img { top: -8.69%; left: -4.71%; width: 109.42%; height: 117.37%; }
+
+
+/* ========== next file ========== */
+
+/* ============================================================
+   BUTTON / PRIMARY — Current Design System
+   Source of truth: Figma › Button/Primary
+   Depends on: tokens.css
+   ============================================================
+
+   VARIANTS
+   .btn.btn--s1           Symbol 1  — single icon
+   .btn.btn--s2           Symbol 2  — two icons
+   .btn.btn--s3           Symbol 3  — three icons
+   .btn.btn--label        Symbol + Text
+   .btn.btn--label-trail  Symbol + Text + Symbol
+   ============================================================ */
+
+.btn {
+  background: var(--accent-white-100, #ffffff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 100px;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+  padding: 0;
+}
+
+/* ── Icon-only variants ── */
+.btn--s1, .btn--s2, .btn--s3 { padding: 2px; }
+
+.btn__icon-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* 28px circle housing each icon */
+.btn__icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 160px;
+  background: var(--accent-white-100, #ffffff);
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* 16px icon centred inside the 28px circle */
+.btn__icon-wrap .btn__icon-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+}
+
+.btn__icon-wrap .btn__icon-vector {
+  position: absolute;
+  top: 12.5%; left: 12.5%; right: 12.5%; bottom: 12.5%;
+}
+
+.btn__icon-wrap .btn__icon-vector img {
+  position: absolute;
+  top: -5%; left: -5%;
+  width: 110%; height: 110%;
+  display: block;
+  max-width: none;
+}
+
+/* ── Label variants ── */
+.btn--label       { padding: 8px 12px 8px 8px; gap: 8px; }
+.btn--label-trail { padding: 8px; gap: 8px; }
+
+/* 16px inline icon slot */
+.btn__icon-slot {
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.btn__icon-slot--magnifying-glass .btn__icon-vector {
+  position: absolute;
+  top: 12.5%; left: 12.5%; right: 12.5%; bottom: 12.5%;
+}
+.btn__icon-slot--magnifying-glass .btn__icon-vector img {
+  position: absolute;
+  top: -5%; left: -5%; width: 110%; height: 110%;
+  display: block; max-width: none;
+}
+
+.btn__icon-slot--chevron-down .btn__icon-vector {
+  position: absolute;
+  top: 34.38%; left: 18.75%; right: 18.75%; bottom: 34.38%;
+}
+.btn__icon-slot--chevron-down .btn__icon-vector img {
+  position: absolute;
+  top: -10%; left: -5%; width: 110%; height: 120%;
+  display: block; max-width: none;
+}
+
+/* ── Label ── */
+.btn__label {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: normal;
+  color: var(--accent-black-80, #333333);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Hover: only the single icon-wrap being hovered changes ── */
+@media (hover: hover) {
+  .btn__icon-wrap:hover {
+    background: var(--accent-black-4, #f5f5f5);
+  }
+  .btn--label:hover,
+  .btn--label-trail:hover {
+    background: var(--accent-black-2, #fafafa);
+  }
+}
+.btn__icon-wrap:active {
+  background: var(--accent-black-4, #f5f5f5);
+}
+
+
+/* ========== next file ========== */
+
+/* =============================================================================
+   LENDER PORTAL — Product-specific component styles
+   Source: Figma › Lender Exploration (PYHG9Pu8YLs4ACMPljBiSG)
+   All values use tokens from tokens.css — no hardcoded hex values.
+   ============================================================================= */
+
+/* ── Loans Pill ────────────────────────────────────────────────────────────────
+   Figma node: 270:1898
+   A pill chip showing a loan category label + count + sort icon.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.loans-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 12px;
+  background: var(--accent-white-100);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.loans-pill:hover {
+  background: var(--accent-black-2);
+}
+
+.loans-pill__label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+.loans-pill__badge {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.loans-pill__count {
+  font-size: 12px;
+  color: var(--accent-black-60);
+}
+
+.loans-pill__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loans-pill__icon img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* ── Loans Dropdown ────────────────────────────────────────────────────────────
+   Figma node: 114:301
+   Appears below the Loans Pill when clicked. Shows loan filter options.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.loans-dropdown {
+  background: var(--accent-bg-1);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 16px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 154px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.loans-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.loans-dropdown__item:hover {
+  background: var(--accent-black-4);
+}
+
+.loans-dropdown__item--hover {
+  background: var(--accent-black-4);
+}
+
+.loans-dropdown__item--active,
+.loans-dropdown__item--selected {
+  background: var(--accent-black-8);
+}
+
+.loans-dropdown__item-label {
+  font-size: 12px;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+.loans-dropdown__item-count {
+  font-size: 12px;
+  color: var(--accent-black-50);
+}
+
+/* Status filter menu — same dropdown component, label-only rows (no counts) */
+.loans-dropdown--status-menu {
+  width: auto;
+  min-width: 168px;
+}
+
+.loans-dropdown--status-menu .loans-dropdown__item {
+  justify-content: flex-start;
+}
+
+/* ── LP Status ─────────────────────────────────────────────────────────────────
+   Figma node: 438:3508
+   Left pill — green dot + status label, left-rounded.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.lp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 8px 12px;
+  background: var(--accent-black-8);
+  border-radius: 100px 4px 4px 100px;
+  transition: background 0.1s;
+}
+
+.lp-status:hover {
+  background: var(--accent-black-12);
+}
+
+.lp-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lp-status__dot--green { background: var(--accent-green-100); }
+.lp-status__dot--amber { background: #f59e0b; }
+.lp-status__dot--red   { background: var(--accent-red-100); }
+
+.lp-status__label {
+  font-size: 12px;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+.lp-status-dropdown-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.lp-status--clickable {
+  cursor: pointer;
+}
+
+/* ── LP Stage ──────────────────────────────────────────────────────────────────
+   Figma node: 438:3509
+   Right pill — stage label + forward button circle, right-rounded.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.lp-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding-left: 12px;
+  background: var(--accent-black-8);
+  border-radius: 4px 100px 100px 4px;
+  overflow: hidden;
+  transition: background 0.1s;
+}
+
+.lp-stage:hover {
+  background: var(--accent-black-12);
+}
+
+.lp-stage__label {
+  font-size: 12px;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+/* Outer ring: white 2px border + 2px padding */
+.lp-stage__btn {
+  border-radius: 100px;
+  border: 2px solid var(--accent-white-100);
+  padding: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Inner circle: 28×28, holds the icon centered */
+.lp-stage__btn-inner {
+  width: 28px;
+  height: 28px;
+  border-radius: 100px;
+  background: var(--accent-black-8);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+}
+
+.lp-stage__btn:hover .lp-stage__btn-inner {
+  background: var(--accent-black-20);
+}
+
+/* ── LP Status Stage ───────────────────────────────────────────────────────────
+   Figma node: 438:3545
+   Composite — Status + Stage joined with 2px gap.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.lp-status-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+}
+
+/* ── Interactive pill wrapper (used in platform preview only) ─── */
+.loans-pill-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}

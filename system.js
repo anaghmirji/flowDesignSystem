@@ -5,6 +5,8 @@
 //   New token        → add to tokenGroups[]
 //   New icon         → add to icons[]
 //   New btn variant  → add to components.buttons.variants[]
+//   New CSS file     → add to scripts/build-css-bundle.sh + build-css-bundle.js,
+//                      then run `npm run build` so design-system/css/global.css updates
 //   New section      → add to nav[], add a renderer in platform.js
 //                      (zero changes needed in platform.html)
 // =============================================================================
@@ -18,6 +20,16 @@ window.SYSTEM = {
   // ── Navigation ──────────────────────────────────────────────────────────────
   // Each item's `id` must match a renderer in platform.js renderPage(id).
   nav: [
+    {
+      section: 'Output',
+      items: [
+        {
+          id: 'global-css',
+          label: 'Global CSS',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M3 3h10v10H3V3z" stroke="currentColor" stroke-width="1.25"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
+        },
+      ],
+    },
     {
       section: 'Foundations',
       items: [
@@ -74,6 +86,11 @@ window.SYSTEM = {
           id: 'lender-status-stage',
           label: 'Status Stage',
           icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="4.5" cy="8" r="2.5" stroke="currentColor" stroke-width="1.25"/><circle cx="11.5" cy="8" r="2.5" stroke="currentColor" stroke-width="1.25"/><path d="M7 8h2" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
+        },
+        {
+          id: 'lender-profile',
+          label: 'Profile',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.25"/><path d="M3 13c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
         },
       ],
     },
@@ -355,6 +372,23 @@ window.SYSTEM = {
             label: 'Active · Underwriting',
             status: { dot: 'green', label: 'Active' },
             stage:  { label: 'Underwriting' },
+          },
+        ],
+      },
+
+      // ── Profile (346:4038) — star icon + circular avatar pill button ──────────
+      profile: {
+        title: 'Profile',
+        subtitle: 'Source: Figma › Lender Exploration · node 346-4038 · click a variant for code',
+        figmaFile: 'PYHG9Pu8YLs4ACMPljBiSG',
+        figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=346-4038',
+        // Asset URLs — update if Figma URLs expire
+        iconUrl:   'https://www.figma.com/api/mcp/asset/6acc232c-7571-4fe5-8746-ce62ce9a39ba',
+        avatarUrl: 'https://www.figma.com/api/mcp/asset/c7282667-898c-4558-b46c-a85b2bb9995f',
+        variants: [
+          {
+            id: 'profile-default',
+            label: 'Default',
           },
         ],
       },

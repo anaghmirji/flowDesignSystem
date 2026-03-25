@@ -4,6 +4,9 @@
 // No hardcoded data here — all data lives in system.js.
 // =============================================================================
 
+/** First nav section is “Global CSS”; default landing page stays Tokens for day-to-day use. */
+const DEFAULT_ACTIVE_PAGE = 'tokens';
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function iconUrl(name) {
@@ -47,14 +50,15 @@ function renderNav() {
           </div>
           <div class="nav-group-items${startCollapsed ? ' nav-group-items--hidden' : ''}">`;
       group.items.forEach(item => {
-        html += `<div class="nav-item" data-page="${item.id}">${item.icon}${item.label}</div>`;
+        const isActive = item.id === DEFAULT_ACTIVE_PAGE;
+        html += `<div class="nav-item${isActive ? ' active' : ''}" data-page="${item.id}">${item.icon}${item.label}</div>`;
       });
       html += `</div></div>`;
     } else {
       html += `<div class="nav-section"${gi > 0 ? ' style="margin-top:8px"' : ''}>${group.section}</div>`;
-      group.items.forEach((item, ii) => {
-        const isFirst = gi === 0 && ii === 0;
-        html += `<div class="nav-item${isFirst ? ' active' : ''}" data-page="${item.id}">${item.icon}${item.label}</div>`;
+      group.items.forEach(item => {
+        const isActive = item.id === DEFAULT_ACTIVE_PAGE;
+        html += `<div class="nav-item${isActive ? ' active' : ''}" data-page="${item.id}">${item.icon}${item.label}</div>`;
       });
     }
   });
@@ -133,6 +137,68 @@ function renderIconsPage() {
 
   html += `</div>`;
   return html;
+}
+
+const GLOBAL_CSS_PATH = 'design-system/css/global.css';
+
+function renderGlobalCssPage() {
+  return `
+    <div class="section-header">
+      <div class="section-title">Global CSS</div>
+      <div class="section-subtitle">One file for tokens, icons, buttons, and Lender Portal — same file the platform loads</div>
+    </div>
+    <p class="global-css-intro">
+      This file is <strong>generated</strong>. Edit the source sheets in the repo root (<code>tokens.css</code>, <code>icons.css</code>, <code>buttons.css</code>, <code>lender-portal.css</code>), then run
+      <code>npm run build</code> or <code>sh scripts/build-css-bundle.sh</code>.
+      If you add a new stylesheet, append it to both bundle scripts so it is included here.
+      In React apps, import this once (or use the npm export <code>flow-design-system/styles.css</code>).
+    </p>
+    <div class="global-css-actions">
+      <button type="button" class="global-css-btn" id="global-css-copy">Copy all CSS</button>
+      <button type="button" class="global-css-btn" id="global-css-reload">Reload from disk</button>
+    </div>
+    <div class="global-css-error" id="global-css-error" role="alert"></div>
+    <div class="global-css-pre-wrap">
+      <pre class="global-css-pre"><code id="global-css-source" class="language-css"></code></pre>
+    </div>`;
+}
+
+function initGlobalCssPage() {
+  const url = GLOBAL_CSS_PATH;
+  const el = document.getElementById('global-css-source');
+  const errEl = document.getElementById('global-css-error');
+  if (!el || !errEl) return;
+
+  async function load() {
+    try {
+      const r = await fetch(url + '?t=' + Date.now());
+      if (!r.ok) throw new Error(String(r.status));
+      const text = await r.text();
+      el.textContent = text;
+      el.className = 'language-css';
+      if (window.hljs && typeof window.hljs.highlightElement === 'function') {
+        window.hljs.highlightElement(el);
+      }
+      errEl.style.display = 'none';
+    } catch {
+      errEl.style.display = 'block';
+      errEl.innerHTML =
+        'Could not load <code>' +
+        escHtml(url) +
+        '</code>. From the repo root run <code>npm run build</code> or <code>sh scripts/build-css-bundle.sh</code>, then refresh.';
+    }
+  }
+
+  document.getElementById('global-css-copy')?.addEventListener('click', async () => {
+    await load();
+    try {
+      await navigator.clipboard.writeText(el.textContent || '');
+    } catch {
+      /* ignore */
+    }
+  });
+  document.getElementById('global-css-reload')?.addEventListener('click', load);
+  load();
 }
 
 // ─── Button preview HTML builder ──────────────────────────────────────────────
@@ -303,7 +369,7 @@ function lenderLoansTabs(variant) {
   flex-shrink: 0;
 }`,
 
-    'React': `import 'lender-portal.css';
+    'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
 
 interface LoansPillProps {
   label?: string;
@@ -432,7 +498,7 @@ function lenderDropdownTabs() {
 }`,
 
     'React': `import { useState } from 'react';
-import 'lender-portal.css';
+import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
 
 interface DropdownItem {
   label: string;
@@ -604,7 +670,7 @@ ${stateComment}
 .loans-dropdown__item-label { font-size: 12px; color: var(--accent-black-80); }
 .loans-dropdown__item-count { font-size: 12px; color: var(--accent-black-50); }`,
 
-    'React': `import 'lender-portal.css';
+    'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
 
 type DropdownItemState = 'default' | 'hover' | 'selected';
 
@@ -796,35 +862,19 @@ function buildLpStageHtml(v, fwdUrl) {
 }
 
 function buildLpStatusStageHtml(v, fwdUrl) {
+  const statusV = { dot: v.status.dot, statusLabel: v.status.label };
   return `<div class="lp-status-stage">
-  <div class="lp-status">
-    <div class="lp-status__dot lp-status__dot--${v.status.dot}"></div>
-    <span class="lp-status__label">${v.status.label}</span>
-  </div>
-  <div class="lp-stage">
-    <span class="lp-stage__label">${v.stage.label}</span>
-    <div class="lp-stage__btn">
-      <div class="lp-stage__btn-inner">
-        <span class="icon icon--forward"><span class="icon__vector"><img src="${fwdUrl}" alt=""></span></span>
-      </div>
-    </div>
-  </div>
-</div>`;
+    ${buildLpStatusHtml(statusV)}
+    ${buildLpStageHtml({ stageLabel: v.stage.label }, fwdUrl)}
+  </div>`;
 }
 
-/** Status Stage with clickable left pill → same status menu as Status page. */
+/** Status Stage = interactive Status (dropdown) + Stage from the same builders as those pages. */
 function buildLpStatusStageInteractiveHtml(v, fwdUrl) {
   const statusAsVariant = { dot: v.status.dot, statusLabel: v.status.label };
   return `<div class="lp-status-stage">
     ${buildLpStatusInteractiveHtml(statusAsVariant)}
-    <div class="lp-stage">
-      <span class="lp-stage__label">${v.stage.label}</span>
-      <div class="lp-stage__btn">
-        <div class="lp-stage__btn-inner">
-          <span class="icon icon--forward"><span class="icon__vector"><img src="${fwdUrl}" alt=""></span></span>
-        </div>
-      </div>
-    </div>
+    ${buildLpStageHtml({ stageLabel: v.stage.label }, fwdUrl)}
   </div>`;
 }
 
@@ -926,7 +976,7 @@ ${buildLpStatusInteractiveHtml(v)}`,
 .loans-dropdown--status-menu { width: auto; min-width: 168px; }`,
 
     'React': `import { useState, useRef, useEffect } from 'react';
-import 'lender-portal.css';
+import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
 
 const STATUS_OPTIONS = [
   { label: 'Active', dot: 'green' as const },
@@ -1063,7 +1113,7 @@ ${buildLpStageHtml(v, fwdUrl)}`,
 }
 .lp-stage__btn:hover .lp-stage__btn-inner { background: var(--accent-black-20); }`,
 
-    'React': `import 'lender-portal.css';
+    'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
 
 interface LpStageProps {
   label: string;
@@ -1171,57 +1221,65 @@ ${buildLpStatusStageInteractiveHtml(v, fwdUrl)}`,
 }
 .lp-stage__btn:hover .lp-stage__btn-inner { background: var(--accent-black-20); }`,
 
-    'React': `import 'lender-portal.css';
+    'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
+import { LpStatusWithMenu, LpStage } from 'flow-design-system-react';
 
-interface LpStatusStageProps {
-  status: { dot: 'green' | 'amber' | 'red'; label: string };
-  stage: { label: string };
-  forwardIconUrl: string;
-  onForward?: () => void;
+// Status Stage = Status page piece + Stage page piece (same imports as those sections).
+// Shortcut: import { LpStatusStage } if you prefer one component.
+
+interface Props {
+  fwdIcon: string;
 }
 
-export function LpStatusStage({ status, stage, forwardIconUrl, onForward }: LpStatusStageProps) {
+export function LoanStatusStageRow({ fwdIcon }: Props) {
   return (
     <div className="lp-status-stage">
-      <div className="lp-status">
-        <div className={\`lp-status__dot lp-status__dot--\${status.dot}\`} />
-        <span className="lp-status__label">{status.label}</span>
-      </div>
-      <div className="lp-stage">
-        <span className="lp-stage__label">{stage.label}</span>
-        <button className="lp-stage__btn" onClick={onForward}>
-          <img src={forwardIconUrl} alt="forward" />
-        </button>
-      </div>
+      <LpStatusWithMenu initialLabel="Active" initialDot="green" />
+      <LpStage
+        label="Underwriting"
+        forwardIconUrl={fwdIcon}
+        onForward={() => {}}
+      />
     </div>
   );
 }
 
-// Usage
-<LpStatusStage
-  status={{ dot: 'green', label: 'Active' }}
-  stage={{ label: 'Underwriting' }}
-  forwardIconUrl={fwdIcon}
-  onForward={handleForward}
-/>`,
+// Usage — wrap in your screen where you have the forward icon URL:
+export function ExampleLoanToolbar({ fwdIcon }: { fwdIcon: string }) {
+  return <LoanStatusStageRow fwdIcon={fwdIcon} />;
+}
 
-    'Vue': `<!-- LpStatusStage.vue -->
+// Usage — same layout without LoanStatusStageRow (wire props from your data):
+export function ExampleInline({
+  fwdIcon,
+  statusLabel = 'Active',
+  statusDot = 'green',
+  stageLabel = 'Underwriting',
+}: {
+  fwdIcon: string;
+  statusLabel?: string;
+  statusDot?: 'green' | 'amber' | 'red';
+  stageLabel?: string;
+}) {
+  return (
+    <div className="lp-status-stage">
+      <LpStatusWithMenu initialLabel={statusLabel} initialDot={statusDot} />
+      <LpStage label={stageLabel} forwardIconUrl={fwdIcon} onForward={() => {}} />
+    </div>
+  );
+}`,
+
+    'Vue': `<!-- Compose the same pieces as Status + Stage pages -->
 <template>
   <div class="lp-status-stage">
-    <div class="lp-status">
-      <div :class="['lp-status__dot', \`lp-status__dot--\${status.dot}\`]" />
-      <span class="lp-status__label">{{ status.label }}</span>
-    </div>
-    <div class="lp-stage">
-      <span class="lp-stage__label">{{ stage.label }}</span>
-      <button class="lp-stage__btn" @click="$emit('forward')">
-        <img :src="forwardIconUrl" alt="forward" />
-      </button>
-    </div>
+    <LpStatusWithMenu :initial-label="status.label" :initial-dot="status.dot" />
+    <LpStage :label="stage.label" :forward-icon-url="forwardIconUrl" @forward="$emit('forward')" />
   </div>
 </template>
 
 <script setup lang="ts">
+import LpStatusWithMenu from './LpStatusWithMenu.vue';
+import LpStage from './LpStage.vue';
 defineProps<{
   status: { dot: 'green' | 'amber' | 'red'; label: string };
   stage: { label: string };
@@ -1328,7 +1386,124 @@ function bindStatusStageRows() {
   });
 }
 
+// ── Profile ────────────────────────────────────────────────────────────────────
+
+function buildProfileHtml(v) {
+  const comp = SYSTEM.products.lenderPortal.profile;
+  return `<button class="profile" type="button">
+  <span class="icon icon--star-filled">
+    <span class="icon__vector"><img src="${comp.iconUrl}" alt=""></span>
+  </span>
+  <span class="profile__avatar">
+    <img src="${comp.avatarUrl}" alt="">
+  </span>
+</button>`;
+}
+
+function renderLenderProfilePage() {
+  const comp = SYSTEM.products.lenderPortal.profile;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table" style="max-width:640px">`;
+
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-lp-profile-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:100px">${v.label}</span>
+        ${buildProfileHtml(v)}
+      </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function profileTabs(variantId) {
+  const comp = SYSTEM.products.lenderPortal.profile;
+  return {
+    'HTML': `<!-- Include global.css (design-system/css/global.css) -->
+
+${buildProfileHtml()}`,
+
+    'CSS': `/* global.css — .profile and .profile__avatar */
+
+.profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 2px 2px 8px;
+  background: var(--accent-bg-1);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.profile:hover { background: var(--accent-black-4); }
+
+.profile__avatar {
+  width: 32px; height: 32px;
+  border-radius: 100px; overflow: hidden;
+  flex-shrink: 0; background: var(--accent-white-100);
+}
+.profile__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s ease; }
+.profile:hover .profile__avatar img { transform: scale(1.5); }
+
+/* Icon uses .icon.icon--star-filled — already in global.css */`,
+
+    'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
+
+interface BorrowerProfileProps {
+  iconSrc: string;
+  avatarSrc: string;
+  avatarAlt?: string;
+  onClick?: () => void;
+}
+
+export function BorrowerProfile({ iconSrc, avatarSrc, avatarAlt = '', onClick }: BorrowerProfileProps) {
+  return (
+    <button className="profile" type="button" onClick={onClick}>
+      <span className="icon icon--star-filled">
+        <span className="icon__vector">
+          <img src={iconSrc} alt="" />
+        </span>
+      </span>
+      <span className="profile__avatar">
+        <img src={avatarSrc} alt={avatarAlt} />
+      </span>
+    </button>
+  );
+}
+
+// Usage
+<BorrowerProfile iconSrc={starFilledUrl} avatarSrc={avatarUrl} onClick={openMenu} />`,
+  };
+}
+
+function bindProfileRows() {
+  document.querySelectorAll('[data-lp-profile-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.lpProfileVariant;
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
+      const comp = SYSTEM.products.lenderPortal.profile;
+      const v = comp.variants.find(x => x.id === variantId);
+      openPanel({
+        type: 'Lender Portal · Profile',
+        name: v?.label || variantId,
+        preview: buildProfileHtml(v),
+        tabs: profileTabs(variantId),
+        defaultLang: 'HTML',
+        commentKey: `lender-profile:${variantId}`,
+      });
+    });
+  });
+}
+
 const PAGE_RENDERERS = {
+  'global-css':          renderGlobalCssPage,
   tokens:                renderTokensPage,
   icons:                 renderIconsPage,
   buttons:               renderButtonsPage,
@@ -1337,6 +1512,7 @@ const PAGE_RENDERERS = {
   'lender-status':       renderLenderStatusPage,
   'lender-stage':        renderLenderStagePage,
   'lender-status-stage': renderLenderStatusStagePage,
+  'lender-profile':      renderLenderProfilePage,
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -1346,19 +1522,19 @@ function init() {
 
   const container = document.getElementById('pages-container');
   const allPageIds = SYSTEM.nav.flatMap(g => g.items.map(i => i.id));
-  const firstPageId = allPageIds[0];
 
-  allPageIds.forEach((id, idx) => {
+  allPageIds.forEach((id) => {
     const renderer = PAGE_RENDERERS[id];
     if (!renderer) return;
     const div = document.createElement('div');
-    div.className = 'page' + (idx === 0 ? ' active' : '');
+    div.className = 'page' + (id === DEFAULT_ACTIVE_PAGE ? ' active' : '');
     div.id = 'page-' + id;
     div.innerHTML = renderer();
     container.appendChild(div);
   });
 
   bindNav();
+  initGlobalCssPage();
   bindTokenRows();
   bindIconRows();
   bindButtonRows();
@@ -1367,6 +1543,7 @@ function init() {
   bindLpStatusRows();
   bindLpStageRows();
   bindStatusStageRows();
+  bindProfileRows();
   initLpStatusOutsideClose();
   initSearch();
 }
@@ -1387,7 +1564,9 @@ function initLpStatusOutsideClose() {
 // ─── Global search ────────────────────────────────────────────────────────────
 
 function buildSearchIndex() {
-  const idx = [];
+  const idx = [
+    { type: 'Global CSS', label: 'Global CSS bundle', pageId: 'global-css', sub: GLOBAL_CSS_PATH, sel: null },
+  ];
 
   // Tokens — searchable by Figma name, CSS var, and hex
   SYSTEM.tokenGroups.forEach(group => {
@@ -1429,6 +1608,11 @@ function buildSearchIndex() {
   // Products — Lender Portal status stage
   SYSTEM.products.lenderPortal.statusStage.variants.forEach(v => {
     idx.push({ type: 'Status Stage', label: v.label, pageId: 'lender-status-stage', sel: `[data-lp-status-stage-variant="${v.id}"]` });
+  });
+
+  // Products — Lender Portal profile
+  SYSTEM.products.lenderPortal.profile.variants.forEach(v => {
+    idx.push({ type: 'Profile', label: v.label, pageId: 'lender-profile', sel: `[data-lp-profile-variant="${v.id}"]` });
   });
 
   return idx;
@@ -2022,7 +2206,7 @@ function btnCss(variant) {
   };
 
   return `/* ── Tokens used ─────────────────────────────── */
-/* @import 'tokens.css';  @import 'buttons.css'; */
+/* @import 'tokens.css';  @import 'flow-design-system/styles.css'; /* global bundle */ */
 
 /* Accent/White/100  → background   */
 /* Accent/Black/12   → border       */
@@ -2048,7 +2232,7 @@ ${specific[variant]}`;
 function btnReact(variant) {
   const map = {
     s1: `import { Icon } from './Icon';
-import 'buttons.css';
+import 'flow-design-system/styles.css'; /* global bundle */
 
 export function Button() {
   return (
@@ -2064,7 +2248,7 @@ export function Button() {
   );
 }`,
     s2: `import { Icon } from './Icon';
-import 'buttons.css';
+import 'flow-design-system/styles.css'; /* global bundle */
 
 interface Props {
   icons: [string, string];
@@ -2088,7 +2272,7 @@ export function Button({ icons }: Props) {
   );
 }`,
     s3: `import { Icon } from './Icon';
-import 'buttons.css';
+import 'flow-design-system/styles.css'; /* global bundle */
 
 interface Props {
   icons: [string, string, string];
@@ -2112,7 +2296,7 @@ export function Button({ icons }: Props) {
   );
 }`,
     label: `import { Icon } from './Icon';
-import 'buttons.css';
+import 'flow-design-system/styles.css'; /* global bundle */
 
 interface Props {
   label: string;
@@ -2137,7 +2321,7 @@ export function Button({
   );
 }`,
     'label-trail': `import { Icon } from './Icon';
-import 'buttons.css';
+import 'flow-design-system/styles.css'; /* global bundle */
 
 interface Props {
   label: string;

@@ -238,3 +238,45 @@
   align-items: flex-start;
   gap: 4px;
 }
+
+/* ── Profile ───────────────────────────────────────────────────────────────────
+   Figma node: 346:4038
+   A pill button: star-filled icon + circular avatar photo.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 2px 2px 8px;
+  background: var(--accent-bg-1);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.profile:hover {
+  background: var(--accent-black-4);
+}
+
+.profile__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 100px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--accent-white-100);
+}
+
+.profile__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.profile:hover .profile__avatar img {
+  transform: scale(1.5);
+}

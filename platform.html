@@ -10,10 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <link rel="stylesheet" href="tokens.css">
-  <link rel="stylesheet" href="icons.css">
-  <link rel="stylesheet" href="buttons.css">
-  <link rel="stylesheet" href="lender-portal.css">
+  <!-- Single global stylesheet (tokens → icons → buttons → lender-portal). Regenerate: npm run build -->
+  <link rel="stylesheet" href="design-system/css/global.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -244,6 +242,23 @@
     .nav-search-result-type { font-size: 9px; font-weight: 500; color: var(--accent-black-40); text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; min-width: 54px; }
     .nav-search-result-label { font-size: 11px; font-weight: 500; color: var(--accent-black-80); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .nav-search-empty { padding: 14px 12px; font-size: 11px; color: var(--accent-black-40); text-align: center; }
+
+    /* ══ GLOBAL CSS PAGE ══ */
+    .global-css-intro { font-size: 12px; color: var(--accent-black-60); max-width: 720px; line-height: 1.55; margin-bottom: 16px; }
+    .global-css-actions { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+    .global-css-btn {
+      padding: 8px 14px; border-radius: 8px; border: 0.5px solid var(--accent-black-12);
+      background: var(--accent-white-100); font-size: 11px; font-weight: 500; font-family: inherit;
+      color: var(--accent-black-80); cursor: pointer; transition: background 0.1s;
+    }
+    .global-css-btn:hover { background: var(--accent-black-4); }
+    .global-css-error { font-size: 12px; color: #b45309; margin-bottom: 12px; display: none; max-width: 640px; line-height: 1.45; }
+    .global-css-pre-wrap {
+      background: var(--accent-white-100); border: 0.5px solid var(--accent-black-12); border-radius: 12px;
+      overflow: hidden; max-width: min(960px, 100%);
+    }
+    .global-css-pre { margin: 0; padding: 16px; max-height: min(70vh, 720px); overflow: auto; font-size: 10px; line-height: 1.45; }
+    .global-css-pre code { font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace; white-space: pre; word-break: normal; }
   </style>
 </head>
 <body>

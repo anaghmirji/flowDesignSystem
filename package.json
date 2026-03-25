@@ -1,0 +1,36 @@
+{
+  "name": "flow-design-system",
+  "version": "0.1.0",
+  "description": "Design tokens and component CSS (buttons, icons, lender portal) — bundle for one global stylesheet",
+  "private": true,
+  "license": "UNLICENSED",
+  "files": [
+    "design-system/css/global.css",
+    "dist/flow-design-system.css",
+    "design-system/README.md",
+    "tokens.css",
+    "icons.css",
+    "buttons.css",
+    "lender-portal.css",
+    "scripts/build-css-bundle.js",
+    "scripts/build-css-bundle.sh"
+  ],
+  "scripts": {
+    "build": "sh scripts/build-css-bundle.sh",
+    "build:node": "node scripts/build-css-bundle.js",
+    "build:react": "npm run build --prefix design-system/react",
+    "prepack": "npm run build"
+  },
+  "exports": {
+    ".": "./package.json",
+    "./styles.css": "./design-system/css/global.css",
+    "./tokens.css": "./tokens.css",
+    "./icons.css": "./icons.css",
+    "./buttons.css": "./buttons.css",
+    "./lender-portal.css": "./lender-portal.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anaghmirji/flowDesignSystem.git"
+  }
+}
