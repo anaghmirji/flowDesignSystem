@@ -630,6 +630,30 @@
   transform: scale(1.5);
 }
 
+/* Star icon inside profile — animates on favourite toggle */
+.profile__star {
+  transition: transform 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile__star svg {
+  transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+/* Pop animation triggered via JS by adding .star-pop class */
+@keyframes star-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.45); }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.profile__star.star-pop {
+  animation: star-pop 0.3s ease forwards;
+}
+
 /* ── Sidebar Item (Figma node 6:92) ────────────────────────────────────────────
    3 states: default (no bg), hover (accent-black-8 bg, icon 24px),
    selected (accent-black-12 bg, icon 20px). Icon transitions via CSS.

@@ -1391,9 +1391,12 @@ function bindStatusStageRows() {
 // ── Profile ────────────────────────────────────────────────────────────────────
 
 function buildProfileHtml(v) {
-  const comp = SYSTEM.products.lenderPortal.profile;
+  const comp     = SYSTEM.products.lenderPortal.profile;
+  const fav      = v?.favorited !== false;
+  const starSvg  = fav ? iconSvg('star-filled') : iconSvg('star');
+  const starStyle = fav ? ' style="--fill-0:#FFCC00"' : '';
   return `<button class="profile" type="button">
-  <span class="icon" style="--fill-0:#FFCC00">${iconSvg('star-filled')}</span>
+  <span class="profile__star icon"${starStyle}>${starSvg}</span>
   <span class="profile__avatar">
     <img src="${comp.avatarUrl}" alt="">
   </span>
@@ -1453,32 +1456,21 @@ ${buildProfileHtml()}`,
 
 /* Icon uses .icon.icon--star-filled — already in global.css */`,
 
-    'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
+    'React': `import { useState } from 'react';
+import { BorrowerProfile } from 'flow-design-system/react';
+import 'flow-design-system/styles.css';
 
-interface BorrowerProfileProps {
-  iconSrc: string;
-  avatarSrc: string;
-  avatarAlt?: string;
-  onClick?: () => void;
-}
-
-export function BorrowerProfile({ iconSrc, avatarSrc, avatarAlt = '', onClick }: BorrowerProfileProps) {
+// Controlled usage — toggle favourite on click
+export function ProfileDemo() {
+  const [isFavorited, setIsFavorited] = useState(false);
   return (
-    <button className="profile" type="button" onClick={onClick}>
-      <span className="icon icon--star-filled">
-        <span className="icon__vector">
-          <img src={iconSrc} alt="" />
-        </span>
-      </span>
-      <span className="profile__avatar">
-        <img src={avatarSrc} alt={avatarAlt} />
-      </span>
-    </button>
+    <BorrowerProfile
+      avatarSrc={avatarUrl}
+      isFavorited={isFavorited}
+      onFavoriteToggle={() => setIsFavorited(f => !f)}
+    />
   );
-}
-
-// Usage
-<BorrowerProfile iconSrc={starFilledUrl} avatarSrc={avatarUrl} onClick={openMenu} />`,
+}`,
   };
 }
 
@@ -1489,11 +1481,29 @@ function bindProfileRows() {
       if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
       const comp = SYSTEM.products.lenderPortal.profile;
-      const v = comp.variants.find(x => x.id === variantId);
+      const v    = comp.variants.find(x => x.id === variantId);
+
       openPanel({
         type: 'Lender Portal · Profile',
         name: v?.label || variantId,
         preview: buildProfileHtml(v),
+        onPreviewMount: (el) => {
+          const btn  = el.querySelector('.profile');
+          const star = el.querySelector('.profile__star');
+          if (!btn || !star) return;
+          let fav = v?.favorited !== false;
+
+          btn.addEventListener('click', () => {
+            fav = !fav;
+            // swap icon
+            star.innerHTML = fav ? iconSvg('star-filled') : iconSvg('star');
+            star.style.setProperty('--fill-0', fav ? '#FFCC00' : '');
+            // pop animation
+            star.classList.remove('star-pop');
+            void star.offsetWidth;
+            star.classList.add('star-pop');
+          });
+        },
         tabs: profileTabs(variantId),
         defaultLang: 'HTML',
       });

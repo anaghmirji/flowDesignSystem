@@ -409,10 +409,8 @@ window.SYSTEM = {
         // star-filled in gold — same SVG as design system star-filled, colour via --fill-0 override
         avatarUrl: 'https://www.figma.com/api/mcp/asset/c7282667-898c-4558-b46c-a85b2bb9995f',
         variants: [
-          {
-            id: 'profile-default',
-            label: 'Default',
-          },
+          { id: 'profile-favorited',   label: 'Favorited',   favorited: true  },
+          { id: 'profile-unfavorited', label: 'Unfavorited', favorited: false },
         ],
       },
       sidebarItem: {
