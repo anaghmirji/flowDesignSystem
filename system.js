@@ -97,6 +97,11 @@ window.SYSTEM = {
           label: 'Sidebar Item',
           icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="12" rx="1" stroke="currentColor" stroke-width="1.25"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.25"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.25"/></svg>',
         },
+        {
+          id: 'lender-sidebar',
+          label: 'Sidebar',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 5h5M8 8h4M8 11h3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
+        },
       ],
     },
   ],
@@ -416,10 +421,26 @@ window.SYSTEM = {
         figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=6-92',
         // Uses any design-system icon — clipboard-document-list shown as example
         iconName: 'clipboard-document-list',
+        relations: {
+          usedBy: [{ name: 'Sidebar', pageId: 'lender-sidebar' }],
+        },
         variants: [
           { id: 'sidebar-item-default',  label: 'Default',  state: 'default'  },
           { id: 'sidebar-item-hover',    label: 'Hover',    state: 'hover'    },
           { id: 'sidebar-item-selected', label: 'Selected', state: 'selected' },
+        ],
+      },
+      sidebar: {
+        title: 'Sidebar',
+        subtitle: 'Source: Figma › Lender Exploration · node 362-2876 · 77px navigation panel',
+        figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=362-2876',
+        avatarUrl: 'https://www.figma.com/api/mcp/asset/c7282667-898c-4558-b46c-a85b2bb9995f',
+        relations: {
+          uses: [{ name: 'Sidebar Item', pageId: 'lender-sidebar-item' }],
+        },
+        items: [
+          { label: 'Loans',    iconName: 'banknotes',               active: true  },
+          { label: 'Worklist', iconName: 'clipboard-document-list', active: false },
         ],
       },
     },

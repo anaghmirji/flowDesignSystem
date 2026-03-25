@@ -283,33 +283,38 @@
 .btn--label       { padding: 8px 12px 8px 8px; gap: 8px; }
 .btn--label-trail { padding: 8px; gap: 8px; }
 
-/* 16px inline icon slot */
+/* 16px inline icon slot — centres the SVG within the 16×16 hit area */
 .btn__icon-slot {
   width: 16px;
   height: 16px;
-  overflow: hidden;
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
-.btn__icon-slot--magnifying-glass .btn__icon-vector {
-  position: absolute;
-  top: 12.5%; left: 12.5%; right: 12.5%; bottom: 12.5%;
-}
-.btn__icon-slot--magnifying-glass .btn__icon-vector img {
-  position: absolute;
-  top: -5%; left: -5%; width: 110%; height: 110%;
-  display: block; max-width: none;
+/* Most icons render at 12px (12.5% inset on a 16px slot, matching Figma) */
+.btn__icon-slot .btn__icon-vector {
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.btn__icon-slot--chevron-down .btn__icon-vector {
-  position: absolute;
-  top: 34.38%; left: 18.75%; right: 18.75%; bottom: 34.38%;
+.btn__icon-slot .btn__icon-vector svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
-.btn__icon-slot--chevron-down .btn__icon-vector img {
-  position: absolute;
-  top: -10%; left: -5%; width: 110%; height: 120%;
-  display: block; max-width: none;
+
+/* Chevron-down is a wide-short shape (viewBox 11×6).
+   Override to natural width so it doesn't scale up to a square.
+   Figma: vector inset-[34.38%_18.75%] → ~10px wide × 6px tall */
+.btn__icon-slot--chevron-down .btn__icon-vector {
+  width: 10px;
+  height: 6px;
 }
 
 /* ── Label ── */
@@ -702,4 +707,49 @@
 .sidebar-item--selected:hover .sidebar-item__icon {
   width: 20px;
   height: 20px;
+}
+
+/* ── Sidebar Nav (Figma node 362:2876) ─────────────────────────────────────────
+   Full navigation panel — nav items at top, user avatar at bottom.
+   Width: 77px. Height: 1117px (matches Figma frame — full viewport height).
+   Background: --accent-bg-0.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.sidebar-nav {
+  width: 77px;
+  height: 1117px;
+  background: var(--accent-bg-0, #f3f3f4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 52px 16px 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Stacked nav items */
+.sidebar-nav__items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+/* User avatar — rounded square, 36×36, object-fit cover */
+.sidebar-nav__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-nav__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }

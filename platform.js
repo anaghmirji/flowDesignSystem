@@ -472,35 +472,10 @@ function lenderLoansTabs(variant) {
 }`,
 
     'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
-
-interface LoansPillProps {
-  label?: string;
-  count?: number;
-  icon: string; // icon asset URL
-  onClick?: () => void;
-}
-
-export function LoansPill({
-  label = 'My Loans',
-  count = 0,
-  icon,
-  onClick,
-}: LoansPillProps) {
-  return (
-    <div className="loans-pill" onClick={onClick} role="button">
-      <span className="loans-pill__label">{label}</span>
-      <div className="loans-pill__badge">
-        <span className="loans-pill__count">{count}</span>
-        <div className="loans-pill__icon">
-          <img src={icon} alt="" />
-        </div>
-      </div>
-    </div>
-  );
-}
+import { LoansPill } from 'flow-design-system-react';
 
 // Usage
-<LoansPill label="My Loans" count={52} icon={sortIcon} />`,
+<LoansPill label="My Loans" count={52} iconSrc={sortIconUrl} onClick={openDropdown} />`,
 
     'Vue': `<!-- LoansPill.vue -->
 <template>
@@ -1075,77 +1050,22 @@ ${buildLpStatusInteractiveHtml(v)}`,
 .lp-status--clickable { cursor: pointer; }
 .loans-dropdown--status-menu { width: auto; min-width: 168px; }`,
 
-    'React': `import { useState, useRef, useEffect } from 'react';
-import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
+    'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
+import { LpStatusWithMenu, LP_STATUS_MENU_DEFAULT } from 'flow-design-system-react';
 
-const STATUS_OPTIONS = [
-  { label: 'Active', dot: 'green' as const },
-  { label: 'On Hold', dot: 'amber' as const },
-  { label: 'Withdrawn', dot: 'red' as const },
-  { label: 'Cancelled', dot: 'red' as const },
-  { label: 'Denied', dot: 'red' as const },
-];
+// Usage — default options (Active / On Hold / Withdrawn / Cancelled / Denied)
+<LpStatusWithMenu initialLabel="Active" initialDot="green" />
 
-export function LpStatusWithMenu() {
-  const [open, setOpen] = useState(false);
-  const [label, setLabel] = useState('Active');
-  const [dot, setDot] = useState<'green' | 'amber' | 'red'>('green');
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const onDoc = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('click', onDoc);
-    return () => document.removeEventListener('click', onDoc);
-  }, []);
-
-  return (
-    <div className="lp-status-dropdown-wrap" ref={wrapRef}>
-      <div
-        role="button"
-        tabIndex={0}
-        className="lp-status lp-status--clickable"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setOpen((o) => !o);
-          }
-        }}
-      >
-        <div className={\`lp-status__dot lp-status__dot--\${dot}\`} />
-        <span className="lp-status__label">{label}</span>
-      </div>
-      {open && (
-        <div
-          className="loans-dropdown loans-dropdown--status-menu"
-          style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 30 }}
-          role="listbox"
-        >
-          {STATUS_OPTIONS.map((opt) => (
-            <div
-              key={opt.label}
-              role="option"
-              aria-selected={opt.label === label}
-              className={\`loans-dropdown__item\${opt.label === label ? ' loans-dropdown__item--active' : ''}\`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setLabel(opt.label);
-                setDot(opt.dot);
-                setOpen(false);
-              }}
-            >
-              <span className="loans-dropdown__item-label">{opt.label}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}`,
+// Custom options
+<LpStatusWithMenu
+  initialLabel="Active"
+  initialDot="green"
+  options={[
+    { label: 'Active',    dot: 'green' },
+    { label: 'On Hold',   dot: 'amber' },
+    { label: 'Withdrawn', dot: 'red'   },
+  ]}
+/>`,
 
     'Vue': `<!-- LpStatus.vue -->
 <template>
@@ -1213,30 +1133,11 @@ ${buildLpStageHtml(v)}`,
 .lp-stage__btn:hover .lp-stage__btn-inner { background: var(--accent-black-20); }`,
 
     'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
+import { LpStage } from 'flow-design-system-react';
 
-// forwardSvg — import from your icons map (inline SVG, never expires)
-import { ICONS } from './icons';
-
-interface LpStageProps {
-  label: string;
-  onForward?: () => void;
-}
-
-export function LpStage({ label, onForward }: LpStageProps) {
-  return (
-    <div className="lp-stage">
-      <span className="lp-stage__label">{label}</span>
-      <button className="lp-stage__btn" onClick={onForward}>
-        <div className="lp-stage__btn-inner">
-          <span className="icon" dangerouslySetInnerHTML={{ __html: ICONS['forward'] }} />
-        </div>
-      </button>
-    </div>
-  );
-}
-
+// forwardIconUrl — URL to the forward icon asset from your project
 // Usage
-<LpStage label="Underwriting" onForward={handleForward} />`,
+<LpStage label="Underwriting" forwardIconUrl={forwardIconUrl} onForward={handleForward} />`,
 
     'Vue': `<!-- LpStage.vue -->
 <template>
@@ -1701,39 +1602,13 @@ ${html}`,
 }`,
 
     'React': `import 'flow-design-system/styles.css';
+import { SidebarItem } from 'flow-design-system-react';
 import { ICONS } from './icons';
 
-type SidebarItemState = 'default' | 'hover' | 'selected';
-type IconName = keyof typeof ICONS;
-
-interface SidebarItemProps {
-  label: string;
-  icon: IconName;
-  state?: SidebarItemState;
-  onClick?: () => void;
-}
-
-export function SidebarItem({ label, icon, state = 'default', onClick }: SidebarItemProps) {
-  return (
-    <button
-      className={\`sidebar-item\${state !== 'default' ? \` sidebar-item--\${state}\` : ''}\`}
-      onClick={onClick}
-      type="button"
-    >
-      <div className="sidebar-item__icon-wrap">
-        <span
-          className="sidebar-item__icon"
-          dangerouslySetInnerHTML={{ __html: ICONS[icon] }}
-        />
-      </div>
-      <span className="sidebar-item__label">{label}</span>
-    </button>
-  );
-}
-
 // Usage
-<SidebarItem label="Worklist" icon="clipboard-document-list" />
-<SidebarItem label="Worklist" icon="clipboard-document-list" state="selected" />`,
+<SidebarItem label="Worklist" iconSvg={ICONS['clipboard-document-list']} />
+<SidebarItem label="Worklist" iconSvg={ICONS['clipboard-document-list']} state="selected" />
+<SidebarItem label="Loans"    iconSvg={ICONS['banknotes']} state="selected" onClick={() => navigate('/loans')} />`,
 
     'Vue': `<!-- SidebarItem.vue -->
 <template>
@@ -1775,7 +1650,174 @@ function bindSidebarItemRows() {
         preview: buildSidebarItemHtml(v),
         tabs: sidebarItemTabs(variantId),
         defaultLang: 'HTML',
+        relations: comp.relations || null,
         commentKey: `lender-sidebar-item:${variantId}`,
+      });
+    });
+  });
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+
+function buildSidebarHtml() {
+  const comp = SYSTEM.products.lenderPortal.sidebar;
+  const itemsHtml = comp.items.map(item => {
+    const svg = iconSvg(item.iconName);
+    const selectedClass = item.active ? ' sidebar-item--selected' : '';
+    return `  <button class="sidebar-item${selectedClass}" type="button">
+    <div class="sidebar-item__icon-wrap">
+      <span class="sidebar-item__icon">${svg}</span>
+    </div>
+    <span class="sidebar-item__label">${item.label}</span>
+  </button>`;
+  }).join('\n');
+
+  return `<nav class="sidebar-nav" aria-label="Main navigation">
+  <div class="sidebar-nav__items">
+${itemsHtml}
+  </div>
+  <div class="sidebar-nav__avatar">
+    <img src="${comp.avatarUrl}" alt="" />
+  </div>
+</nav>`;
+}
+
+function renderLenderSidebarPage() {
+  const comp = SYSTEM.products.lenderPortal.sidebar;
+  return `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table" style="max-width:640px">
+      <div class="ds-row" data-sidebar-row="sidebar" style="align-items:flex-start;padding:16px 20px">
+        <span class="ds-row-name" style="min-width:100px;padding-top:12px">Full panel</span>
+        <div style="height:1117px;display:flex;border-radius:8px;overflow:hidden">
+          ${buildSidebarHtml()}
+        </div>
+      </div>
+    </div>`;
+}
+
+function sidebarTabs() {
+  const comp = SYSTEM.products.lenderPortal.sidebar;
+  const html = buildSidebarHtml();
+  return {
+    'HTML': `<!-- Include global.css -->
+${html}`,
+
+    'CSS': `/* global.css — Sidebar Nav */
+.sidebar-nav {
+  width: 77px;
+  height: 1117px;
+  background: var(--accent-bg-0, #f3f3f4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 52px 16px 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-nav__items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.sidebar-nav__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-nav__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}`,
+
+    'React': `import 'flow-design-system/styles.css';
+import { Sidebar } from 'flow-design-system-react';
+import { ICONS } from './icons';
+
+<Sidebar
+  items={[
+    { id: 'loans',    label: 'Loans',    iconSvg: ICONS['banknotes'],               active: true,  onClick: () => navigate('/loans')    },
+    { id: 'worklist', label: 'Worklist', iconSvg: ICONS['clipboard-document-list'],               onClick: () => navigate('/worklist') },
+  ]}
+  avatarSrc={userPhotoUrl}
+  avatarAlt="Jane Doe"
+/>`,
+
+    'Vue': `<!-- Sidebar.vue -->
+<template>
+  <nav class="sidebar-nav" aria-label="Main navigation">
+    <div class="sidebar-nav__items">
+      <button
+        v-for="item in items"
+        :key="item.id"
+        :class="['sidebar-item', item.active && 'sidebar-item--selected']"
+        type="button"
+        @click="item.onClick?.()"
+      >
+        <div class="sidebar-item__icon-wrap">
+          <span class="sidebar-item__icon" v-html="ICONS[item.icon]" />
+        </div>
+        <span class="sidebar-item__label">{{ item.label }}</span>
+      </button>
+    </div>
+    <div class="sidebar-nav__avatar">
+      <img :src="avatarSrc" :alt="avatarAlt ?? ''" />
+    </div>
+  </nav>
+</template>
+
+<script setup lang="ts">
+import { ICONS } from './icons';
+defineProps<{
+  items: Array<{ id: string; label: string; icon: string; active?: boolean; onClick?: () => void }>;
+  avatarSrc: string;
+  avatarAlt?: string;
+}>();
+</script>`,
+  };
+}
+
+function mountSidebarInteractive(el) {
+  el.querySelectorAll('.sidebar-item').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      el.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('sidebar-item--selected'));
+      btn.classList.add('sidebar-item--selected');
+    });
+  });
+}
+
+function bindSidebarRows() {
+  // Make the inline page preview interactive
+  document.querySelectorAll('[data-sidebar-row]').forEach(row => {
+    mountSidebarInteractive(row);
+    row.addEventListener('click', () => {
+      const comp = SYSTEM.products.lenderPortal.sidebar;
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
+      openPanel({
+        type: 'Lender Portal · Sidebar',
+        name: comp.title,
+        preview: `<div style="height:1117px;display:flex">${buildSidebarHtml()}</div>`,
+        onPreviewMount: mountSidebarInteractive,
+        tabs: sidebarTabs(),
+        defaultLang: 'HTML',
+        relations: comp.relations || null,
+        commentKey: 'lender-sidebar:sidebar',
       });
     });
   });
@@ -1793,6 +1835,7 @@ const PAGE_RENDERERS = {
   'lender-status-stage':      renderLenderStatusStagePage,
   'lender-profile':           renderLenderProfilePage,
   'lender-sidebar-item':      renderLenderSidebarItemPage,
+  'lender-sidebar':           renderLenderSidebarPage,
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -1825,6 +1868,7 @@ function init() {
   bindStatusStageRows();
   bindProfileRows();
   bindSidebarItemRows();
+  bindSidebarRows();
   initLpStatusOutsideClose();
   initSearch();
 }
@@ -2132,11 +2176,33 @@ function bindLenderRows() {
           const pill     = el.querySelector('.loans-pill');
           const dropdown = el.querySelector('.loans-dropdown');
           if (!pill || !dropdown) return;
+
+          // Toggle dropdown open/close on pill click
           pill.addEventListener('click', (e) => {
             e.stopPropagation();
             const isOpen = dropdown.style.display !== 'none';
             dropdown.style.display = isOpen ? 'none' : 'flex';
           });
+
+          // When a dropdown item is clicked → make it active + update pill label
+          dropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const item = e.target.closest('.loans-dropdown__item');
+            if (!item) return;
+            dropdown.querySelectorAll('.loans-dropdown__item').forEach(i =>
+              i.classList.remove('loans-dropdown__item--active')
+            );
+            item.classList.add('loans-dropdown__item--active');
+            const label = item.querySelector('.loans-dropdown__item-label')?.textContent || '';
+            const count = item.querySelector('.loans-dropdown__item-count')?.textContent || '';
+            const pillLabel = pill.querySelector('.loans-pill__label');
+            const pillCount = pill.querySelector('.loans-pill__count');
+            if (pillLabel) pillLabel.textContent = label;
+            if (pillCount) pillCount.textContent = count;
+            dropdown.style.display = 'none';
+          });
+
+          // Close on outside click
           document.addEventListener('click', function handler() {
             dropdown.style.display = 'none';
             document.removeEventListener('click', handler);
@@ -2144,6 +2210,19 @@ function bindLenderRows() {
         };
       } else if (variantId === 'loans-dropdown') {
         previewHtml = buildDropdownHtml();
+        onMount = (el) => {
+          const dropdown = el.querySelector('.loans-dropdown');
+          if (!dropdown) return;
+          // Clicking an item makes it the active selection
+          dropdown.addEventListener('click', (e) => {
+            const item = e.target.closest('.loans-dropdown__item');
+            if (!item) return;
+            dropdown.querySelectorAll('.loans-dropdown__item').forEach(i =>
+              i.classList.remove('loans-dropdown__item--active')
+            );
+            item.classList.add('loans-dropdown__item--active');
+          });
+        };
       }
 
       openPanel({

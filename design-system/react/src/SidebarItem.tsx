@@ -1,8 +1,9 @@
 import React from 'react';
+import type { AriaAttributes } from 'react';
 
-type SidebarItemState = 'default' | 'hover' | 'selected';
+export type SidebarItemState = 'default' | 'hover' | 'selected';
 
-interface SidebarItemProps {
+export interface SidebarItemProps {
   /** Text label rendered below the icon */
   label: string;
   /** Inline SVG string — use ICONS['icon-name'] from the design system icons map */
@@ -11,6 +12,7 @@ interface SidebarItemProps {
   state?: SidebarItemState;
   onClick?: () => void;
   className?: string;
+  'aria-current'?: AriaAttributes['aria-current'];
 }
 
 /**
@@ -31,6 +33,7 @@ export function SidebarItem({
   state = 'default',
   onClick,
   className,
+  'aria-current': ariaCurrent,
 }: SidebarItemProps) {
   const stateClass = state !== 'default' ? ` sidebar-item--${state}` : '';
 
@@ -39,6 +42,7 @@ export function SidebarItem({
       className={`sidebar-item${stateClass}${className ? ' ' + className : ''}`}
       type="button"
       onClick={onClick}
+      aria-current={ariaCurrent}
     >
       <div className="sidebar-item__icon-wrap">
         <span
