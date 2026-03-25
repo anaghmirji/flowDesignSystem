@@ -785,4 +785,9 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.35s var(--ease-spring);
+}
+
+.sidebar-nav__avatar:hover img {
+  transform: scale(1.2);
 }
