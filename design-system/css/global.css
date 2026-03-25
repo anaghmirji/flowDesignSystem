@@ -55,6 +55,14 @@
                'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
 
+  /* ── Motion — Apple-like easing curves ───────────────────────────────────
+     --ease-smooth : standard decelerate (iOS default state changes)
+     --ease-spring : spring with slight overshoot (interactive/toggle)
+     --ease-out    : fast-in slow-out (appear/expand)                      */
+  --ease-smooth : cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-spring : cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out    : cubic-bezier(0.0,  0.0,  0.2,  1);
+
   /* ── Font weights — map to Circular Std named cuts ───────────────────────
      Book = 400, Medium = 500, Bold = 700                                   */
   --font-book:   400;  /* Circular Std Book   */
@@ -367,7 +375,7 @@
   border: 0.5px solid var(--accent-black-12);
   border-radius: 100px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 
 .loans-pill:hover {
@@ -431,7 +439,7 @@
   padding: 8px;
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 
 .loans-dropdown__item:hover {
@@ -481,7 +489,7 @@
   padding: 8px 12px;
   background: var(--accent-black-8);
   border-radius: 100px 4px 4px 100px;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 
 .lp-status:hover {
@@ -528,7 +536,7 @@
   background: var(--accent-black-8);
   border-radius: 4px 100px 100px 4px;
   overflow: hidden;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 
 .lp-stage:hover {
@@ -560,7 +568,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 
 .lp-stage__btn:hover .lp-stage__btn-inner {
@@ -602,7 +610,7 @@
   border: 0.5px solid var(--accent-black-12);
   border-radius: 100px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 
 .profile:hover {
@@ -623,7 +631,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.2s ease;
+  transition: transform 0.35s var(--ease-spring);
 }
 
 .profile:hover .profile__avatar img {
@@ -632,26 +640,27 @@
 
 /* Star icon inside profile — animates on favourite toggle */
 .profile__star {
-  transition: transform 0.15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s var(--ease-spring);
 }
 
 .profile__star svg {
-  transition: fill 0.2s ease, stroke 0.2s ease;
+  transition: fill 0.25s var(--ease-smooth), stroke 0.25s var(--ease-smooth);
 }
 
 /* Pop animation triggered via JS by adding .star-pop class */
 @keyframes star-pop {
   0%   { transform: scale(1); }
-  40%  { transform: scale(1.45); }
-  70%  { transform: scale(0.9); }
+  35%  { transform: scale(1.5); }
+  65%  { transform: scale(0.88); }
+  82%  { transform: scale(1.08); }
   100% { transform: scale(1); }
 }
 
 .profile__star.star-pop {
-  animation: star-pop 0.3s ease forwards;
+  animation: star-pop 0.4s var(--ease-smooth) forwards;
 }
 
 /* ── Sidebar Item (Figma node 6:92) ────────────────────────────────────────────
@@ -682,19 +691,20 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  transition: background 0.15s ease;
+  transition: background 0.2s var(--ease-smooth);
 }
 
-/* Icon container — overflow:hidden clips SVG to exact bounds (mirrors Figma overflow-clip) */
+/* Icon container — fixed at 24px, scale transform used for smooth 20→24 transition */
 .sidebar-item__icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: width 0.15s ease, height 0.15s ease;
+  transform: scale(0.833); /* 20÷24 — renders at 20px equivalent */
+  transform-origin: center;
+  transition: transform 0.25s var(--ease-spring);
 }
 
 .sidebar-item__icon svg {
@@ -712,7 +722,7 @@
   line-height: normal;
 }
 
-/* Hover — background appears, icon grows 20→24px */
+/* Hover — background appears, icon springs to full 24px */
 .sidebar-item:hover .sidebar-item__icon-wrap,
 .sidebar-item--hover .sidebar-item__icon-wrap {
   background: var(--accent-black-8, #ebebeb);
@@ -720,18 +730,16 @@
 
 .sidebar-item:hover .sidebar-item__icon,
 .sidebar-item--hover .sidebar-item__icon {
-  width: 24px;
-  height: 24px;
+  transform: scale(1);
 }
 
-/* Selected — darker background, icon locked at 20px (no hover growth) */
+/* Selected — darker background, icon stays at 20px even on hover */
 .sidebar-item--selected .sidebar-item__icon-wrap {
   background: var(--accent-black-12, #e0e0e0);
 }
 .sidebar-item--selected .sidebar-item__icon,
 .sidebar-item--selected:hover .sidebar-item__icon {
-  width: 20px;
-  height: 20px;
+  transform: scale(0.833);
 }
 
 /* ── Sidebar Nav (Figma node 362:2876) ─────────────────────────────────────────
