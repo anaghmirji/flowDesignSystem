@@ -1325,7 +1325,7 @@ function bindLpStatusRows() {
 
     row.addEventListener('click', () => {
       const variantId = row.dataset.lpStatusVariant;
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
       const comp = SYSTEM.products.lenderPortal.status;
       const v = comp.variants.find(x => x.id === variantId);
@@ -1349,7 +1349,7 @@ function bindLpStageRows() {
   document.querySelectorAll('[data-lp-stage-variant]').forEach(row => {
     row.addEventListener('click', () => {
       const variantId = row.dataset.lpStageVariant;
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
       const comp = SYSTEM.products.lenderPortal.stage;
       const v = comp.variants.find(x => x.id === variantId);
@@ -1371,7 +1371,7 @@ function bindStatusStageRows() {
 
     row.addEventListener('click', () => {
       const variantId = row.dataset.lpStatusStageVariant;
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
       const comp = SYSTEM.products.lenderPortal.statusStage;
       const v = comp.variants.find(x => x.id === variantId);
@@ -1489,7 +1489,7 @@ function bindProfileRows() {
   document.querySelectorAll('[data-lp-profile-variant]').forEach(row => {
     row.addEventListener('click', () => {
       const variantId = row.dataset.lpProfileVariant;
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
       const comp = SYSTEM.products.lenderPortal.profile;
       const v = comp.variants.find(x => x.id === variantId);
@@ -1642,7 +1642,7 @@ function bindSidebarItemRows() {
       const comp = SYSTEM.products.lenderPortal.sidebarItem;
       const v = comp.variants.find(x => x.id === variantId);
 
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
       openPanel({
         type: 'Lender Portal · Sidebar Item',
@@ -1807,7 +1807,7 @@ function bindSidebarRows() {
     mountSidebarInteractive(row);
     row.addEventListener('click', () => {
       const comp = SYSTEM.products.lenderPortal.sidebar;
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
       openPanel({
         type: 'Lender Portal · Sidebar',
@@ -2065,7 +2065,7 @@ function bindNav() {
 function bindTokenRows() {
   document.querySelectorAll('.token-row').forEach(row => {
     row.addEventListener('click', () => {
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
       const { token, figma, hex } = row.dataset;
       openPanel({
@@ -2084,7 +2084,7 @@ function bindIconRows() {
   document.querySelectorAll('[data-icon]').forEach(row => {
     row.addEventListener('click', () => {
       const name = row.dataset.icon;
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
       const iconDef = SYSTEM.icons.find(i => i.name === name);
       openPanel({
@@ -2104,7 +2104,7 @@ function bindButtonRows() {
   document.querySelectorAll('[data-variant]').forEach(row => {
     row.addEventListener('click', () => {
       const v = row.dataset.variant;
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
       const btn = row.querySelector('.btn');
       const variantDef = SYSTEM.components.buttons.variants.find(x => x.id === v);
@@ -2140,7 +2140,7 @@ function bindDropdownItemRows() {
   document.querySelectorAll('[data-dropdown-variant]').forEach(row => {
     row.addEventListener('click', () => {
       const variantId = row.dataset.dropdownVariant;
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
       const variantDef = SYSTEM.components.dropdownItem.variants.find(v => v.id === variantId);
       const cls = stateClass[variantDef?.state || 'default'];
@@ -2161,7 +2161,7 @@ function bindLenderRows() {
   document.querySelectorAll('[data-lender-variant]').forEach(row => {
     row.addEventListener('click', () => {
       const variantId = row.dataset.lenderVariant;
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
 
       const variantDef = SYSTEM.products.lenderPortal.loans.variants.find(v => v.id === variantId);
@@ -3158,8 +3158,9 @@ function openPanel({ type, name, preview, tabs, defaultLang, onPreviewMount, rel
   if (onPreviewMount) onPreviewMount(panelPrev);
   currentTabs = tabs;
   renderTabs(tabs, defaultLang || Object.keys(tabs)[0]);
+  document.getElementById('panel-empty').style.display   = 'none';
+  document.getElementById('panel-content').style.display = 'flex';
   panel.classList.add('open');
-  mainEl.classList.add('panel-open');
   resetCopy();
   mountPanelComments(commentKey);
 }
@@ -3174,8 +3175,9 @@ function closePanel() {
     pch.innerHTML = '';
     pch.classList.add('is-hidden');
   }
+  document.getElementById('panel-content').style.display = 'none';
+  document.getElementById('panel-empty').style.display   = '';
   panel.classList.remove('open');
-  mainEl.classList.remove('panel-open');
   if (activeRow) { activeRow.classList.remove('active'); activeRow = null; }
 }
 
