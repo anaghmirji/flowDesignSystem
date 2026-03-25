@@ -154,21 +154,21 @@ function renderGlobalCssPage() {
       In React apps, import this once (or use the npm export <code>flow-design-system/styles.css</code>).
     </p>
     <div class="global-css-actions">
-      <button type="button" class="global-css-btn" id="global-css-copy">Copy all CSS</button>
-      <button type="button" class="global-css-btn" id="global-css-reload">Reload from disk</button>
+      <div class="global-css-actions-left">
+        <button type="button" class="global-css-btn" id="global-css-copy">Copy all CSS</button>
+        <button type="button" class="global-css-btn" id="global-css-reload">Reload from disk</button>
+      </div>
+      <div class="global-css-search-bar">
+        <div class="global-css-search-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4" stroke="#666666" stroke-width="1.25"/><path d="M9.5 9.5L12 12" stroke="#666666" stroke-width="1.25" stroke-linecap="round"/></svg>
+        </div>
+        <input class="global-css-search-input" id="global-css-search-input" placeholder="Search" type="text" autocomplete="off" spellcheck="false">
+        <span class="global-css-search-count" id="global-css-search-count"></span>
+        <button class="global-css-search-nav-btn" id="global-css-search-prev" title="Previous (↑)" disabled>↑</button>
+        <button class="global-css-search-nav-btn" id="global-css-search-next" title="Next (↓)" disabled>↓</button>
+      </div>
     </div>
     <div class="global-css-error" id="global-css-error" role="alert"></div>
-    <div class="global-css-search-wrap">
-      <div class="global-css-search-bar">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;opacity:0.4"><circle cx="6" cy="6" r="4" stroke="#333" stroke-width="1.25"/><path d="M9.5 9.5L12 12" stroke="#333" stroke-width="1.25" stroke-linecap="round"/></svg>
-        <input class="global-css-search-input" id="global-css-search-input" placeholder="Search within CSS…" type="text" autocomplete="off" spellcheck="false">
-        <span class="global-css-search-count" id="global-css-search-count"></span>
-      </div>
-      <div class="global-css-search-nav">
-        <button class="global-css-search-nav-btn" id="global-css-search-prev" title="Previous match" disabled>↑</button>
-        <button class="global-css-search-nav-btn" id="global-css-search-next" title="Next match" disabled>↓</button>
-      </div>
-    </div>
     <div class="global-css-pre-wrap">
       <pre class="global-css-pre" id="global-css-pre"><code id="global-css-source" class="language-css"></code></pre>
     </div>`;
