@@ -158,8 +158,19 @@ function renderGlobalCssPage() {
       <button type="button" class="global-css-btn" id="global-css-reload">Reload from disk</button>
     </div>
     <div class="global-css-error" id="global-css-error" role="alert"></div>
+    <div class="global-css-search-wrap">
+      <div class="global-css-search-bar">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;opacity:0.4"><circle cx="6" cy="6" r="4" stroke="#333" stroke-width="1.25"/><path d="M9.5 9.5L12 12" stroke="#333" stroke-width="1.25" stroke-linecap="round"/></svg>
+        <input class="global-css-search-input" id="global-css-search-input" placeholder="Search within CSS…" type="text" autocomplete="off" spellcheck="false">
+        <span class="global-css-search-count" id="global-css-search-count"></span>
+      </div>
+      <div class="global-css-search-nav">
+        <button class="global-css-search-nav-btn" id="global-css-search-prev" title="Previous match" disabled>↑</button>
+        <button class="global-css-search-nav-btn" id="global-css-search-next" title="Next match" disabled>↓</button>
+      </div>
+    </div>
     <div class="global-css-pre-wrap">
-      <pre class="global-css-pre"><code id="global-css-source" class="language-css"></code></pre>
+      <pre class="global-css-pre" id="global-css-pre"><code id="global-css-source" class="language-css"></code></pre>
     </div>`;
 }
 
@@ -168,6 +179,9 @@ function initGlobalCssPage() {
   const el = document.getElementById('global-css-source');
   const errEl = document.getElementById('global-css-error');
   if (!el || !errEl) return;
+
+  let highlightedHtml = ''; // hljs-rendered HTML, restored on search clear
+  let matchIndex = 0;       // currently active match (0-based)
 
   async function load() {
     try {
@@ -179,7 +193,11 @@ function initGlobalCssPage() {
       if (window.hljs && typeof window.hljs.highlightElement === 'function') {
         window.hljs.highlightElement(el);
       }
+      highlightedHtml = el.innerHTML;
       errEl.style.display = 'none';
+      // Re-run search if query is already typed
+      const q = document.getElementById('global-css-search-input')?.value.trim();
+      if (q) applySearch(q);
     } catch {
       errEl.style.display = 'block';
       errEl.innerHTML =
@@ -189,13 +207,99 @@ function initGlobalCssPage() {
     }
   }
 
+  // ── Search helpers ────────────────────────────────────────────────────────
+
+  function applySearch(q) {
+    const countEl  = document.getElementById('global-css-search-count');
+    const prevBtn  = document.getElementById('global-css-search-prev');
+    const nextBtn  = document.getElementById('global-css-search-next');
+
+    if (!q) {
+      el.innerHTML = highlightedHtml;
+      if (countEl) { countEl.textContent = ''; countEl.classList.remove('has-results'); }
+      if (prevBtn) prevBtn.disabled = true;
+      if (nextBtn) nextBtn.disabled = true;
+      return;
+    }
+
+    // Work on raw text to find match positions, then rebuild innerHTML with <mark> injected
+    const raw = el.textContent || '';
+    const escaped = escHtml(raw);
+    const re = new RegExp(escRegex(q), 'gi');
+    let count = 0;
+    const marked = escaped.replace(re, m => {
+      const idx = count++;
+      return `<mark data-match="${idx}">${m}</mark>`;
+    });
+
+    el.innerHTML = marked;
+
+    if (countEl) {
+      if (count === 0) {
+        countEl.textContent = 'no matches';
+        countEl.classList.remove('has-results');
+      } else {
+        countEl.classList.add('has-results');
+      }
+    }
+    if (prevBtn) prevBtn.disabled = count === 0;
+    if (nextBtn) nextBtn.disabled = count === 0;
+
+    matchIndex = 0;
+    activateMatch(count);
+  }
+
+  function activateMatch(total) {
+    const countEl = document.getElementById('global-css-search-count');
+    const marks = el.querySelectorAll('mark[data-match]');
+    marks.forEach(m => m.classList.remove('active'));
+    if (!marks.length) return;
+    matchIndex = ((matchIndex % marks.length) + marks.length) % marks.length;
+    const active = marks[matchIndex];
+    active.classList.add('active');
+    active.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    if (countEl) countEl.textContent = `${matchIndex + 1} / ${marks.length}`;
+  }
+
+  function escRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  // ── Wire up search input ──────────────────────────────────────────────────
+
+  const searchInput = document.getElementById('global-css-search-input');
+  searchInput?.addEventListener('input', () => {
+    matchIndex = 0;
+    applySearch(searchInput.value.trim());
+  });
+  searchInput?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.shiftKey) { matchIndex--; } else { matchIndex++; }
+      activateMatch(el.querySelectorAll('mark[data-match]').length);
+    }
+    if (e.key === 'Escape') {
+      searchInput.value = '';
+      applySearch('');
+    }
+  });
+
+  document.getElementById('global-css-search-next')?.addEventListener('click', () => {
+    matchIndex++;
+    activateMatch(el.querySelectorAll('mark[data-match]').length);
+  });
+  document.getElementById('global-css-search-prev')?.addEventListener('click', () => {
+    matchIndex--;
+    activateMatch(el.querySelectorAll('mark[data-match]').length);
+  });
+
+  // ── Copy / reload ─────────────────────────────────────────────────────────
+
   document.getElementById('global-css-copy')?.addEventListener('click', async () => {
     await load();
     try {
       await navigator.clipboard.writeText(el.textContent || '');
-    } catch {
-      /* ignore */
-    }
+    } catch { /* ignore */ }
   });
   document.getElementById('global-css-reload')?.addEventListener('click', load);
   load();
