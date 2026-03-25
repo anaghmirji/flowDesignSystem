@@ -242,7 +242,7 @@ window.SYSTEM = {
     buttons: {
       title: 'Button / Primary',
       subtitle: 'Source: Figma › Button/Primary · click a variant for code',
-      cssFile: 'buttons.css',
+      cssFile: 'global.css',
       // relations → shown in the panel's relationship graph for every button variant
       relations: {
         uses: [{ name: 'Icons', pageId: 'icons' }],
@@ -284,7 +284,7 @@ window.SYSTEM = {
     dropdownItem: {
       title: 'Dropdown Item',
       subtitle: 'Global · used inside any dropdown · click a variant for code',
-      cssFile: 'lender-portal.css',
+      cssFile: 'global.css',
       // relations → shown in the panel's relationship graph for every dropdown-item variant
       relations: {
         usedBy: [{ name: 'Loans Dropdown', pageId: 'lender-loans' }],

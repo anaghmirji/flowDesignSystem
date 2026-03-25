@@ -146,7 +146,7 @@ function renderGlobalCssPage() {
       <div class="section-subtitle">One file for tokens, icons, buttons, and Lender Portal — same file the platform loads</div>
     </div>
     <p class="global-css-intro">
-      This file is <strong>generated</strong>. Edit the source sheets in the repo root (<code>tokens.css</code>, <code>icons.css</code>, <code>buttons.css</code>, <code>lender-portal.css</code>), then run
+      This file is <strong>generated</strong>. Edit the source sheets in the repo root (<code>global.css</code>, <code>global.css</code>, <code>global.css</code>, <code>global.css</code>), then run
       <code>npm run build</code> or <code>sh scripts/build-css-bundle.sh</code>.
       If you add a new stylesheet, append it to both bundle scripts so it is included here.
       In React apps, import this once (or use the npm export <code>flow-design-system/styles.css</code>).
@@ -422,7 +422,7 @@ function lenderLoansTabs(variant) {
   if (!v) return {};
 
   return {
-    'HTML': `<!-- Include lender-portal.css -->
+    'HTML': `<!-- Include global.css -->
 <div class="loans-pill">
   <span class="loans-pill__label">My Loans</span>
   <div class="loans-pill__badge">
@@ -433,7 +433,7 @@ function lenderLoansTabs(variant) {
   </div>
 </div>`,
 
-    'CSS': `/* lender-portal.css */
+    'CSS': `/* global.css */
 /* Tokens used: accent-white-100, accent-black-12, accent-black-80, accent-black-60 */
 
 .loans-pill {
@@ -523,7 +523,7 @@ defineEmits(['click']);
 
 function lenderDropdownTabs() {
   return {
-    'HTML': `<!-- Include lender-portal.css -->
+    'HTML': `<!-- Include global.css -->
 <div class="loans-dropdown">
   <div class="loans-dropdown__item loans-dropdown__item--active">
     <span class="loans-dropdown__item-label">My Loans</span>
@@ -539,7 +539,7 @@ function lenderDropdownTabs() {
   </div>
 </div>`,
 
-    'CSS': `/* lender-portal.css */
+    'CSS': `/* global.css */
 /* Tokens: accent-bg-1, accent-black-12, accent-black-8,
            accent-black-80, accent-black-50, accent-black-4 */
 
@@ -712,14 +712,14 @@ function dropdownItemTabs(variantId) {
                      : state === 'selected' ? '<!-- selected state -->'
                      : '<!-- default state -->';
   return {
-    'HTML': `<!-- Include lender-portal.css -->
+    'HTML': `<!-- Include global.css -->
 ${stateComment}
 <div class="loans-dropdown__item${modClass}">
   <span class="loans-dropdown__item-label">My Loans</span>
   <span class="loans-dropdown__item-count">12</span>
 </div>`,
 
-    'CSS': `/* lender-portal.css — source of truth */
+    'CSS': `/* global.css — source of truth */
 /* Tokens: accent-black-80, accent-black-50, accent-black-8, accent-black-4 */
 
 /* Base */
@@ -1022,11 +1022,11 @@ function lpStatusTabs(variantId) {
   const v = SYSTEM.products.lenderPortal.status.variants.find(x => x.id === variantId);
   if (!v) return {};
   return {
-    'HTML': `<!-- Include lender-portal.css -->
+    'HTML': `<!-- Include global.css -->
 <!-- Click pill to open. Menu rows = same .loans-dropdown__item pattern as Dropdown Item. -->
 ${buildLpStatusInteractiveHtml(v)}`,
 
-    'CSS': `/* lender-portal.css */
+    'CSS': `/* global.css */
 /* Tokens: accent-black-8, accent-black-12, accent-black-80, accent-green-100 */
 
 .lp-status {
@@ -1097,10 +1097,10 @@ function lpStageTabs(variantId) {
   const v = comp.variants.find(x => x.id === variantId);
   if (!v) return {};
   return {
-    'HTML': `<!-- Include lender-portal.css -->
+    'HTML': `<!-- Include global.css -->
 ${buildLpStageHtml(v)}`,
 
-    'CSS': `/* lender-portal.css */
+    'CSS': `/* global.css */
 /* Tokens: accent-black-8, accent-black-12, accent-black-20, accent-black-80, accent-white-100 */
 
 .lp-stage {
@@ -1181,11 +1181,11 @@ function statusStageTabs(variantId) {
   const v = comp.variants.find(x => x.id === variantId);
   if (!v) return {};
   return {
-    'HTML': `<!-- Include lender-portal.css -->
+    'HTML': `<!-- Include global.css -->
 <!-- Click the left status pill to open the menu (.loans-dropdown pattern). -->
 ${buildLpStatusStageInteractiveHtml(v)}`,
 
-    'CSS': `/* lender-portal.css */
+    'CSS': `/* global.css */
 /* Tokens: accent-black-8, accent-black-12, accent-black-20, accent-black-80, accent-green-100, accent-white-100 */
 
 /* Composite wrapper */
@@ -1541,10 +1541,10 @@ function sidebarItemTabs(variantId) {
   const html = buildSidebarItemHtml(v);
   const stateClass = v.state === 'default' ? '' : ` sidebar-item--${v.state}`;
   return {
-    'HTML': `<!-- Include lender-portal.css + global.css -->
+    'HTML': `<!-- Include global.css + global.css -->
 ${html}`,
 
-    'CSS': `/* lender-portal.css — Sidebar Item */
+    'CSS': `/* global.css — Sidebar Item */
 .sidebar-item {
   display: inline-flex;
   flex-direction: column;
@@ -2239,7 +2239,7 @@ function tokenTabs(token, figma, hex) {
   border-color: var(--${token});
 }
 
-/* Definition in tokens.css */
+/* Definition in global.css */
 :root {
   --${token}: ${hex};
 }`,
@@ -2276,7 +2276,7 @@ import styles from './Component.module.css';
 // Map all design tokens → Tailwind theme so you get
 // class autocomplete for every token (text-*, bg-*, border-*)
 //
-// Requires tokens.css imported in your global CSS.
+// Requires global.css imported in your global CSS.
 
 module.exports = {
   theme: {
@@ -2402,7 +2402,7 @@ const props = defineProps<{ name: string; size?: number }>();
 
 function btnHtml(variant) {
   const map = {
-    s1: `<!-- buttons.css required -->
+    s1: `<!-- global.css required -->
 <button class="btn btn--s1" aria-label="magnifying-glass">
   <div class="btn__icon-wrap">
     <div class="btn__icon-inner">
@@ -2412,7 +2412,7 @@ function btnHtml(variant) {
     </div>
   </div>
 </button>`,
-    s2: `<!-- buttons.css required -->
+    s2: `<!-- global.css required -->
 <button class="btn btn--s2">
   <div class="btn__icon-group">
     <div class="btn__icon-wrap">
@@ -2431,7 +2431,7 @@ function btnHtml(variant) {
     </div>
   </div>
 </button>`,
-    s3: `<!-- buttons.css required -->
+    s3: `<!-- global.css required -->
 <button class="btn btn--s3">
   <div class="btn__icon-group">
     <div class="btn__icon-wrap">
@@ -2457,7 +2457,7 @@ function btnHtml(variant) {
     </div>
   </div>
 </button>`,
-    label: `<!-- buttons.css required -->
+    label: `<!-- global.css required -->
 <button class="btn btn--label">
   <div class="btn__icon-slot btn__icon-slot--magnifying-glass">
     <div class="btn__icon-vector">
@@ -2466,7 +2466,7 @@ function btnHtml(variant) {
   </div>
   <span class="btn__label">Label</span>
 </button>`,
-    'label-trail': `<!-- buttons.css required -->
+    'label-trail': `<!-- global.css required -->
 <button class="btn btn--label-trail">
   <div class="btn__icon-slot btn__icon-slot--magnifying-glass">
     <div class="btn__icon-vector">
@@ -2541,7 +2541,7 @@ function btnCss(variant) {
   };
 
   return `/* ── Tokens used ─────────────────────────────── */
-/* @import 'tokens.css';  @import 'flow-design-system/styles.css'; /* global bundle */ */
+/* @import 'global.css';  @import 'flow-design-system/styles.css'; /* global bundle */ */
 
 /* Accent/White/100  → background   */
 /* Accent/Black/12   → border       */
@@ -2787,7 +2787,7 @@ defineEmits(['click']);
 }
 
 function btnTailwind(variant) {
-  const base = `<!-- buttons.css + tokens.css must be imported globally   -->
+  const base = `<!-- global.css + global.css must be imported globally   -->
 <!-- Recommended: use .btn classes as-is — they're already   -->
 <!-- token-based. Tailwind utilities add layout/spacing only. -->
 

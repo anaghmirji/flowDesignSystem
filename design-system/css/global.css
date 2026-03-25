@@ -1,8 +1,9 @@
-/* Global design-system stylesheet (generated — do not edit by hand)
- * Paths: design-system/css/global.css · dist/flow-design-system.css
- * Order: tokens.css → icons.css → buttons.css → lender-portal.css
- * Regenerate: npm run build  OR  sh scripts/build-css-bundle.sh
- */
+/* ============================================================
+ * Flow Design System — Global Stylesheet
+ * Path: design-system/css/global.css
+ * This is the single source of truth for all CSS.
+ * Import this one file in your project — nothing else needed.
+ * ============================================================ */
 
 /* ============================================================
    DESIGN TOKENS — Current Design System
