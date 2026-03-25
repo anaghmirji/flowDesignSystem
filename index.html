@@ -245,7 +245,12 @@
 
     /* ══ GLOBAL CSS PAGE ══ */
     .global-css-intro { font-size: 12px; color: var(--accent-black-60); max-width: 720px; line-height: 1.55; margin-bottom: 16px; }
-    .global-css-actions { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+    /* actions row: buttons left, search right */
+    .global-css-actions {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-bottom: 12px; max-width: min(960px, 100%);
+    }
+    .global-css-actions-left { display: flex; gap: 8px; align-items: center; }
     .global-css-btn {
       padding: 8px 14px; border-radius: 8px; border: 0.5px solid var(--accent-black-12);
       background: var(--accent-white-100); font-size: 11px; font-weight: 500; font-family: inherit;
@@ -253,6 +258,42 @@
     }
     .global-css-btn:hover { background: var(--accent-black-4); }
     .global-css-error { font-size: 12px; color: #b45309; margin-bottom: 12px; display: none; max-width: 640px; line-height: 1.45; }
+
+    /* ── Search pill — matches nav search bar exactly ── */
+    .global-css-search-bar {
+      display: flex; align-items: center; padding: 4px;
+      background: var(--accent-white-100); border: 0.5px solid var(--accent-black-12);
+      border-radius: 100px; cursor: text; transition: border-color 0.15s; width: 220px;
+    }
+    .global-css-search-bar:focus-within { border-color: var(--accent-black-30); }
+    .global-css-search-icon {
+      width: 28px; height: 28px; border-radius: 100px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .global-css-search-input {
+      flex: 1; border: none; background: transparent; outline: none;
+      font-size: 11px; font-family: inherit; color: var(--accent-black-60);
+      padding: 0 4px 0 2px; min-width: 0;
+    }
+    .global-css-search-input::placeholder { color: var(--accent-black-60); }
+    .global-css-search-count {
+      font-size: 10px; font-weight: 500; color: var(--accent-black-40);
+      white-space: nowrap; flex-shrink: 0; padding: 0 4px;
+    }
+    .global-css-search-count.has-results { color: var(--accent-black-60); }
+    .global-css-search-nav-btn {
+      width: 28px; height: 28px; border-radius: 100px; border: none;
+      background: transparent; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent-black-50); font-size: 11px; transition: background 0.1s;
+    }
+    .global-css-search-nav-btn:hover { background: var(--accent-black-8); }
+    .global-css-search-nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+    /* Highlighted matches inside the code block */
+    .global-css-pre mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; }
+    .global-css-pre mark.active { background: #f97316; color: #fff; }
+
     .global-css-pre-wrap {
       background: var(--accent-white-100); border: 0.5px solid var(--accent-black-12); border-radius: 12px;
       overflow: hidden; max-width: min(960px, 100%);
