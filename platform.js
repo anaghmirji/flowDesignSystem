@@ -9,10 +9,12 @@ const DEFAULT_ACTIVE_PAGE = 'tokens';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function iconUrl(name) {
+function iconSvg(name) {
   const icon = SYSTEM.icons.find(i => i.name === name);
-  return icon ? icon.url : '';
+  return icon ? icon.svg : '';
 }
+// legacy alias
+function iconUrl(name) { return ''; }
 
 function escHtml(str) {
   return str
@@ -125,11 +127,7 @@ function renderIconsPage() {
     html += `
       <div class="ds-row" data-icon="${icon.name}">
         <div class="icon-row-preview">
-          <span class="icon icon--${icon.name}">
-            <span class="icon__vector">
-              <img src="${icon.url}" alt="">
-            </span>
-          </span>
+          <span class="icon">${icon.svg}</span>
         </div>
         <span class="ds-row-name">${icon.name}</span>
       </div>`;
@@ -310,10 +308,10 @@ function initGlobalCssPage() {
 
 function buildBtnPreviewHtml(v) {
   const wrap = (name) =>
-    `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector"><img src="${iconUrl(name)}" alt=""></div></div></div>`;
+    `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg(name)}</div></div></div>`;
 
   const slot = (name) =>
-    `<div class="btn__icon-slot btn__icon-slot--${name}"><div class="btn__icon-vector"><img src="${iconUrl(name)}" alt=""></div></div>`;
+    `<div class="btn__icon-slot btn__icon-slot--${name}"><div class="btn__icon-vector">${iconSvg(name)}</div></div>`;
 
   if (v.id === 's1')
     return `<button class="btn btn--s1" tabindex="-1">${wrap(v.icons[0])}</button>`;
@@ -373,7 +371,7 @@ function buildLoansPillInteractivePreview(v) {
         <span class="loans-pill__label">${v.defaultText}</span>
         <div class="loans-pill__badge">
           <span class="loans-pill__count">${v.defaultCount}</span>
-          <div class="loans-pill__icon"><img src="${v.iconUrl}" alt="" style="width:16px;height:16px;display:block"></div>
+          <div class="loans-pill__icon"><span class="icon">${v.iconSvg || ''}</span></div>
         </div>
       </div>
       <div class="loans-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:10">
@@ -401,7 +399,7 @@ function renderLenderLoansPage() {
           <span class="loans-pill__label">${v.defaultText}</span>
           <div class="loans-pill__badge">
             <span class="loans-pill__count">${v.defaultCount}</span>
-            <div class="loans-pill__icon"><img src="${v.iconUrl}" alt="" style="width:16px;height:16px;display:block"></div>
+            <div class="loans-pill__icon"><span class="icon">${v.iconSvg || ''}</span></div>
           </div>
         </div>`;
     } else if (v.id === 'loans-dropdown') {
@@ -954,31 +952,31 @@ function mountLpStatusDropdown(root) {
   });
 }
 
-function buildLpStageHtml(v, fwdUrl) {
+function buildLpStageHtml(v) {
   return `<div class="lp-stage">
   <span class="lp-stage__label">${v.stageLabel}</span>
   <div class="lp-stage__btn">
     <div class="lp-stage__btn-inner">
-      <span class="icon icon--forward"><span class="icon__vector"><img src="${fwdUrl}" alt=""></span></span>
+      <span class="icon">${iconSvg('forward')}</span>
     </div>
   </div>
 </div>`;
 }
 
-function buildLpStatusStageHtml(v, fwdUrl) {
+function buildLpStatusStageHtml(v) {
   const statusV = { dot: v.status.dot, statusLabel: v.status.label };
   return `<div class="lp-status-stage">
     ${buildLpStatusHtml(statusV)}
-    ${buildLpStageHtml({ stageLabel: v.stage.label }, fwdUrl)}
+    ${buildLpStageHtml({ stageLabel: v.stage.label })}
   </div>`;
 }
 
 /** Status Stage = interactive Status (dropdown) + Stage from the same builders as those pages. */
-function buildLpStatusStageInteractiveHtml(v, fwdUrl) {
+function buildLpStatusStageInteractiveHtml(v) {
   const statusAsVariant = { dot: v.status.dot, statusLabel: v.status.label };
   return `<div class="lp-status-stage">
     ${buildLpStatusInteractiveHtml(statusAsVariant)}
-    ${buildLpStageHtml({ stageLabel: v.stage.label }, fwdUrl)}
+    ${buildLpStageHtml({ stageLabel: v.stage.label })}
   </div>`;
 }
 
@@ -1005,7 +1003,6 @@ function renderLenderStatusPage() {
 
 function renderLenderStagePage() {
   const comp = SYSTEM.products.lenderPortal.stage;
-  const fwdUrl = comp.forwardIconUrl;
   let html = `
     <div class="section-header">
       <div class="section-title">${comp.title}</div>
@@ -1017,7 +1014,7 @@ function renderLenderStagePage() {
     html += `
       <div class="ds-row" data-lp-stage-variant="${v.id}">
         <span class="ds-row-name" style="min-width:120px">${v.label}</span>
-        ${buildLpStageHtml(v, fwdUrl)}
+        ${buildLpStageHtml(v)}
       </div>`;
   });
 
@@ -1027,7 +1024,6 @@ function renderLenderStagePage() {
 
 function renderLenderStatusStagePage() {
   const comp = SYSTEM.products.lenderPortal.statusStage;
-  const fwdUrl = SYSTEM.products.lenderPortal.stage.forwardIconUrl;
   let html = `
     <div class="section-header">
       <div class="section-title">${comp.title}</div>
@@ -1039,7 +1035,7 @@ function renderLenderStatusStagePage() {
     html += `
       <div class="ds-row" data-lp-status-stage-variant="${v.id}">
         <span class="ds-row-name" style="min-width:160px">${v.label}</span>
-        ${buildLpStatusStageInteractiveHtml(v, fwdUrl)}
+        ${buildLpStatusStageInteractiveHtml(v)}
       </div>`;
   });
 
@@ -1180,10 +1176,9 @@ function lpStageTabs(variantId) {
   const comp = SYSTEM.products.lenderPortal.stage;
   const v = comp.variants.find(x => x.id === variantId);
   if (!v) return {};
-  const fwdUrl = comp.forwardIconUrl;
   return {
     'HTML': `<!-- Include lender-portal.css -->
-${buildLpStageHtml(v, fwdUrl)}`,
+${buildLpStageHtml(v)}`,
 
     'CSS': `/* lender-portal.css */
 /* Tokens: accent-black-8, accent-black-12, accent-black-20, accent-black-80, accent-white-100 */
@@ -1219,19 +1214,21 @@ ${buildLpStageHtml(v, fwdUrl)}`,
 
     'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
 
+// forwardSvg — import from your icons map (inline SVG, never expires)
+import { ICONS } from './icons';
+
 interface LpStageProps {
   label: string;
-  forwardIconUrl: string;
   onForward?: () => void;
 }
 
-export function LpStage({ label, forwardIconUrl, onForward }: LpStageProps) {
+export function LpStage({ label, onForward }: LpStageProps) {
   return (
     <div className="lp-stage">
       <span className="lp-stage__label">{label}</span>
       <button className="lp-stage__btn" onClick={onForward}>
         <div className="lp-stage__btn-inner">
-          <span className="icon icon--forward"><span className="icon__vector"><img src={forwardIconUrl} alt="" /></span></span>
+          <span className="icon" dangerouslySetInnerHTML={{ __html: ICONS['forward'] }} />
         </div>
       </button>
     </div>
@@ -1239,35 +1236,40 @@ export function LpStage({ label, forwardIconUrl, onForward }: LpStageProps) {
 }
 
 // Usage
-<LpStage label="Underwriting" forwardIconUrl={fwdIcon} onForward={handleForward} />`,
+<LpStage label="Underwriting" onForward={handleForward} />`,
 
     'Vue': `<!-- LpStage.vue -->
 <template>
   <div class="lp-stage">
     <span class="lp-stage__label">{{ label }}</span>
     <button class="lp-stage__btn" @click="$emit('forward')">
-      <img :src="forwardIconUrl" alt="forward" />
+      <div class="lp-stage__btn-inner">
+        <span class="icon" v-html="ICONS['forward']" />
+      </div>
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{ label: string; forwardIconUrl: string }>();
+import { ICONS } from './icons';
+defineProps<{ label: string }>();
 defineEmits(['forward']);
 </script>
 
 <!-- Usage -->
-<LpStage label="Underwriting" :forwardIconUrl="fwdIcon" @forward="handleForward" />`,
+<LpStage label="Underwriting" @forward="handleForward" />`,
 
     'Tailwind': `<div class="inline-flex items-center gap-[10px] h-8 pl-3
             bg-[var(--accent-black-8)]
-            rounded-[4px_100px_100px_4px] overflow-hidden
-            hover:bg-[var(--accent-black-12)] transition-colors">
+            rounded-[4px_100px_100px_4px] overflow-hidden">
   <span class="text-xs text-[var(--accent-black-80)] whitespace-nowrap">Underwriting</span>
-  <button class="w-8 h-8 rounded-full shrink-0 flex items-center justify-center
-                 border-2 border-white bg-[var(--accent-black-8)]
-                 hover:bg-[var(--accent-black-20)] transition-colors cursor-pointer">
-    <img src="[forward-icon]" alt="forward" class="w-4 h-4 block" />
+  <button class="rounded-full shrink-0 flex items-center justify-center p-0.5
+                 border-2 border-white cursor-pointer
+                 hover:[&_.lp-stage__btn-inner]:bg-[var(--accent-black-20)]">
+    <div class="size-7 rounded-full bg-[var(--accent-black-8)]
+                flex items-center justify-center">
+      <span class="icon size-4">${iconSvg('forward')}</span>
+    </div>
   </button>
 </div>`,
   };
@@ -1277,11 +1279,10 @@ function statusStageTabs(variantId) {
   const comp = SYSTEM.products.lenderPortal.statusStage;
   const v = comp.variants.find(x => x.id === variantId);
   if (!v) return {};
-  const fwdUrl = SYSTEM.products.lenderPortal.stage.forwardIconUrl;
   return {
     'HTML': `<!-- Include lender-portal.css -->
 <!-- Click the left status pill to open the menu (.loans-dropdown pattern). -->
-${buildLpStatusStageInteractiveHtml(v, fwdUrl)}`,
+${buildLpStatusStageInteractiveHtml(v)}`,
 
     'CSS': `/* lender-portal.css */
 /* Tokens: accent-black-8, accent-black-12, accent-black-20, accent-black-80, accent-green-100, accent-white-100 */
@@ -1454,7 +1455,7 @@ function bindLpStageRows() {
       openPanel({
         type: 'Lender Portal · Stage',
         name: v?.label || variantId,
-        preview: buildLpStageHtml(v, comp.forwardIconUrl),
+        preview: buildLpStageHtml(v),
         tabs: lpStageTabs(variantId),
         defaultLang: 'HTML',
         commentKey: `lender-stage:${variantId}`,
@@ -1473,11 +1474,10 @@ function bindStatusStageRows() {
       setActive(row);
       const comp = SYSTEM.products.lenderPortal.statusStage;
       const v = comp.variants.find(x => x.id === variantId);
-      const fwdUrl = SYSTEM.products.lenderPortal.stage.forwardIconUrl;
       openPanel({
         type: 'Lender Portal · Status Stage',
         name: v?.label || variantId,
-        preview: buildLpStatusStageInteractiveHtml(v, fwdUrl),
+        preview: buildLpStatusStageInteractiveHtml(v),
         onPreviewMount: (el) => {
           el.querySelectorAll('.lp-status-dropdown-wrap').forEach(mountLpStatusDropdown);
         },
@@ -1495,9 +1495,7 @@ function bindStatusStageRows() {
 function buildProfileHtml(v) {
   const comp = SYSTEM.products.lenderPortal.profile;
   return `<button class="profile" type="button">
-  <span class="icon icon--star-filled">
-    <span class="icon__vector"><img src="${comp.iconUrl}" alt=""></span>
-  </span>
+  <span class="icon" style="--fill-0:#FFCC00">${iconSvg('star-filled')}</span>
   <span class="profile__avatar">
     <img src="${comp.avatarUrl}" alt="">
   </span>
@@ -1606,17 +1604,194 @@ function bindProfileRows() {
   });
 }
 
+// ── Sidebar Item ─────────────────────────────────────────────────────────────
+
+function buildSidebarItemHtml(v) {
+  const comp = SYSTEM.products.lenderPortal.sidebarItem;
+  const svg  = iconSvg(comp.iconName);
+  const stateClass = v.state === 'default' ? '' : ` sidebar-item--${v.state}`;
+  return `<button class="sidebar-item${stateClass}" type="button">
+  <div class="sidebar-item__icon-wrap">
+    <span class="sidebar-item__icon">${svg}</span>
+  </div>
+  <span class="sidebar-item__label">Worklist</span>
+</button>`;
+}
+
+function renderLenderSidebarItemPage() {
+  const comp = SYSTEM.products.lenderPortal.sidebarItem;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table" style="max-width:640px">`;
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-sidebar-item-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:100px">${v.label}</span>
+        ${buildSidebarItemHtml(v)}
+      </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function sidebarItemTabs(variantId) {
+  const comp = SYSTEM.products.lenderPortal.sidebarItem;
+  const v    = comp.variants.find(x => x.id === variantId);
+  if (!v) return {};
+  const html = buildSidebarItemHtml(v);
+  const stateClass = v.state === 'default' ? '' : ` sidebar-item--${v.state}`;
+  return {
+    'HTML': `<!-- Include lender-portal.css + global.css -->
+${html}`,
+
+    'CSS': `/* lender-portal.css — Sidebar Item */
+.sidebar-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.sidebar-item__icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+.sidebar-item__icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.15s ease, height 0.15s ease;
+}
+
+.sidebar-item__label {
+  font-size: 12px;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+/* Hover — icon grows to 24px */
+.sidebar-item:hover .sidebar-item__icon-wrap {
+  background: var(--accent-black-8);
+}
+.sidebar-item:hover .sidebar-item__icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Selected */
+.sidebar-item--selected .sidebar-item__icon-wrap {
+  background: var(--accent-black-12);
+}`,
+
+    'React': `import 'flow-design-system/styles.css';
+import { ICONS } from './icons';
+
+type SidebarItemState = 'default' | 'hover' | 'selected';
+type IconName = keyof typeof ICONS;
+
+interface SidebarItemProps {
+  label: string;
+  icon: IconName;
+  state?: SidebarItemState;
+  onClick?: () => void;
+}
+
+export function SidebarItem({ label, icon, state = 'default', onClick }: SidebarItemProps) {
+  return (
+    <button
+      className={\`sidebar-item\${state !== 'default' ? \` sidebar-item--\${state}\` : ''}\`}
+      onClick={onClick}
+      type="button"
+    >
+      <div className="sidebar-item__icon-wrap">
+        <span
+          className="sidebar-item__icon"
+          dangerouslySetInnerHTML={{ __html: ICONS[icon] }}
+        />
+      </div>
+      <span className="sidebar-item__label">{label}</span>
+    </button>
+  );
+}
+
+// Usage
+<SidebarItem label="Worklist" icon="clipboard-document-list" />
+<SidebarItem label="Worklist" icon="clipboard-document-list" state="selected" />`,
+
+    'Vue': `<!-- SidebarItem.vue -->
+<template>
+  <button
+    :class="['sidebar-item', state !== 'default' && \`sidebar-item--\${state}\`]"
+    type="button"
+    @click="$emit('click')"
+  >
+    <div class="sidebar-item__icon-wrap">
+      <span class="sidebar-item__icon" v-html="ICONS[icon]" />
+    </div>
+    <span class="sidebar-item__label">{{ label }}</span>
+  </button>
+</template>
+
+<script setup lang="ts">
+import { ICONS } from './icons';
+defineProps<{ label: string; icon: string; state?: string }>();
+defineEmits(['click']);
+</script>
+
+<!-- Usage -->
+<SidebarItem label="Worklist" icon="clipboard-document-list" />`,
+  };
+}
+
+function bindSidebarItemRows() {
+  document.querySelectorAll('[data-sidebar-item-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.sidebarItemVariant;
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
+      const comp = SYSTEM.products.lenderPortal.sidebarItem;
+      const v = comp.variants.find(x => x.id === variantId);
+      openPanel({
+        type: 'Lender Portal · Sidebar Item',
+        name: v?.label || variantId,
+        preview: buildSidebarItemHtml(v),
+        tabs: sidebarItemTabs(variantId),
+        defaultLang: 'HTML',
+        commentKey: `lender-sidebar-item:${variantId}`,
+      });
+    });
+  });
+}
+
 const PAGE_RENDERERS = {
-  'global-css':          renderGlobalCssPage,
-  tokens:                renderTokensPage,
-  icons:                 renderIconsPage,
-  buttons:               renderButtonsPage,
-  'dropdown-item':       renderDropdownItemPage,
-  'lender-loans':        renderLenderLoansPage,
-  'lender-status':       renderLenderStatusPage,
-  'lender-stage':        renderLenderStagePage,
-  'lender-status-stage': renderLenderStatusStagePage,
-  'lender-profile':      renderLenderProfilePage,
+  'global-css':               renderGlobalCssPage,
+  tokens:                     renderTokensPage,
+  icons:                      renderIconsPage,
+  buttons:                    renderButtonsPage,
+  'dropdown-item':            renderDropdownItemPage,
+  'lender-loans':             renderLenderLoansPage,
+  'lender-status':            renderLenderStatusPage,
+  'lender-stage':             renderLenderStagePage,
+  'lender-status-stage':      renderLenderStatusStagePage,
+  'lender-profile':           renderLenderProfilePage,
+  'lender-sidebar-item':      renderLenderSidebarItemPage,
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -1648,6 +1823,7 @@ function init() {
   bindLpStageRows();
   bindStatusStageRows();
   bindProfileRows();
+  bindSidebarItemRows();
   initLpStatusOutsideClose();
   initSearch();
 }
@@ -1717,6 +1893,11 @@ function buildSearchIndex() {
   // Products — Lender Portal profile
   SYSTEM.products.lenderPortal.profile.variants.forEach(v => {
     idx.push({ type: 'Profile', label: v.label, pageId: 'lender-profile', sel: `[data-lp-profile-variant="${v.id}"]` });
+  });
+
+  // Products — Lender Portal sidebar item
+  SYSTEM.products.lenderPortal.sidebarItem.variants.forEach(v => {
+    idx.push({ type: 'Sidebar Item', label: v.label, pageId: 'lender-sidebar-item', sel: `[data-sidebar-item-variant="${v.id}"]` });
   });
 
   return idx;
@@ -1864,7 +2045,7 @@ function bindIconRows() {
       openPanel({
         type: 'Icon',
         name,
-        preview: `<span class="icon icon--${name}" style="width:24px;height:24px;overflow:hidden;position:relative;display:inline-block"><span class="icon__vector" style="position:absolute;top:12.5%;left:12.5%;right:12.5%;bottom:12.5%"><img src="${iconUrl(name)}" style="position:absolute;top:-5%;left:-5%;width:110%;height:110%" alt=""></span></span>`,
+        preview: `<span class="icon" style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center">${iconSvg(name)}</span>`,
         tabs: iconTabs(name),
         defaultLang: 'HTML',
         relations: iconDef?.relations || null,
@@ -2054,42 +2235,46 @@ ${tailwindColorsBlock()}
 }
 
 function iconTabs(name) {
-  const url = iconUrl(name);
+  const svg = iconSvg(name);
+  const iconNames = SYSTEM.icons.map(i => `'${i.name}'`).join(' | ');
   return {
-    'HTML': `<!-- Include icons.css in <head> -->
-<link rel="stylesheet" href="icons.css">
+    'HTML': `<!-- SVG is inline — no image files, no URLs, never expires -->
+<!-- Include global.css for .icon base styles -->
 
-<span class="icon icon--${name}">
-  <span class="icon__vector">
-    <img src="${url}" alt="${name}" />
-  </span>
+<span class="icon">
+  ${svg}
+</span>
+
+<!-- Larger size -->
+<span class="icon" style="width:24px;height:24px">
+  ${svg}
 </span>`,
-    'CSS': `/* icons.css — from Figma */
+
+    'CSS': `/* global.css — base icon styles */
 .icon {
-  position: relative;
   width: 16px;
   height: 16px;
-  overflow: hidden;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
-
-.icon--${name} .icon__vector {
-  position: absolute;
-  top: 12.5%; left: 12.5%;
-  right: 12.5%; bottom: 12.5%;
-}
-.icon--${name} .icon__vector img {
-  position: absolute;
-  top: -5%; left: -5%;
-  width: 110%; height: 110%;
+.icon svg {
+  width: 100%;
+  height: 100%;
   display: block;
+}
+
+/* Theming — override stroke/fill colour */
+:root {
+  --stroke-0: #333333;
+  --fill-0:   #333333;
 }`,
-    'React': `// Icon.tsx
-type IconName =
-  | 'magnifying-glass' | 'plus' | 'funnel'
-  | 'archive-box' | 'bell' | 'star'
-  | 'star-filled' | 'chevron-down' | 'document';
+
+    'React': `// Icon.tsx — inline SVGs, no assets needed
+import { ICONS } from './icons'; // map of name → svg string
+
+type IconName = ${iconNames};
 
 interface IconProps {
   name: IconName;
@@ -2100,72 +2285,49 @@ interface IconProps {
 export function Icon({ name, size = 16, className }: IconProps) {
   return (
     <span
-      className={\`icon icon--\${name}\${className ? ' ' + className : ''}\`}
+      className={\`icon\${className ? ' ' + className : ''}\`}
       style={{ width: size, height: size }}
-    >
-      <span className="icon__vector">
-        <img src={iconAssets[name]} alt={name} />
-      </span>
-    </span>
+      dangerouslySetInnerHTML={{ __html: ICONS[name] }}
+    />
   );
 }
 
 // Usage
 <Icon name="${name}" />
 <Icon name="${name}" size={24} />`,
-    'Vue': `<!-- Icon.vue -->
+
+    'Vue': `<!-- Icon.vue — inline SVGs, no assets needed -->
 <template>
   <span
-    :class="\`icon icon--\${name}\`"
+    class="icon"
     :style="{ width: size + 'px', height: size + 'px' }"
-  >
-    <span class="icon__vector">
-      <img :src="iconAssets[name]" :alt="name" />
-    </span>
-  </span>
+    v-html="ICONS[name]"
+  />
 </template>
 
 <script setup lang="ts">
-import { iconAssets } from './iconAssets';
+import { ICONS } from './icons';
 const props = defineProps<{ name: string; size?: number }>();
 </script>
 
 <!-- Usage -->
 <Icon name="${name}" />`,
 
-    'Tailwind': `<!-- Icons use .icon classes from icons.css — pair with Tailwind utilities -->
-<!-- Import icons.css globally, then use Tailwind for layout/spacing -->
+    'Tailwind': `<!-- Inline SVG — pairs cleanly with Tailwind utilities -->
 
-<!-- Basic usage (icons.css handles size + position) -->
-<span class="icon icon--${name}">
-  <span class="icon__vector">
-    <img src="${url}" alt="${name}" />
-  </span>
+<span class="icon inline-flex items-center justify-center shrink-0 size-4">
+  ${svg}
 </span>
 
-<!-- With Tailwind layout utilities -->
+<!-- With label -->
 <div class="flex items-center gap-2">
-  <span class="icon icon--${name}">
-    <span class="icon__vector">
-      <img src="${url}" alt="${name}" />
-    </span>
+  <span class="icon inline-flex items-center justify-center shrink-0 size-4">
+    ${svg}
   </span>
   <span class="text-sm text-[var(--accent-black-80)]">Label</span>
-</div>
+</div>`,
 
-<!-- Larger size via Tailwind arbitrary -->
-<span class="icon icon--${name} !w-6 !h-6">
-  <span class="icon__vector">
-    <img src="${url}" alt="${name}" />
-  </span>
-</span>
-
-/* In your global CSS — add icons to @layer components */
-@layer components {
-  .icon--${name} {
-    @apply inline-block relative overflow-hidden flex-shrink-0;
-  }
-}`,
+    'SVG': svg,
   };
 }
 

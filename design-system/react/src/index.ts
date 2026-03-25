@@ -13,3 +13,4 @@ export { LpStatusPill, type LpStatusPillProps, type LpStatusDot } from './LpStat
 export { LpStage, type LpStageProps } from './LpStage.js';
 export { LpStatusStage, type LpStatusStageProps } from './LpStatusStage.js';
 export { BorrowerProfile, type BorrowerProfileProps } from './BorrowerProfile.js';
+export { SidebarItem, type SidebarItemProps } from './SidebarItem.js';
