@@ -7,7 +7,6 @@ Internal static site: **tokens**, **icons**, **buttons**, **Lender Portal** comp
 | File | Use |
 |------|-----|
 | **`platform.html`** | Main design-system tool (nav, search, code panel) |
-| **`button-library.html`** | Button-only showcase |
 | **`index.html`** | Lender dashboard mock (separate from the platform) |
 
 After hosting on GitHub Pages, share:  
@@ -100,6 +99,27 @@ Install **[GitHub Desktop](https://desktop.github.com/)**, sign in, **File → A
 
 - **`system.js`** — Data source (nav, tokens, icons, components, products)  
 - **`platform.js`** — UI and code snippets  
-- **`tokens.css`**, **`icons.css`**, **`buttons.css`**, **`lender-portal.css`** — Styles  
+- **`tokens.css`**, **`icons.css`**, **`buttons.css`**, **`lender-portal.css`** — **Authoring** styles (edit these)  
+- **`design-system/css/global.css`** — **Generated** bundle; also copied to `dist/flow-design-system.css` for npm  
+- **`design-system/react/`** — Real React components (build with `npm run build` inside that folder)  
+- **`design-system/README.md`** — Short guide for this folder  
 
-Figma asset URLs in `system.js` can expire; refresh or self-host icons for long-term stability.
+The **platform** and **button library** load **`design-system/css/global.css`** only (one request). Figma asset URLs in `system.js` can expire; refresh or self-host icons for production.
+
+## For app engineering (one global stylesheet)
+
+Regenerate after changing any root `*.css` layer:
+
+```bash
+npm run build
+```
+
+**Canonical file:** `design-system/css/global.css` (same content as `dist/flow-design-system.css`). Import via `flow-design-system/styles.css` from npm, or copy/link the file. Order is always **tokens → icons → buttons → lender-portal**.
+
+**Buttons:** compound classes, e.g. `.btn.btn--s1`, `.btn.btn--label`, `.btn.btn--label-trail`.
+
+**React:** `design-system/react/` — **`DsIcon`**, **`DsButton`**, **`LoansPill`**, **`LoansDropdown`**, **`DsDropdownItem`**, **`LpStatusWithMenu`**, **`LpStage`**, **`LpStatusStage`**. Import global CSS once, then `import { … } from 'flow-design-system-react'`. Pass **`getIconSrc`** for icons where needed.
+
+**Platform React / Vue tabs** in `platform.js` stay as **copy-paste examples** (now pointing at `flow-design-system/styles.css`); the **`design-system/react`** sources are what you version in apps.
+
+`package.json` sets `"private": true` by default; set `private` to `false` if you publish to npm.

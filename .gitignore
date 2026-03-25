@@ -18,6 +18,10 @@ venv/
 # Editor / local-only (machine-specific permissions)
 .claude/settings.local.json
 
+# Node (React package build)
+node_modules/
+packages/*/dist/
+
 # Logs
 *.log
 npm-debug.log*
