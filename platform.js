@@ -1339,7 +1339,6 @@ function bindLpStatusRows() {
         tabs: lpStatusTabs(variantId),
         defaultLang: 'HTML',
         relations: comp.relations || null,
-        commentKey: `lender-status:${variantId}`,
       });
     });
   });
@@ -1359,7 +1358,6 @@ function bindLpStageRows() {
         preview: buildLpStageHtml(v),
         tabs: lpStageTabs(variantId),
         defaultLang: 'HTML',
-        commentKey: `lender-stage:${variantId}`,
       });
     });
   });
@@ -1385,7 +1383,6 @@ function bindStatusStageRows() {
         tabs: statusStageTabs(variantId),
         defaultLang: 'HTML',
         relations: comp.relations || null,
-        commentKey: `lender-status-stage:${variantId}`,
       });
     });
   });
@@ -1499,7 +1496,6 @@ function bindProfileRows() {
         preview: buildProfileHtml(v),
         tabs: profileTabs(variantId),
         defaultLang: 'HTML',
-        commentKey: `lender-profile:${variantId}`,
       });
     });
   });
@@ -1651,7 +1647,6 @@ function bindSidebarItemRows() {
         tabs: sidebarItemTabs(variantId),
         defaultLang: 'HTML',
         relations: comp.relations || null,
-        commentKey: `lender-sidebar-item:${variantId}`,
       });
     });
   });
@@ -1817,7 +1812,6 @@ function bindSidebarRows() {
         tabs: sidebarTabs(),
         defaultLang: 'HTML',
         relations: comp.relations || null,
-        commentKey: 'lender-sidebar:sidebar',
       });
     });
   });
@@ -2074,7 +2068,6 @@ function bindTokenRows() {
         preview: `<div style="width:48px;height:48px;border-radius:12px;background:${hex};border:0.5px solid #e0e0e0"></div>`,
         tabs: tokenTabs(token, figma, hex),
         defaultLang: 'CSS',
-        commentKey: `token:${token}`,
       });
     });
   });
@@ -2094,7 +2087,6 @@ function bindIconRows() {
         tabs: iconTabs(name),
         defaultLang: 'HTML',
         relations: iconDef?.relations || null,
-        commentKey: `icon:${name}`,
       });
     });
   });
@@ -2115,7 +2107,6 @@ function bindButtonRows() {
         tabs: btnTabs(v),
         defaultLang: 'HTML',
         relations: SYSTEM.components.buttons.relations || null,
-        commentKey: `button:${v}`,
       });
     });
   });
@@ -2151,7 +2142,6 @@ function bindDropdownItemRows() {
         tabs: dropdownItemTabs(variantId),
         defaultLang: 'HTML',
         relations: SYSTEM.components.dropdownItem.relations || null,
-        commentKey: `dropdown-item:${variantId}`,
       });
     });
   });
@@ -2233,7 +2223,6 @@ function bindLenderRows() {
         tabs: lenderLoansTabs(variantId),
         defaultLang: 'HTML',
         relations: variantDef?.relations || null,
-        commentKey: `lender-loans:${variantId}`,
       });
     });
   });
@@ -2965,105 +2954,6 @@ const mainEl    = document.getElementById('main');
 let activeRow   = null;
 let activeLang  = null;
 let currentTabs = {};
-let panelCommentsUnsub = null;
-
-function formatCommentAt(iso) {
-  if (!iso) return '';
-  try {
-    const d = new Date(iso);
-    return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-  } catch {
-    return String(iso);
-  }
-}
-
-function commentsApi() {
-  return (
-    window.DesignSystemComments || {
-      isCloud: false,
-      subscribe: (_k, cb) => {
-        cb([]);
-        return () => {};
-      },
-      add: () => Promise.resolve(),
-      getAuthor: () => '',
-      setAuthor: () => {},
-    }
-  );
-}
-
-function mountPanelComments(commentKey) {
-  const host = document.getElementById('panel-comments');
-  if (!host) return;
-
-  if (panelCommentsUnsub) {
-    panelCommentsUnsub();
-    panelCommentsUnsub = null;
-  }
-
-  if (!commentKey) {
-    host.innerHTML = '';
-    host.classList.add('is-hidden');
-    return;
-  }
-
-  host.classList.remove('is-hidden');
-  const DSC = commentsApi();
-  const authorDefault = DSC.getAuthor();
-  const modeHint = DSC.isCloud
-    ? '<span class="panel-comments-live">Live</span>'
-    : '<span class="panel-comments-local">This browser · syncs across your tabs. Add Firebase (free) for team-wide live comments.</span>';
-
-  host.innerHTML = `
-    <div class="panel-comments-inner">
-      <div class="panel-comments-header">
-        <span class="rel-section-label">Comments</span>
-        ${modeHint}
-      </div>
-      <div class="panel-comments-thread" id="panel-comments-thread"></div>
-      <form class="panel-comments-form" id="panel-comments-form">
-        <input type="text" class="panel-comments-name" name="author" placeholder="Name" value="${escAttr(authorDefault)}" maxlength="80" autocomplete="name">
-        <textarea class="panel-comments-text" name="text" placeholder="Add a note…" rows="2" maxlength="4000" required></textarea>
-        <button type="submit" class="panel-comments-submit">Post</button>
-      </form>
-    </div>`;
-
-  const thread = host.querySelector('#panel-comments-thread');
-  const form = host.querySelector('#panel-comments-form');
-
-  function renderList(items) {
-    thread.innerHTML =
-      items.length > 0
-        ? items
-            .map(
-              c => `
-        <div class="panel-comment" data-id="${escAttr(c.id)}">
-          <div class="panel-comment-meta"><span class="panel-comment-author">${escHtml(c.author)}</span><span class="panel-comment-at">${escHtml(formatCommentAt(c.at))}</span></div>
-          <div class="panel-comment-text">${escHtml(c.text)}</div>
-        </div>`
-            )
-            .join('')
-        : '<div class="panel-comments-empty">No comments yet.</div>';
-  }
-
-  panelCommentsUnsub = DSC.subscribe(commentKey, renderList);
-
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const fd = new FormData(form);
-    const author = fd.get('author');
-    const text = fd.get('text');
-    if (!String(text || '').trim()) return;
-    DSC.setAuthor(String(author || '').trim());
-    try {
-      await DSC.add(commentKey, author, text);
-      form.querySelector('[name="text"]').value = '';
-    } catch (err) {
-      console.error(err);
-      alert('Could not post comment. Check the browser console.');
-    }
-  });
-}
 
 function renderTabs(tabs, defaultLang) {
   const lang = (activeLang && tabs[activeLang]) ? activeLang : defaultLang;
@@ -3128,7 +3018,7 @@ function buildRelationsHtml(name, relations) {
   </div>`;
 }
 
-function openPanel({ type, name, preview, tabs, defaultLang, onPreviewMount, relations, commentKey }) {
+function openPanel({ type, name, preview, tabs, defaultLang, onPreviewMount, relations }) {
   panelType.textContent = type;
   panelName.textContent = name;
 
@@ -3162,19 +3052,9 @@ function openPanel({ type, name, preview, tabs, defaultLang, onPreviewMount, rel
   document.getElementById('panel-content').style.display = 'flex';
   panel.classList.add('open');
   resetCopy();
-  mountPanelComments(commentKey);
 }
 
 function closePanel() {
-  if (panelCommentsUnsub) {
-    panelCommentsUnsub();
-    panelCommentsUnsub = null;
-  }
-  const pch = document.getElementById('panel-comments');
-  if (pch) {
-    pch.innerHTML = '';
-    pch.classList.add('is-hidden');
-  }
   document.getElementById('panel-content').style.display = 'none';
   document.getElementById('panel-empty').style.display   = '';
   panel.classList.remove('open');
