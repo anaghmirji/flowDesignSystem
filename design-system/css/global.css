@@ -694,7 +694,12 @@
   height: 24px;
 }
 
-/* Selected — slightly darker background, icon stays 20px */
+/* Selected — darker background, icon locked at 20px (no hover growth) */
 .sidebar-item--selected .sidebar-item__icon-wrap {
   background: var(--accent-black-12, #e0e0e0);
+}
+.sidebar-item--selected .sidebar-item__icon,
+.sidebar-item--selected:hover .sidebar-item__icon {
+  width: 20px;
+  height: 20px;
 }

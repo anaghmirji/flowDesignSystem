@@ -1764,10 +1764,11 @@ function bindSidebarItemRows() {
   document.querySelectorAll('[data-sidebar-item-variant]').forEach(row => {
     row.addEventListener('click', () => {
       const variantId = row.dataset.sidebarItemVariant;
-      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
-      setActive(row);
       const comp = SYSTEM.products.lenderPortal.sidebarItem;
       const v = comp.variants.find(x => x.id === variantId);
+
+      if (activeRow === row && panel.classList.contains('open')) { closePanel(); return; }
+      setActive(row);
       openPanel({
         type: 'Lender Portal · Sidebar Item',
         name: v?.label || variantId,
@@ -2873,6 +2874,11 @@ const panel     = document.getElementById('panel');
 const panelType = document.getElementById('panel-type');
 const panelName = document.getElementById('panel-name');
 const panelPrev = document.getElementById('panel-preview');
+panelPrev.addEventListener('click', (e) => {
+  const btn = e.target.closest('.sidebar-item');
+  if (!btn) return;
+  btn.classList.toggle('sidebar-item--selected');
+});
 const panelTabs = document.getElementById('panel-tabs');
 const codeWrap  = document.getElementById('panel-code-wrap');
 const panelCopy = document.getElementById('panel-copy');
