@@ -718,6 +718,23 @@
   display: block;
 }
 
+/* Initials avatar — no photo, shows text initials (Figma node 553-2540) */
+.assignees__avatar--initials {
+  background: var(--background-1, #fcfcfd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.assignees__initials {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-100, #000);
+  line-height: 1;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+}
+
 /* Count bubble — shows "+N" when there are more assignees than displayed */
 .assignees__count {
   width: 28px;
@@ -758,26 +775,43 @@
 
 .assignees.open .assignees__chevron { transform: rotate(180deg); }
 
-/* Unassigned state */
-.assignees--unassigned { gap: 4px; }
+/* Unassigned state — 32px circle (Figma node 545-2607) */
+.assignees--unassigned {
+  width: 32px;
+  height: 32px;
+  padding: 2px;
+  gap: 0;
+}
 
-.assignees__unassigned-icon {
-  width: 16px;
-  height: 16px;
+/* 28px inner circle — the avatar placeholder */
+.assignees__unassigned-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 160px;
+  background: var(--accent-black-8, #ebebeb);
+  overflow: hidden;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.assignees__unassigned-icon svg { width: 100%; height: 100%; display: block; }
+/* 16px icon container, vector fills 12×12 area (inset 2px each side — matches Figma) */
+.assignees__unassigned-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
 
-.assignees__unassigned-label {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--accent-black-40, #999);
-  line-height: 1;
-  white-space: nowrap;
+.assignees__unassigned-icon svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* ── Sidebar Item (Figma node 6:92) ────────────────────────────────────────────

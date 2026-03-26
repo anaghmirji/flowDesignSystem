@@ -1529,25 +1529,32 @@ function buildAssigneesHtml(v) {
   const count = v?.count ?? 2;
   const chevronSvg = `<svg viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 0.5L5.5 5.5L0.5 0.5" stroke="var(--accent-black-50,#808080)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-  // Unassigned state — person+ icon + "Assign" label
+  // Unassigned state — circular 32px avatar placeholder with user-plus icon (Figma node 545-2607)
   if (count === 0) {
-    const personSvg = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5.5" r="2.5" stroke="var(--accent-black-40,#999)" stroke-width="1.2"/><path d="M2.5 13.5c0-2.485 2.462-4.5 5.5-4.5s5.5 2.015 5.5 4.5" stroke="var(--accent-black-40,#999)" stroke-width="1.2" stroke-linecap="round"/><path d="M11.5 3v3M13 4.5h-3" stroke="var(--accent-black-40,#999)" stroke-width="1.2" stroke-linecap="round"/></svg>`;
-    return `<button class="assignees assignees--unassigned" type="button">
-  <span class="assignees__unassigned-icon">${personSvg}</span>
-  <span class="assignees__unassigned-label">Assign</span>
-  <span class="assignees__chevron">${chevronSvg}</span>
+    const userPlusSvg = iconSvg('user-plus');
+    return `<button class="assignees assignees--unassigned" type="button" style="--stroke-0:var(--accent-black-60,#666)">
+  <span class="assignees__unassigned-avatar">
+    <span class="assignees__unassigned-icon">${userPlusSvg}</span>
+  </span>
 </button>`;
   }
 
   // Build avatar stack — show max 3, then +N count bubble
   const avatarUrls = [comp.avatar1Url, comp.avatar2Url, comp.avatar3Url];
+  const initialsArr = comp.initials || ['AM', 'JS', 'KP'];
   let avatarsHtml = '';
   const shown = Math.min(count, 3);
 
   for (let i = 0; i < shown; i++) {
-    avatarsHtml += `<span class="assignees__avatar" style="z-index:${3 - i}">
-      <img src="${avatarUrls[i]}" alt="">
-    </span>`;
+    if (v?.initials) {
+      avatarsHtml += `<span class="assignees__avatar assignees__avatar--initials" style="z-index:${3 - i}">
+        <span class="assignees__initials">${initialsArr[i]}</span>
+      </span>`;
+    } else {
+      avatarsHtml += `<span class="assignees__avatar" style="z-index:${3 - i}">
+        <img src="${avatarUrls[i]}" alt="">
+      </span>`;
+    }
   }
 
   if (count > 3) {
@@ -1627,6 +1634,10 @@ ${buildAssigneesHtml(v)}`,
 .assignees__avatar:hover { transform: translateY(-2px); z-index: 10; }
 .assignees__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+/* Initials avatar — no photo (Figma node 553-2540) */
+.assignees__avatar--initials { background: var(--background-1, #fcfcfd); display: flex; align-items: center; justify-content: center; }
+.assignees__initials { font-size: 12px; font-weight: 400; color: var(--accent-black-100, #000); line-height: 1; white-space: nowrap; }
+
 /* +N overflow count bubble */
 .assignees__count {
   width: 28px; height: 28px;
@@ -1649,21 +1660,24 @@ ${buildAssigneesHtml(v)}`,
 .assignees__chevron svg { width: 7.5px; height: 3.75px; display: block; }
 .assignees.open .assignees__chevron { transform: rotate(180deg); }
 
-/* Unassigned state */
-.assignees--unassigned { gap: 4px; }
+/* Unassigned state — 32px circle (Figma node 545-2607) */
+.assignees--unassigned { width: 32px; height: 32px; padding: 2px; gap: 0; }
+
+.assignees__unassigned-avatar {
+  width: 28px; height: 28px;
+  border-radius: 160px;
+  background: var(--accent-black-8);
+  overflow: hidden; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
 
 .assignees__unassigned-icon {
   width: 16px; height: 16px;
-  flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; overflow: hidden;
 }
-.assignees__unassigned-icon svg { width: 100%; height: 100%; display: block; }
-
-.assignees__unassigned-label {
-  font-size: 12px; font-weight: 400;
-  color: var(--accent-black-40, #999);
-  line-height: 1; white-space: nowrap;
-}`,
+/* SVG fills 12×12 (inset 2px each side) — matches Figma inset-[12.5%] */
+.assignees__unassigned-icon svg { width: 12px; height: 12px; display: block; flex-shrink: 0; }`,
 
     'SVG': `<!-- Chevron icon (chevron-down) — stroke colour via --stroke-0 -->
 <svg viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1674,29 +1688,45 @@ ${buildAssigneesHtml(v)}`,
     stroke-linejoin="round"/>
 </svg>
 
+<!-- User-plus icon (unassigned state) — stroke colour via --stroke-0 -->
+<svg viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10.5 3.5V5.5M10.5 5.5V7.5M10.5 5.5H12.5M10.5 5.5H8.5M7 2.75C7 3.34674 6.76295 3.91903 6.34099 4.34099C5.91903 4.76295 5.34674 5 4.75 5C4.15326 5 3.58097 4.76295 3.15901 4.34099C2.73705 3.91903 2.5 3.34674 2.5 2.75C2.5 2.15326 2.73705 1.58097 3.15901 1.15901C3.58097 0.737053 4.15326 0.5 4.75 0.5C5.34674 0.5 5.91903 0.737053 6.34099 1.15901C6.76295 1.58097 7 2.15326 7 2.75ZM0.5 11.3233V11.25C0.5 10.1228 0.947767 9.04183 1.7448 8.2448C2.54183 7.44777 3.62283 7 4.75 7C5.87717 7 6.95817 7.44777 7.7552 8.2448C8.55223 9.04183 9 10.1228 9 11.25V11.3227C7.71699 12.0954 6.24707 12.5025 4.74933 12.5C3.19533 12.5 1.74133 12.07 0.5 11.3227V11.3233Z"
+    stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
 <!-- Set --stroke-0 on the container to change colour:
-  style="--stroke-0: var(--accent-black-50)" -->`,
+  style="--stroke-0: var(--accent-black-40)" — unassigned (dimmed)
+  style="--stroke-0: var(--accent-black-50)" — chevron -->`,
 
     'React': `import { useState } from 'react';
 import { Assignees } from 'flow-design-system/react';
 import 'flow-design-system/styles.css';
 
+// Photo avatars
 export function AssigneesDemo() {
   const [open, setOpen] = useState(false);
-  const assignees = [
-    { id: '1', name: 'Sarah K.', avatarUrl: '/avatars/sarah.jpg' },
-    { id: '2', name: 'James L.', avatarUrl: '/avatars/james.jpg' },
-    { id: '3', name: 'Mia T.',   avatarUrl: '/avatars/mia.jpg'   },
-  ];
-
   return (
     <Assignees
-      assignees={assignees}
+      assignees={[
+        { id: '1', name: 'Sarah K.', avatarUrl: '/avatars/sarah.jpg' },
+        { id: '2', name: 'James L.', avatarUrl: '/avatars/james.jpg' },
+      ]}
       open={open}
       onToggle={() => setOpen(o => !o)}
     />
   );
-}`,
+}
+
+// Initials only (no photo)
+<Assignees
+  assignees={[
+    { id: '1', name: 'Alex M.', initials: 'AM' },
+    { id: '2', name: 'Tom K.',  initials: 'TK' },
+  ]}
+/>
+
+// Unassigned
+<Assignees assignees={[]} onToggle={openAssignModal} />`,
   };
 }
 

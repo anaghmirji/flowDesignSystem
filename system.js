@@ -237,6 +237,8 @@ window.SYSTEM = {
       svg: '<svg width="100%" height="100%" viewBox="0 0 12.2 14.2" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.1 7.1H6.6M4.1 9.1H6.6M4.1 11.1H6.6M8.6 11.6H10.1C10.4978 11.6 10.8794 11.442 11.1607 11.1607C11.442 10.8794 11.6 10.4978 11.6 10.1V3.172C11.6 2.41533 11.0367 1.77333 10.2827 1.71067C10.0333 1.68999 9.78375 1.67221 9.534 1.65733M9.534 1.65733C9.57824 1.80072 9.60005 1.94994 9.6 2.1C9.6 2.23261 9.54732 2.35979 9.45355 2.45355C9.35979 2.54732 9.23261 2.6 9.1 2.6H6.1C5.824 2.6 5.6 2.376 5.6 2.1C5.6 1.946 5.62333 1.79733 5.66667 1.65733M9.534 1.65733C9.34533 1.04533 8.77467 0.6 8.1 0.6H7.1C6.77949 0.600075 6.46743 0.702763 6.20951 0.893026C5.95158 1.08329 5.76135 1.35113 5.66667 1.65733M5.66667 1.65733C5.416 1.67267 5.16667 1.69067 4.91733 1.71067C4.16333 1.77333 3.6 2.41533 3.6 3.172V4.6M3.6 4.6H1.35C0.936 4.6 0.6 4.936 0.6 5.35V12.85C0.6 13.264 0.936 13.6 1.35 13.6H7.85C8.264 13.6 8.6 13.264 8.6 12.85V5.35C8.6 4.936 8.264 4.6 7.85 4.6H3.6ZM2.6 7.1H2.60533V7.10533H2.6V7.1ZM2.6 9.1H2.60533V9.10533H2.6V9.1ZM2.6 11.1H2.60533V11.1053H2.6V11.1Z" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
     { name: 'banknotes',
       svg: '<svg width="100%" height="100%" viewBox="0 0 14 11.9281" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.5 10C4.05707 9.9971 7.59867 10.4681 11.0313 11.4007C11.516 11.5327 12 11.1727 12 10.67V10M1.5 0.5V1C1.5 1.13261 1.44732 1.25979 1.35355 1.35355C1.25979 1.44732 1.13261 1.5 1 1.5H0.5M0.5 1.5V1.25C0.5 0.836 0.836 0.5 1.25 0.5H12.5M0.5 1.5V7.5M12.5 0.5V1C12.5 1.276 12.724 1.5 13 1.5H13.5M12.5 0.5H12.75C13.164 0.5 13.5 0.836 13.5 1.25V7.75C13.5 8.164 13.164 8.5 12.75 8.5H12.5M0.5 7.5V7.75C0.5 7.94891 0.579018 8.13968 0.71967 8.28033C0.860322 8.42098 1.05109 8.5 1.25 8.5H1.5M0.5 7.5H1C1.13261 7.5 1.25979 7.55268 1.35355 7.64645C1.44732 7.74022 1.5 7.86739 1.5 8V8.5M12.5 8.5V8C12.5 7.86739 12.5527 7.74022 12.6464 7.64645C12.7402 7.55268 12.8674 7.5 13 7.5H13.5M12.5 8.5H1.5M9 4.5C9 5.03043 8.78929 5.53914 8.41421 5.91421C8.03914 6.28929 7.53043 6.5 7 6.5C6.46957 6.5 5.96086 6.28929 5.58579 5.91421C5.21071 5.53914 5 5.03043 5 4.5C5 3.96957 5.21071 3.46086 5.58579 3.08579C5.96086 2.71071 6.46957 2.5 7 2.5C7.53043 2.5 8.03914 2.71071 8.41421 3.08579C8.78929 3.46086 9 3.96957 9 4.5ZM11 4.5H11.0053V4.50533H11V4.5ZM3 4.5H3.00533V4.50533H3V4.5Z" stroke="var(--stroke-0,#333)" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+    { name: 'user-plus',
+      svg: '<svg width="100%" height="100%" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 3.5V5.5M10.5 5.5V7.5M10.5 5.5H12.5M10.5 5.5H8.5M7 2.75C7 3.34674 6.76295 3.91903 6.34099 4.34099C5.91903 4.76295 5.34674 5 4.75 5C4.15326 5 3.58097 4.76295 3.15901 4.34099C2.73705 3.91903 2.5 3.34674 2.5 2.75C2.5 2.15326 2.73705 1.58097 3.15901 1.15901C3.58097 0.737053 4.15326 0.5 4.75 0.5C5.34674 0.5 5.91903 0.737053 6.34099 1.15901C6.76295 1.58097 7 2.15326 7 2.75ZM0.5 11.3233V11.25C0.5 10.1228 0.947767 9.04183 1.7448 8.2448C2.54183 7.44777 3.62283 7 4.75 7C5.87717 7 6.95817 7.44777 7.7552 8.2448C8.55223 9.04183 9 10.1228 9 11.25V11.3227C7.71699 12.0954 6.24707 12.5025 4.74933 12.5C3.19533 12.5 1.74133 12.07 0.5 11.3227V11.3233Z" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
   ],
 
   // ── Components ──────────────────────────────────────────────────────────────
@@ -440,17 +442,26 @@ window.SYSTEM = {
         figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=390-2745',
         cssFile: 'global.css',
         relations: {
-          uses: [{ name: 'chevron-down', pageId: 'icon-chevron-down' }],
+          uses: [
+            { name: 'chevron-down', pageId: 'icon-chevron-down' },
+            { name: 'user-plus',    pageId: 'icon-user-plus'    },
+          ],
         },
         // Avatar URLs — replace with real user photos in production
         avatar1Url: 'https://www.figma.com/api/mcp/asset/4247bb8a-1c40-4062-851e-d9659c386128',
         avatar2Url: 'https://www.figma.com/api/mcp/asset/e48e30d2-f0f0-4fc5-8733-9d4dced30960',
         avatar3Url: 'https://www.figma.com/api/mcp/asset/c7282667-898c-4558-b46c-a85b2bb9995f',
+        // Sample initials for no-photo variant (Figma node 553-2540)
+        initials: ['AM', 'TK', 'KP'],
         variants: [
-          { id: 'assignees-unassigned', label: 'Unassigned', count: 0 },
-          { id: 'assignees-2', label: '2 Assignees', count: 2 },
-          { id: 'assignees-3', label: '3 Assignees', count: 3 },
-          { id: 'assignees-overflow', label: '4+ Assignees', count: 4 },
+          { id: 'assignees-unassigned',    label: 'Unassigned',          count: 0 },
+          { id: 'assignees-1',             label: '1 Assignee',          count: 1 },
+          { id: 'assignees-2',             label: '2 Assignees',         count: 2 },
+          { id: 'assignees-3',             label: '3 Assignees',         count: 3 },
+          { id: 'assignees-overflow',      label: '4+ Assignees',        count: 4 },
+          { id: 'assignees-initials-1',    label: '1 (Initials)',        count: 1, initials: true },
+          { id: 'assignees-initials-2',    label: '2 (Initials)',        count: 2, initials: true },
+          { id: 'assignees-initials-3',    label: '3 (Initials)',        count: 3, initials: true },
         ],
       },
       sidebar: {
