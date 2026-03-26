@@ -122,6 +122,11 @@ window.SYSTEM = {
           label: 'Loan List Item',
           icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="4" rx="1" stroke="currentColor" stroke-width="1.25"/><rect x="2" y="9" width="12" height="4" rx="1" stroke="currentColor" stroke-width="1.25"/></svg>',
         },
+        {
+          id: 'lender-loan-stage-group',
+          label: 'Loan Stage Group',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="5" rx="2" stroke="currentColor" stroke-width="1.25"/><rect x="2" y="9" width="12" height="5" rx="2" stroke="currentColor" stroke-width="1.25"/><path d="M5 4.5h6M5 11.5h4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>',
+        },
       ],
     },
     {
@@ -271,6 +276,8 @@ window.SYSTEM = {
       svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 13V4M4.5 7.5L8 4L11.5 7.5" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
     { name: 'x-mark',
       svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4L12 12M12 4L4 12" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+    { name: 'building-office-2',
+      svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 14H14.5M2.5 2V14M9.5 2V14M13.5 5V14M4.5 4.5H5M4.5 6.5H5M4.5 8.5H5M7 4.5H7.5M7 6.5H7.5M7 8.5H7.5M4.5 14V11.75C4.5 11.336 4.836 11 5.25 11H6.75C7.164 11 7.5 11.336 7.5 11.75V14M2 2H10M9.5 5H14M11.5 7.5H11.5053V7.50533H11.5V7.5ZM11.5 9.5H11.5053V9.50533H11.5V9.5ZM11.5 11.5H11.5053V11.5053H11.5V11.5Z" stroke="var(--stroke-0,#333)" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
   ],
 
   // ── Components ──────────────────────────────────────────────────────────────
@@ -553,6 +560,33 @@ window.SYSTEM = {
         ],
       },
       // ── Loan List Item (217-473) — individual loan row in the loans panel ────
+      loanStageGroup: {
+        title: 'Loan Stage Group',
+        subtitle: 'Source: Figma › Lender Exploration · node 588-3106 · state: expanded, collapsed',
+        figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=588-3106',
+        cssFile: 'global.css',
+        sample: {
+          stageName: 'Application',
+          count: 4,
+          loans: [
+            { name: 'Laura Lee',     amount: '$370,000', loanType: 'Fix & Flip', time: '5 mins ago',   status: 'Active',  statusKey: 'active',  iconName: 'user' },
+            { name: 'James Wilson',  amount: '$450,000', loanType: 'Fix & Flip', time: '10 mins ago',  status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+            { name: 'Emily Davis',   amount: '$500,000', loanType: 'Fix & Flip', time: '15 mins ago',  status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+            { name: 'Anna Martinez', amount: '$280,000', loanType: 'Fix & Flip', time: '2 hours ago',  status: 'On Hold', statusKey: 'on-hold', iconName: 'user' },
+          ],
+        },
+        variants: [
+          { id: 'loan-stage-group-expanded',  label: 'Expanded',  expanded: true  },
+          { id: 'loan-stage-group-collapsed', label: 'Collapsed', expanded: false },
+        ],
+        relations: {
+          uses:   [
+            { label: 'Loan List Item',      pageId: 'lender-loan-list-item' },
+            { label: 'chevron-down icon',   pageId: 'icons' },
+          ],
+          usedBy: [{ label: 'Loans', pageId: 'lender-loans' }],
+        },
+      },
       loanListItem: {
         title: 'Loan List Item',
         subtitle: 'Source: Figma › Lender Exploration · node 217-473 · state: default, hover, selected · type: Individual',
