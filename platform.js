@@ -1697,6 +1697,7 @@ function bindAssigneesRows() {
         },
         tabs: assigneesTabs(variantId),
         defaultLang: 'HTML',
+        relations: comp.relations || null,
       });
     });
   });
