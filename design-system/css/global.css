@@ -1482,4 +1482,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  --stroke-0: var(--accent-black-50, #808080);
+}
+
+/* Trailing icon: same 16×16 .icon wrapper as Icons page (SVG from SYSTEM.icons) */
+.loan-list-item__icon .icon {
+  display: inline-block;
 }

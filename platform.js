@@ -2624,7 +2624,8 @@ function buildLoanListItemHtml(v) {
   const comp   = SYSTEM.products.lenderPortal.loanListItem;
   const s      = comp.sample;
   const stateClass = v.state === 'default' ? '' : ` loan-list-item--${v.state}`;
-  const personSvg  = iconSvg('user');
+  const iconName = comp.trailingIconName || 'user';
+  const userIconSvg = iconSvg(iconName);
   return `<div class="loan-list-item${stateClass}">
   <div class="loan-list-item__left">
     <div class="loan-list-item__top">
@@ -2639,7 +2640,7 @@ function buildLoanListItemHtml(v) {
   </div>
   <div class="loan-list-item__right">
     <span class="loan-list-item__badge loan-list-item__badge--${s.statusKey}">${s.status}</span>
-    <span class="loan-list-item__icon">${personSvg}</span>
+    <span class="loan-list-item__icon"><span class="icon">${userIconSvg}</span></span>
   </div>
 </div>`;
 }
@@ -2781,21 +2782,20 @@ ${html}`,
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Same wrapper as Icons page — SVG from SYSTEM.icons[name] */
+.loan-list-item__icon .icon {
+  display: inline-block;
 }`,
 
     'React': `import 'flow-design-system/styles.css';
-import { LoanListItem } from 'flow-design-system-react';
+// Trailing icon: same string as Icons › user (build from SYSTEM.icons in your app)
+import { ICONS } from './icons';
 
-// Usage
-<LoanListItem
-  name="Michael Brown"
-  amount="$370,000"
-  loanType="Fix & Flip"
-  time="30 mins ago"
-  status="active"
-/>
-<LoanListItem name="Michael Brown" amount="$370,000" loanType="Fix & Flip" time="30 mins ago" status="active" state="hover" />
-<LoanListItem name="Michael Brown" amount="$370,000" loanType="Fix & Flip" time="30 mins ago" status="active" state="selected" />`,
+<span className="loan-list-item__icon">
+  <span className="icon" dangerouslySetInnerHTML={{ __html: ICONS['user'] }} />
+</span>`,
 
     'Vue': `<!-- LoanListItem.vue -->
 <template>
@@ -2813,7 +2813,9 @@ import { LoanListItem } from 'flow-design-system-react';
     </div>
     <div class="loan-list-item__right">
       <span :class="['loan-list-item__badge', \`loan-list-item__badge--\${status}\`]">{{ statusLabel }}</span>
-      <span class="loan-list-item__icon" v-html="personSvg" />
+      <span class="loan-list-item__icon">
+        <span class="icon" v-html="ICONS['user']" />
+      </span>
     </div>
   </div>
 </template>
@@ -2822,7 +2824,6 @@ import { LoanListItem } from 'flow-design-system-react';
 import { computed } from 'vue';
 const props = defineProps({ name: String, amount: String, loanType: String, time: String, status: String, state: { default: 'default' } });
 const statusLabel = computed(() => ({ active: 'Active', 'on-hold': 'On Hold' })[props.status] ?? props.status);
-const personSvg = ICONS['user']; // from SYSTEM.icons
 </script>`,
   };
 }
