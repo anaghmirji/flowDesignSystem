@@ -53,14 +53,22 @@ function renderNav() {
           <div class="nav-group-items${startCollapsed ? ' nav-group-items--hidden' : ''}">`;
       group.items.forEach(item => {
         const isActive = item.id === DEFAULT_ACTIVE_PAGE;
-        html += `<div class="nav-item${isActive ? ' active' : ''}" data-page="${item.id}">${item.icon}${item.label}</div>`;
+        if (item.href) {
+          html += `<a class="nav-item" href="${item.href}" target="_blank" style="text-decoration:none">${item.icon}${item.label}<svg style="margin-left:auto;opacity:0.4;flex-shrink:0" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2V6" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`;
+        } else {
+          html += `<div class="nav-item${isActive ? ' active' : ''}" data-page="${item.id}">${item.icon}${item.label}</div>`;
+        }
       });
       html += `</div></div>`;
     } else {
       html += `<div class="nav-section"${gi > 0 ? ' style="margin-top:8px"' : ''}>${group.section}</div>`;
       group.items.forEach(item => {
         const isActive = item.id === DEFAULT_ACTIVE_PAGE;
-        html += `<div class="nav-item${isActive ? ' active' : ''}" data-page="${item.id}">${item.icon}${item.label}</div>`;
+        if (item.href) {
+          html += `<a class="nav-item" href="${item.href}" target="_blank" style="text-decoration:none">${item.icon}${item.label}<svg style="margin-left:auto;opacity:0.4;flex-shrink:0" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2V6" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`;
+        } else {
+          html += `<div class="nav-item${isActive ? ' active' : ''}" data-page="${item.id}">${item.icon}${item.label}</div>`;
+        }
       });
     }
   });
@@ -2617,6 +2625,7 @@ function bindSidebarRows() {
     });
   });
 }
+
 
 const PAGE_RENDERERS = {
   'global-css':               renderGlobalCssPage,

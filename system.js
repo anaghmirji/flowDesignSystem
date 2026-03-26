@@ -119,6 +119,17 @@ window.SYSTEM = {
         },
       ],
     },
+    {
+      section: 'Prototype',
+      items: [
+        {
+          id: 'prototype-lender-portal',
+          label: 'Lender Portal',
+          href: 'prototype.html',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2.5" stroke="currentColor" stroke-width="1.25"/><path d="M2 6h12" stroke="currentColor" stroke-width="1.25"/><circle cx="5" cy="4" r="0.75" fill="currentColor"/><circle cx="7.5" cy="4" r="0.75" fill="currentColor"/></svg>',
+        },
+      ],
+    },
   ],
 
   // ── Design Tokens ───────────────────────────────────────────────────────────
