@@ -2624,16 +2624,22 @@ function buildLoanListItemHtml(v) {
   const comp   = SYSTEM.products.lenderPortal.loanListItem;
   const s      = comp.sample;
   const stateClass = v.state === 'default' ? '' : ` loan-list-item--${v.state}`;
-  const personSvg  = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="var(--stroke-0,#aaa)" stroke-width="1.25"/><path d="M4 17c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="var(--stroke-0,#aaa)" stroke-width="1.25" stroke-linecap="round"/></svg>`;
+  const personSvg  = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="var(--stroke-0,#999)" stroke-width="1.2"/><path d="M2.5 14c0-3.038 2.462-5.5 5.5-5.5s5.5 2.462 5.5 5.5" stroke="var(--stroke-0,#999)" stroke-width="1.2" stroke-linecap="round"/></svg>`;
   return `<div class="loan-list-item${stateClass}">
   <div class="loan-list-item__left">
-    <span class="loan-list-item__name">${s.name}</span>
-    <span class="loan-list-item__meta">${s.amount} · ${s.loanType}</span>
+    <div class="loan-list-item__top">
+      <span class="loan-list-item__name">${s.name}</span>
+      <div class="loan-list-item__meta">
+        <span class="loan-list-item__meta-amount">${s.amount}</span>
+        <span class="loan-list-item__meta-sep">·</span>
+        <span class="loan-list-item__meta-type">${s.loanType}</span>
+      </div>
+    </div>
     <span class="loan-list-item__time">${s.time}</span>
   </div>
   <div class="loan-list-item__right">
     <span class="loan-list-item__badge loan-list-item__badge--${s.statusKey}">${s.status}</span>
-    <span class="loan-list-item__assignee">${personSvg}</span>
+    <span class="loan-list-item__icon">${personSvg}</span>
   </div>
 </div>`;
 }
@@ -2672,52 +2678,80 @@ ${html}`,
   align-items: center;
   justify-content: space-between;
   width: 288px;
-  min-height: 92px;
+  height: 92px;
   padding: 12px;
   box-sizing: border-box;
   cursor: pointer;
+  overflow: hidden;
   border-radius: 0;
-  border: 0.5px solid var(--accent-black-12, #E0E0E0);
-  transition: background 0.18s var(--ease-smooth), border-radius 0.18s var(--ease-smooth), box-shadow 0.18s var(--ease-smooth);
+  border: none;
+  border-bottom: 0.5px solid var(--accent-black-12, #E0E0E0);
+  transition: background 0.2s var(--ease-smooth), border-radius 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth);
 }
 
+.loan-list-item:hover,
 .loan-list-item--hover {
-  background: var(--accent-black-5, #F5F5F5);
+  background: var(--accent-black-8, #EBEBEB);
   border-radius: 16px;
-  border-color: transparent;
+  border-bottom-color: transparent;
 }
 
 .loan-list-item--selected {
-  background: var(--background-1, #FCFCFD);
+  background: var(--accent-black-2, #FAFAFA);
   border-radius: 16px;
-  border-color: transparent;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.05);
+  border: 0.5px solid var(--accent-black-12, #E0E0E0);
+  box-shadow:
+    0px 35px 10px 0px rgba(0,0,0,0),
+    0px 23px  9px 0px rgba(0,0,0,0.01),
+    0px 13px  8px 0px rgba(0,0,0,0.02),
+    0px  6px  6px 0px rgba(0,0,0,0.03),
+    0px  1px  3px 0px rgba(0,0,0,0.04);
 }
 
 .loan-list-item__left {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
+  gap: 16px;
+  height: 100%;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+
+.loan-list-item__top {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
 }
 
 .loan-list-item__name {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--accent-black-80, #333);
-  line-height: 1.3;
+  line-height: normal;
+  white-space: nowrap;
 }
 
 .loan-list-item__meta {
-  font-size: 11px;
-  color: var(--accent-black-50, #888);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--accent-black-60, #666);
+  white-space: nowrap;
+  line-height: normal;
 }
 
+.loan-list-item__meta-amount { font-weight: 500; }
+.loan-list-item__meta-sep,
+.loan-list-item__meta-type   { font-weight: 400; }
+
 .loan-list-item__time {
-  font-size: 11px;
-  color: var(--accent-black-30, #B3B3B3);
-  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-60, #666);
+  white-space: nowrap;
+  line-height: normal;
 }
 
 .loan-list-item__right {
@@ -2726,25 +2760,24 @@ ${html}`,
   align-items: flex-end;
   justify-content: space-between;
   align-self: stretch;
-  gap: 6px;
   flex-shrink: 0;
-  padding-left: 8px;
 }
 
 .loan-list-item__badge {
-  font-size: 10px;
-  font-weight: 500;
-  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 400;
+  padding: 4px 8px;
   border-radius: 100px;
   white-space: nowrap;
+  line-height: normal;
 }
 
-.loan-list-item__badge--active {
-  background: #D6F4DE;
-  color: #1A7A36;
-}
+.loan-list-item__badge--active { background: var(--accent-green-20, #D6F4DE); color: var(--accent-green-100, #34C759); }
 
-.loan-list-item__assignee {
+.loan-list-item__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2768,20 +2801,28 @@ import { LoanListItem } from 'flow-design-system-react';
 <template>
   <div :class="['loan-list-item', state !== 'default' && \`loan-list-item--\${state}\`]">
     <div class="loan-list-item__left">
-      <span class="loan-list-item__name">{{ name }}</span>
-      <span class="loan-list-item__meta">{{ amount }} · {{ loanType }}</span>
+      <div class="loan-list-item__top">
+        <span class="loan-list-item__name">{{ name }}</span>
+        <div class="loan-list-item__meta">
+          <span class="loan-list-item__meta-amount">{{ amount }}</span>
+          <span class="loan-list-item__meta-sep">·</span>
+          <span class="loan-list-item__meta-type">{{ loanType }}</span>
+        </div>
+      </div>
       <span class="loan-list-item__time">{{ time }}</span>
     </div>
     <div class="loan-list-item__right">
       <span :class="['loan-list-item__badge', \`loan-list-item__badge--\${status}\`]">{{ statusLabel }}</span>
-      <span class="loan-list-item__assignee" v-html="ICONS['person']" />
+      <span class="loan-list-item__icon" v-html="personSvg" />
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({ name: String, amount: String, loanType: String, time: String, status: String, state: { default: 'default' } });
+import { computed } from 'vue';
+const props = defineProps({ name: String, amount: String, loanType: String, time: String, status: String, state: { default: 'default' } });
 const statusLabel = computed(() => ({ active: 'Active', 'on-hold': 'On Hold' })[props.status] ?? props.status);
+const personSvg = \`<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="var(--stroke-0,#999)" stroke-width="1.2"/><path d="M2.5 14c0-3.038 2.462-5.5 5.5-5.5s5.5 2.462 5.5 5.5" stroke="var(--stroke-0,#999)" stroke-width="1.2" stroke-linecap="round"/></svg>\`;
 </script>`,
   };
 }
