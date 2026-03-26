@@ -1431,7 +1431,7 @@ function profileTabs(variantId) {
 
 ${buildProfileHtml()}`,
 
-    'CSS': `/* global.css — .profile and .profile__avatar */
+    'CSS': `/* global.css — .profile, .profile__avatar, .profile__star */
 
 .profile {
   display: inline-flex;
@@ -1442,7 +1442,7 @@ ${buildProfileHtml()}`,
   border: 0.5px solid var(--accent-black-12);
   border-radius: 100px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 .profile:hover { background: var(--accent-black-4); }
 
@@ -1451,10 +1451,21 @@ ${buildProfileHtml()}`,
   border-radius: 100px; overflow: hidden;
   flex-shrink: 0; background: var(--accent-white-100);
 }
-.profile__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s ease; }
-.profile:hover .profile__avatar img { transform: scale(1.5); }
+.profile__avatar img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.35s var(--ease-spring);
+}
+.profile__avatar:hover img { transform: scale(1.2); }
 
-/* Icon uses .icon.icon--star-filled — already in global.css */`,
+/* Star — unfavourited uses black-50 stroke, favourited overrides --fill-0 to gold */
+.profile__star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  --stroke-0: var(--accent-black-50); /* unfavourited colour */
+  transition: transform 0.2s var(--ease-spring);
+}
+/* Favourited: set --fill-0:#FFCC00 via inline style on the element */`,
 
     'React': `import { useState } from 'react';
 import { BorrowerProfile } from 'flow-design-system/react';

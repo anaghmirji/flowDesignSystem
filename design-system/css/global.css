@@ -634,8 +634,8 @@
   transition: transform 0.35s var(--ease-spring);
 }
 
-.profile:hover .profile__avatar img {
-  transform: scale(1.5);
+.profile__avatar:hover img {
+  transform: scale(1.2);
 }
 
 /* Star icon inside profile — animates on favourite toggle */
@@ -644,6 +644,7 @@
   align-items: center;
   justify-content: center;
   transition: transform 0.2s var(--ease-spring);
+  --stroke-0: var(--accent-black-50);
 }
 
 .profile__star svg {
