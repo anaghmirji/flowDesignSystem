@@ -2624,7 +2624,7 @@ function buildLoanListItemHtml(v) {
   const comp   = SYSTEM.products.lenderPortal.loanListItem;
   const s      = comp.sample;
   const stateClass = v.state === 'default' ? '' : ` loan-list-item--${v.state}`;
-  const personSvg  = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="var(--stroke-0,#999)" stroke-width="1.2"/><path d="M2.5 14c0-3.038 2.462-5.5 5.5-5.5s5.5 2.462 5.5 5.5" stroke="var(--stroke-0,#999)" stroke-width="1.2" stroke-linecap="round"/></svg>`;
+  const personSvg  = iconSvg('user-plus');
   return `<div class="loan-list-item${stateClass}">
   <div class="loan-list-item__left">
     <div class="loan-list-item__top">
@@ -2822,7 +2822,7 @@ import { LoanListItem } from 'flow-design-system-react';
 import { computed } from 'vue';
 const props = defineProps({ name: String, amount: String, loanType: String, time: String, status: String, state: { default: 'default' } });
 const statusLabel = computed(() => ({ active: 'Active', 'on-hold': 'On Hold' })[props.status] ?? props.status);
-const personSvg = \`<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="var(--stroke-0,#999)" stroke-width="1.2"/><path d="M2.5 14c0-3.038 2.462-5.5 5.5-5.5s5.5 2.462 5.5 5.5" stroke="var(--stroke-0,#999)" stroke-width="1.2" stroke-linecap="round"/></svg>\`;
+const personSvg = ICONS['user-plus']; // from SYSTEM.icons
 </script>`,
   };
 }
