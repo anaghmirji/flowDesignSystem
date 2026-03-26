@@ -2618,6 +2618,193 @@ function bindSidebarRows() {
   });
 }
 
+// ── Loan List Item ────────────────────────────────────────────────────────────
+
+function buildLoanListItemHtml(v) {
+  const comp   = SYSTEM.products.lenderPortal.loanListItem;
+  const s      = comp.sample;
+  const stateClass = v.state === 'default' ? '' : ` loan-list-item--${v.state}`;
+  const personSvg  = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="var(--stroke-0,#aaa)" stroke-width="1.25"/><path d="M4 17c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="var(--stroke-0,#aaa)" stroke-width="1.25" stroke-linecap="round"/></svg>`;
+  return `<div class="loan-list-item${stateClass}">
+  <div class="loan-list-item__left">
+    <span class="loan-list-item__name">${s.name}</span>
+    <span class="loan-list-item__meta">${s.amount} · ${s.loanType}</span>
+    <span class="loan-list-item__time">${s.time}</span>
+  </div>
+  <div class="loan-list-item__right">
+    <span class="loan-list-item__badge loan-list-item__badge--${s.statusKey}">${s.status}</span>
+    <span class="loan-list-item__assignee">${personSvg}</span>
+  </div>
+</div>`;
+}
+
+function renderLenderLoanListItemPage() {
+  const comp = SYSTEM.products.lenderPortal.loanListItem;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table" style="max-width:420px">`;
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-loan-list-item-variant="${v.id}" style="padding:16px 20px">
+        <span class="ds-row-name" style="min-width:80px">${v.label}</span>
+        ${buildLoanListItemHtml(v)}
+      </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function loanListItemTabs(variantId) {
+  const comp = SYSTEM.products.lenderPortal.loanListItem;
+  const v    = comp.variants.find(x => x.id === variantId);
+  if (!v) return {};
+  const html = buildLoanListItemHtml(v);
+  return {
+    'HTML': `<!-- Include global.css -->
+${html}`,
+
+    'CSS': `/* global.css — Loan List Item */
+.loan-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 288px;
+  min-height: 92px;
+  padding: 12px;
+  box-sizing: border-box;
+  cursor: pointer;
+  border-radius: 0;
+  border: 0.5px solid var(--accent-black-12, #E0E0E0);
+  transition: background 0.18s var(--ease-smooth), border-radius 0.18s var(--ease-smooth), box-shadow 0.18s var(--ease-smooth);
+}
+
+.loan-list-item--hover {
+  background: var(--accent-black-5, #F5F5F5);
+  border-radius: 16px;
+  border-color: transparent;
+}
+
+.loan-list-item--selected {
+  background: var(--background-1, #FCFCFD);
+  border-radius: 16px;
+  border-color: transparent;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.loan-list-item__left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.loan-list-item__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-black-80, #333);
+  line-height: 1.3;
+}
+
+.loan-list-item__meta {
+  font-size: 11px;
+  color: var(--accent-black-50, #888);
+}
+
+.loan-list-item__time {
+  font-size: 11px;
+  color: var(--accent-black-30, #B3B3B3);
+  margin-top: 4px;
+}
+
+.loan-list-item__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  align-self: stretch;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-left: 8px;
+}
+
+.loan-list-item__badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.loan-list-item__badge--active {
+  background: #D6F4DE;
+  color: #1A7A36;
+}
+
+.loan-list-item__assignee {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}`,
+
+    'React': `import 'flow-design-system/styles.css';
+import { LoanListItem } from 'flow-design-system-react';
+
+// Usage
+<LoanListItem
+  name="Michael Brown"
+  amount="$370,000"
+  loanType="Fix & Flip"
+  time="30 mins ago"
+  status="active"
+/>
+<LoanListItem name="Michael Brown" amount="$370,000" loanType="Fix & Flip" time="30 mins ago" status="active" state="hover" />
+<LoanListItem name="Michael Brown" amount="$370,000" loanType="Fix & Flip" time="30 mins ago" status="active" state="selected" />`,
+
+    'Vue': `<!-- LoanListItem.vue -->
+<template>
+  <div :class="['loan-list-item', state !== 'default' && \`loan-list-item--\${state}\`]">
+    <div class="loan-list-item__left">
+      <span class="loan-list-item__name">{{ name }}</span>
+      <span class="loan-list-item__meta">{{ amount }} · {{ loanType }}</span>
+      <span class="loan-list-item__time">{{ time }}</span>
+    </div>
+    <div class="loan-list-item__right">
+      <span :class="['loan-list-item__badge', \`loan-list-item__badge--\${status}\`]">{{ statusLabel }}</span>
+      <span class="loan-list-item__assignee" v-html="ICONS['person']" />
+    </div>
+  </div>
+</template>
+
+<script setup>
+defineProps({ name: String, amount: String, loanType: String, time: String, status: String, state: { default: 'default' } });
+const statusLabel = computed(() => ({ active: 'Active', 'on-hold': 'On Hold' })[props.status] ?? props.status);
+</script>`,
+  };
+}
+
+function bindLoanListItemRows() {
+  document.querySelectorAll('[data-loan-list-item-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.loanListItemVariant;
+      const comp = SYSTEM.products.lenderPortal.loanListItem;
+      const v    = comp.variants.find(x => x.id === variantId);
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
+      setActive(row);
+      openPanel({
+        type: 'Lender Portal · Loan List Item',
+        name: v?.label || variantId,
+        preview: buildLoanListItemHtml(v),
+        tabs: loanListItemTabs(variantId),
+        defaultLang: 'HTML',
+      });
+    });
+  });
+}
+
 const PAGE_RENDERERS = {
   'global-css':               renderGlobalCssPage,
   tokens:                     renderTokensPage,
@@ -2634,6 +2821,7 @@ const PAGE_RENDERERS = {
   'lender-assignees':         renderLenderAssigneesPage,
   'lender-people-dropdown':   renderLenderPeopleDropdownPage,
   'lender-role-picker':       renderLenderRolePickerPage,
+  'lender-loan-list-item':    renderLenderLoanListItemPage,
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -2670,6 +2858,7 @@ function init() {
   bindAssigneesRows();
   bindPeopleDropdownRows();
   bindRolePickerRows();
+  bindLoanListItemRows();
   initLpStatusOutsideClose();
   initSearch();
 }
@@ -2744,6 +2933,11 @@ function buildSearchIndex() {
   // Products — Lender Portal sidebar item
   SYSTEM.products.lenderPortal.sidebarItem.variants.forEach(v => {
     idx.push({ type: 'Sidebar Item', label: v.label, pageId: 'lender-sidebar-item', sel: `[data-sidebar-item-variant="${v.id}"]` });
+  });
+
+  // Products — Lender Portal loan list item
+  SYSTEM.products.lenderPortal.loanListItem.variants.forEach(v => {
+    idx.push({ type: 'Loan List Item', label: v.label, pageId: 'lender-loan-list-item', sel: `[data-loan-list-item-variant="${v.id}"]` });
   });
 
   return idx;

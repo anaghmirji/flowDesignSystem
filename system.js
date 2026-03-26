@@ -117,6 +117,11 @@ window.SYSTEM = {
           label: 'Role Picker',
           icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.25"/><path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>',
         },
+        {
+          id: 'lender-loan-list-item',
+          label: 'Loan List Item',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="4" rx="1" stroke="currentColor" stroke-width="1.25"/><rect x="2" y="9" width="12" height="4" rx="1" stroke="currentColor" stroke-width="1.25"/></svg>',
+        },
       ],
     },
   ],
@@ -532,6 +537,25 @@ window.SYSTEM = {
         items: [
           { label: 'Loans',    iconName: 'banknotes',               active: true  },
           { label: 'Worklist', iconName: 'clipboard-document-list', active: false },
+        ],
+      },
+      // ── Loan List Item (217-473) — individual loan row in the loans panel ────
+      loanListItem: {
+        title: 'Loan List Item',
+        subtitle: 'Source: Figma › Lender Exploration · node 217-473 · state: default, hover, selected · type: Individual',
+        figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=217-473',
+        sample: {
+          name: 'Michael Brown',
+          amount: '$370,000',
+          loanType: 'Fix & Flip',
+          time: '30 mins ago',
+          status: 'Active',
+          statusKey: 'active',
+        },
+        variants: [
+          { id: 'loan-list-item-default',  label: 'Default',  state: 'default'  },
+          { id: 'loan-list-item-hover',    label: 'Hover',    state: 'hover'    },
+          { id: 'loan-list-item-selected', label: 'Selected', state: 'selected' },
         ],
       },
     },

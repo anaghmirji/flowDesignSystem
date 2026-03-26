@@ -1367,3 +1367,95 @@
 .sidebar-nav__avatar:hover img {
   transform: scale(1.2);
 }
+
+/* ─── Loan List Item ──────────────────────────────────────────────────────── */
+
+.loan-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 288px;
+  min-height: 92px;
+  padding: 12px;
+  box-sizing: border-box;
+  cursor: pointer;
+  border-radius: 0;
+  border: 0.5px solid var(--accent-black-12, #E0E0E0);
+  transition: background 0.18s var(--ease-smooth), border-radius 0.18s var(--ease-smooth), box-shadow 0.18s var(--ease-smooth), border-color 0.18s var(--ease-smooth);
+}
+
+.loan-list-item:hover {
+  background: var(--accent-black-5, #F5F5F5);
+  border-radius: 16px;
+  border-color: transparent;
+}
+
+.loan-list-item--hover {
+  background: var(--accent-black-5, #F5F5F5);
+  border-radius: 16px;
+  border-color: transparent;
+}
+
+.loan-list-item--selected {
+  background: var(--background-1, #FCFCFD);
+  border-radius: 16px;
+  border-color: transparent;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.loan-list-item__left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.loan-list-item__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-black-80, #333);
+  line-height: 1.3;
+}
+
+.loan-list-item__meta {
+  font-size: 11px;
+  color: var(--accent-black-50, #888);
+}
+
+.loan-list-item__time {
+  font-size: 11px;
+  color: var(--accent-black-30, #B3B3B3);
+  margin-top: 4px;
+}
+
+.loan-list-item__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  align-self: stretch;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-left: 8px;
+}
+
+.loan-list-item__badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.loan-list-item__badge--active   { background: #D6F4DE; color: #1A7A36; }
+.loan-list-item__badge--on-hold  { background: #FFF1CC; color: #996600; }
+.loan-list-item__badge--withdrawn,
+.loan-list-item__badge--cancelled,
+.loan-list-item__badge--denied   { background: #FFE5E5; color: #CC3333; }
+
+.loan-list-item__assignee {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
