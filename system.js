@@ -102,6 +102,11 @@ window.SYSTEM = {
           label: 'Sidebar',
           icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 5h5M8 8h4M8 11h3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
         },
+        {
+          id: 'lender-assignees',
+          label: 'Assignees',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="5" cy="6" r="2.5" stroke="currentColor" stroke-width="1.25"/><circle cx="11" cy="6" r="2.5" stroke="currentColor" stroke-width="1.25"/><path d="M1 14c0-2.209 1.791-4 4-4s4 1.791 4 4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M9 14c0-2.209 1.791-4 4-4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
+        },
       ],
     },
   ],
@@ -223,7 +228,7 @@ window.SYSTEM = {
     { name: 'star-filled',
       svg: '<svg width="100%" height="100%" viewBox="0 0 13.2103 12.6493" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.79714 0.5385C6.09581 -0.1795 7.11448 -0.1795 7.41314 0.5385L8.80114 3.87583L12.4038 4.16517C13.1798 4.22717 13.4945 5.19517 12.9031 5.70183L10.1585 8.05317L10.9965 11.5685C11.1771 12.3258 10.3538 12.9238 9.68981 12.5185L6.60514 10.6345L3.52048 12.5185C2.85648 12.9238 2.03314 12.3252 2.21381 11.5685L3.05181 8.05317L0.307145 5.70183C-0.284188 5.19517 0.0304782 4.22717 0.806478 4.16517L4.40914 3.87583L5.79714 0.5385Z" fill="var(--fill-0,#333)"/></svg>' },
     { name: 'chevron-down', relations: { usedBy: [{ name: 'Buttons', pageId: 'buttons' }] },
-      svg: '<svg width="100%" height="100%" viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 0.5L5.5 5.5L0.5 0.5" stroke="var(--stroke-0,#333)" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+      svg: '<svg width="100%" height="100%" viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 0.5L5.5 5.5L0.5 0.5" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
     { name: 'document',
       svg: '<svg width="100%" height="100%" viewBox="0 0 12.2 14.2" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.6 10.6V12.85C8.6 13.264 8.264 13.6 7.85 13.6H1.35C1.15109 13.6 0.960322 13.521 0.81967 13.3803C0.679018 13.2397 0.6 13.0489 0.6 12.85V4.35C0.6 3.936 0.936 3.6 1.35 3.6H2.6C2.93505 3.59977 3.26954 3.62742 3.6 3.68267M8.6 10.6H10.85C11.264 10.6 11.6 10.264 11.6 9.85V6.6C11.6 3.62667 9.438 1.15933 6.6 0.682668C6.26954 0.627424 5.93505 0.599773 5.6 0.600001H4.35C3.936 0.600001 3.6 0.936001 3.6 1.35V3.68267M8.6 10.6H4.35C4.15109 10.6 3.96032 10.521 3.81967 10.3803C3.67902 10.2397 3.6 10.0489 3.6 9.85V3.68267M11.6 8.1V6.85C11.6 6.25326 11.3629 5.68097 10.941 5.25901C10.519 4.83705 9.94674 4.6 9.35 4.6H8.35C8.15109 4.6 7.96032 4.52098 7.81967 4.38033C7.67902 4.23968 7.6 4.04891 7.6 3.85V2.85C7.6 2.55453 7.5418 2.26195 7.42873 1.98896C7.31566 1.71598 7.14992 1.46794 6.94099 1.25901C6.73206 1.05008 6.48402 0.884345 6.21104 0.771272C5.93806 0.658199 5.64547 0.600001 5.35 0.600001H4.6" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
     { name: 'forward',
@@ -426,6 +431,25 @@ window.SYSTEM = {
           { id: 'sidebar-item-default',  label: 'Default',  state: 'default'  },
           { id: 'sidebar-item-hover',    label: 'Hover',    state: 'hover'    },
           { id: 'sidebar-item-selected', label: 'Selected', state: 'selected' },
+        ],
+      },
+      assignees: {
+        title: 'Assignees',
+        subtitle: 'Source: Figma › Lender Exploration · node 390-2745 · click a variant for code',
+        figmaFile: 'PYHG9Pu8YLs4ACMPljBiSG',
+        figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=390-2745',
+        cssFile: 'global.css',
+        relations: {
+          uses: [{ name: 'chevron-down', pageId: 'icon-chevron-down' }],
+        },
+        // Avatar URLs — replace with real user photos in production
+        avatar1Url: 'https://www.figma.com/api/mcp/asset/4247bb8a-1c40-4062-851e-d9659c386128',
+        avatar2Url: 'https://www.figma.com/api/mcp/asset/e48e30d2-f0f0-4fc5-8733-9d4dced30960',
+        avatar3Url: 'https://www.figma.com/api/mcp/asset/c7282667-898c-4558-b46c-a85b2bb9995f',
+        variants: [
+          { id: 'assignees-2', label: '2 Assignees', count: 2 },
+          { id: 'assignees-3', label: '3 Assignees', count: 3 },
+          { id: 'assignees-overflow', label: '4+ Assignees', count: 4 },
         ],
       },
       sidebar: {

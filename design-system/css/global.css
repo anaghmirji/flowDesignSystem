@@ -664,6 +664,100 @@
   animation: star-pop 0.4s var(--ease-smooth) forwards;
 }
 
+/* ── Assignees pill (Figma node 390:2745) ─────────────────────────────────────
+   Stacked circular avatars + chevron-down — shows people assigned to a file.
+   Click to open dropdown (dropdown wired in platform.js bindAssigneesRows).
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.assignees {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px 2px 2px;
+  background: var(--accent-black-8);
+  border-radius: 100px;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.assignees:hover { background: var(--accent-black-12); }
+
+/* Stacked avatars — negative margin creates overlap, z-index controls order */
+.assignees__avatars {
+  display: flex;
+  align-items: center;
+  padding-right: 12px; /* compensate for last avatar's negative margin */
+  isolation: isolate;  /* scope z-index stacking to within the avatar group */
+}
+
+.assignees__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 100px;
+  border: 1px solid var(--accent-black-8);
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-right: -12px;
+  background: var(--accent-white-100);
+  position: relative;
+  transition: transform 0.2s var(--ease-spring), z-index 0s;
+}
+
+.assignees__avatar:first-child { z-index: 2; }
+.assignees__avatar:nth-child(2) { z-index: 1; }
+.assignees__avatar:nth-child(3) { z-index: 0; }
+
+.assignees__avatar:hover { transform: translateY(-2px); z-index: 10; }
+
+.assignees__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Count bubble — shows "+N" when there are more assignees than displayed */
+.assignees__count {
+  width: 28px;
+  height: 28px;
+  border-radius: 100px;
+  border: 1px solid var(--accent-black-8);
+  background: var(--accent-black-12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--accent-black-60);
+  flex-shrink: 0;
+  margin-right: -12px;
+  z-index: 0;
+}
+
+/* Chevron — springs open/closed. 12×12 container, path renders at 7.5×3.75px (matches Figma inset 34.38% 18.75%) */
+.assignees__chevron {
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  --stroke-0: var(--accent-black-50);
+  transition: transform 0.28s var(--ease-spring);
+}
+
+.assignees__chevron svg {
+  width: 7.5px;
+  height: 3.75px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.assignees.open .assignees__chevron { transform: rotate(180deg); }
+
 /* ── Sidebar Item (Figma node 6:92) ────────────────────────────────────────────
    3 states: default (no bg), hover (accent-black-8 bg, icon 24px),
    selected (accent-black-12 bg, icon 20px). Icon transitions via CSS.

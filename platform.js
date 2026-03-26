@@ -36,7 +36,7 @@ function renderNav() {
   const navBody = document.getElementById('nav-body');
   let html = '';
 
-  const CHEVRON = `<svg class="nav-collapse-chevron" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const CHEVRON = `<svg class="nav-collapse-chevron" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
   SYSTEM.nav.forEach((group, gi) => {
     const isCollapsible = !!group.collapsible;
@@ -1522,6 +1522,186 @@ function bindProfileRows() {
   });
 }
 
+// ── Assignees ─────────────────────────────────────────────────────────────────
+
+function buildAssigneesHtml(v) {
+  const comp  = SYSTEM.products.lenderPortal.assignees;
+  const count = v?.count ?? 2;
+  // chevron SVG sized to match Figma: 7.5×3.75px path inside 12×12 container
+  const chevronSvg = `<svg viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 0.5L5.5 5.5L0.5 0.5" stroke="var(--accent-black-50,#808080)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  // Build avatar stack — show max 3, then +N count bubble
+  const avatarUrls = [comp.avatar1Url, comp.avatar2Url, comp.avatar3Url];
+  let avatarsHtml = '';
+  const shown = Math.min(count, 3);
+
+  for (let i = 0; i < shown; i++) {
+    avatarsHtml += `<span class="assignees__avatar" style="z-index:${3 - i}">
+      <img src="${avatarUrls[i]}" alt="">
+    </span>`;
+  }
+
+  if (count > 3) {
+    avatarsHtml += `<span class="assignees__count">+${count - 3}</span>`;
+  }
+
+  return `<button class="assignees" type="button">
+  <span class="assignees__avatars">${avatarsHtml}</span>
+  <span class="assignees__chevron">${chevronSvg}</span>
+</button>`;
+}
+
+function renderLenderAssigneesPage() {
+  const comp = SYSTEM.products.lenderPortal.assignees;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table" style="max-width:640px">`;
+
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-lp-assignees-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:120px">${v.label}</span>
+        ${buildAssigneesHtml(v)}
+      </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function assigneesTabs(variantId) {
+  const v = SYSTEM.products.lenderPortal.assignees.variants.find(x => x.id === variantId);
+  return {
+    'HTML': `<!-- Include global.css (design-system/css/global.css) -->
+
+${buildAssigneesHtml(v)}`,
+
+    'CSS': `/* global.css — .assignees */
+
+.assignees {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px 2px 2px;
+  background: var(--accent-black-8);
+  border-radius: 100px;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: background 0.2s var(--ease-smooth);
+}
+.assignees:hover { background: var(--accent-black-12); }
+
+/* Stacked avatars — negative margin creates overlap */
+.assignees__avatars {
+  display: flex;
+  align-items: center;
+  padding-right: 12px;
+  isolation: isolate;
+}
+.assignees__avatar {
+  width: 28px; height: 28px;
+  border-radius: 100px;
+  border: 1px solid var(--accent-black-8);
+  background: var(--accent-white-100);
+  overflow: hidden; flex-shrink: 0;
+  margin-right: -12px;
+  position: relative;
+  transition: transform 0.2s var(--ease-spring), z-index 0s;
+}
+.assignees__avatar:first-child  { z-index: 2; }
+.assignees__avatar:nth-child(2) { z-index: 1; }
+.assignees__avatar:nth-child(3) { z-index: 0; }
+.assignees__avatar:hover { transform: translateY(-2px); z-index: 10; }
+.assignees__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* +N overflow count bubble */
+.assignees__count {
+  width: 28px; height: 28px;
+  border-radius: 100px;
+  border: 1px solid var(--accent-black-8);
+  background: var(--accent-black-12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 500; color: var(--accent-black-60);
+  flex-shrink: 0; margin-right: -12px; z-index: 0;
+}
+
+/* Chevron — springs 180° when open. --stroke-0 sets icon colour */
+.assignees__chevron {
+  width: 12px; height: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; overflow: hidden;
+  --stroke-0: var(--accent-black-50);
+  transition: transform 0.28s var(--ease-spring);
+}
+.assignees__chevron svg { width: 7.5px; height: 3.75px; display: block; }
+.assignees.open .assignees__chevron { transform: rotate(180deg); }`,
+
+    'SVG': `<!-- Chevron icon (chevron-down) — stroke colour via --stroke-0 -->
+<svg viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10.5 0.5L5.5 5.5L0.5 0.5"
+    stroke="var(--stroke-0,#333)"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"/>
+</svg>
+
+<!-- Set --stroke-0 on the container to change colour:
+  style="--stroke-0: var(--accent-black-50)" -->`,
+
+    'React': `import { useState } from 'react';
+import { Assignees } from 'flow-design-system/react';
+import 'flow-design-system/styles.css';
+
+export function AssigneesDemo() {
+  const [open, setOpen] = useState(false);
+  const assignees = [
+    { id: '1', name: 'Sarah K.', avatarUrl: '/avatars/sarah.jpg' },
+    { id: '2', name: 'James L.', avatarUrl: '/avatars/james.jpg' },
+    { id: '3', name: 'Mia T.',   avatarUrl: '/avatars/mia.jpg'   },
+  ];
+
+  return (
+    <Assignees
+      assignees={assignees}
+      open={open}
+      onToggle={() => setOpen(o => !o)}
+    />
+  );
+}`,
+  };
+}
+
+function bindAssigneesRows() {
+  document.querySelectorAll('[data-lp-assignees-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.lpAssigneesVariant;
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
+      setActive(row);
+      const comp = SYSTEM.products.lenderPortal.assignees;
+      const v    = comp.variants.find(x => x.id === variantId);
+
+      openPanel({
+        type: 'Lender Portal · Assignees',
+        name: v?.label || variantId,
+        preview: buildAssigneesHtml(v),
+        onPreviewMount: (el) => {
+          const btn = el.querySelector('.assignees');
+          if (!btn) return;
+          btn.addEventListener('click', () => {
+            btn.classList.toggle('open');
+          });
+        },
+        tabs: assigneesTabs(variantId),
+        defaultLang: 'HTML',
+      });
+    });
+  });
+}
+
 // ── Sidebar Item ─────────────────────────────────────────────────────────────
 
 function buildSidebarItemHtml(v) {
@@ -1851,6 +2031,7 @@ const PAGE_RENDERERS = {
   'lender-profile':           renderLenderProfilePage,
   'lender-sidebar-item':      renderLenderSidebarItemPage,
   'lender-sidebar':           renderLenderSidebarPage,
+  'lender-assignees':         renderLenderAssigneesPage,
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -1884,6 +2065,7 @@ function init() {
   bindProfileRows();
   bindSidebarItemRows();
   bindSidebarRows();
+  bindAssigneesRows();
   initLpStatusOutsideClose();
   initSearch();
 }
