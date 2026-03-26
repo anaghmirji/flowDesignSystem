@@ -2624,7 +2624,7 @@ function buildLoanListItemHtml(v) {
   const comp   = SYSTEM.products.lenderPortal.loanListItem;
   const s      = comp.sample;
   const stateClass = v.state === 'default' ? '' : ` loan-list-item--${v.state}`;
-  const personSvg  = iconSvg('user-plus');
+  const personSvg  = iconSvg('user');
   return `<div class="loan-list-item${stateClass}">
   <div class="loan-list-item__left">
     <div class="loan-list-item__top">
@@ -2822,7 +2822,7 @@ import { LoanListItem } from 'flow-design-system-react';
 import { computed } from 'vue';
 const props = defineProps({ name: String, amount: String, loanType: String, time: String, status: String, state: { default: 'default' } });
 const statusLabel = computed(() => ({ active: 'Active', 'on-hold': 'On Hold' })[props.status] ?? props.status);
-const personSvg = ICONS['user-plus']; // from SYSTEM.icons
+const personSvg = ICONS['user']; // from SYSTEM.icons
 </script>`,
   };
 }
