@@ -15,3 +15,4 @@ export { LpStatusStage, type LpStatusStageProps } from './LpStatusStage.js';
 export { BorrowerProfile, type BorrowerProfileProps } from './BorrowerProfile.js';
 export { SidebarItem, type SidebarItemProps } from './SidebarItem.js';
 export { Sidebar, type SidebarProps, type SidebarNavItem } from './Sidebar.js';
+export { Assignees, type AssigneesProps, type Assignee } from './Assignees.js';
