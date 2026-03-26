@@ -1628,18 +1628,26 @@ function buildAssigneesHtml(v) {
 
   // Build avatar stack — show max 3, then +N count bubble
   const avatarUrls  = [comp.avatar1Url, comp.avatar2Url, comp.avatar3Url];
-  const initialsArr = comp.initials || ['AM', 'JS', 'KP'];
+  const initialsArr = comp.initials   || ['AM', 'JS', 'KP'];
+  const namesArr    = comp.names      || ['Anagh Mirji', 'James Sullivan', 'Kate Park'];
+  const rolesArr    = comp.roles      || ['Loan Officer', 'Processor', 'Underwriter'];
   let avatarsHtml = '';
   const shown = Math.min(count, 3);
 
   for (let i = 0; i < shown; i++) {
+    const initials = initialsArr[i];
+    const name     = namesArr[i];
+    const role     = rolesArr[i];
+    const tooltip  = `${name} (${role})`;
     if (v?.initials) {
       avatarsHtml += `<span class="assignees__avatar assignees__avatar--initials" style="z-index:${3 - i}">
-        <span class="assignees__initials">${initialsArr[i]}</span>
+        <span class="assignees__initials">${initials}</span>
+        <span class="assignees__tooltip">${tooltip}</span>
       </span>`;
     } else {
       avatarsHtml += `<span class="assignees__avatar" style="z-index:${3 - i}">
-        <img src="${avatarUrls[i]}" alt="">
+        <img src="${avatarUrls[i]}" alt="${name}">
+        <span class="assignees__tooltip">${tooltip}</span>
       </span>`;
     }
   }

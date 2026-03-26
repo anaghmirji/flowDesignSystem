@@ -469,6 +469,9 @@ window.SYSTEM = {
         avatar3Url: 'https://www.figma.com/api/mcp/asset/c7282667-898c-4558-b46c-a85b2bb9995f',
         // Sample initials for no-photo variant (Figma node 553-2540)
         initials: ['AM', 'TK', 'KP'],
+        // Names and roles for tooltip display on avatar hover
+        names: ['Anagh Mirji', 'Tom Kim', 'Kate Park'],
+        roles: ['Loan Officer', 'Processor', 'Underwriter'],
         variants: [
           { id: 'assignees-unassigned',    label: 'Unassigned',          count: 0 },
           { id: 'assignees-1',             label: '1 Assignee',          count: 1 },

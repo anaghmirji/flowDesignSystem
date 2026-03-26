@@ -697,7 +697,7 @@
   height: 28px;
   border-radius: 100px;
   border: 1px solid var(--accent-black-8);
-  overflow: hidden;
+  overflow: visible; /* allow tooltip to overflow */
   flex-shrink: 0;
   margin-right: -8px;
   background: var(--accent-white-100);
@@ -705,11 +705,41 @@
   transition: transform 0.2s var(--ease-spring), z-index 0s;
 }
 
+/* Clip the image itself while keeping overflow visible for tooltip */
+.assignees__avatar img {
+  border-radius: 100px;
+  overflow: hidden;
+}
+
 .assignees__avatar:first-child { z-index: 2; }
 .assignees__avatar:nth-child(2) { z-index: 1; }
 .assignees__avatar:nth-child(3) { z-index: 0; }
 
 .assignees__avatar:hover { transform: translateY(-2px); z-index: 10; }
+
+/* Tooltip — appears above avatar on hover */
+.assignees__tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--accent-black-80, #333);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s var(--ease-smooth), transform 0.15s var(--ease-smooth);
+  z-index: 20;
+}
+.assignees__avatar:hover .assignees__tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 
 .assignees__avatar img {
   width: 100%;
