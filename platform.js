@@ -1527,8 +1527,17 @@ function bindProfileRows() {
 function buildAssigneesHtml(v) {
   const comp  = SYSTEM.products.lenderPortal.assignees;
   const count = v?.count ?? 2;
-  // chevron SVG sized to match Figma: 7.5×3.75px path inside 12×12 container
   const chevronSvg = `<svg viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 0.5L5.5 5.5L0.5 0.5" stroke="var(--accent-black-50,#808080)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  // Unassigned state — person+ icon + "Assign" label
+  if (count === 0) {
+    const personSvg = `<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5.5" r="2.5" stroke="var(--accent-black-40,#999)" stroke-width="1.2"/><path d="M2.5 13.5c0-2.485 2.462-4.5 5.5-4.5s5.5 2.015 5.5 4.5" stroke="var(--accent-black-40,#999)" stroke-width="1.2" stroke-linecap="round"/><path d="M11.5 3v3M13 4.5h-3" stroke="var(--accent-black-40,#999)" stroke-width="1.2" stroke-linecap="round"/></svg>`;
+    return `<button class="assignees assignees--unassigned" type="button">
+  <span class="assignees__unassigned-icon">${personSvg}</span>
+  <span class="assignees__unassigned-label">Assign</span>
+  <span class="assignees__chevron">${chevronSvg}</span>
+</button>`;
+  }
 
   // Build avatar stack — show max 3, then +N count bubble
   const avatarUrls = [comp.avatar1Url, comp.avatar2Url, comp.avatar3Url];
@@ -1638,7 +1647,23 @@ ${buildAssigneesHtml(v)}`,
   transition: transform 0.28s var(--ease-spring);
 }
 .assignees__chevron svg { width: 7.5px; height: 3.75px; display: block; }
-.assignees.open .assignees__chevron { transform: rotate(180deg); }`,
+.assignees.open .assignees__chevron { transform: rotate(180deg); }
+
+/* Unassigned state */
+.assignees--unassigned { gap: 4px; }
+
+.assignees__unassigned-icon {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.assignees__unassigned-icon svg { width: 100%; height: 100%; display: block; }
+
+.assignees__unassigned-label {
+  font-size: 12px; font-weight: 400;
+  color: var(--accent-black-40, #999);
+  line-height: 1; white-space: nowrap;
+}`,
 
     'SVG': `<!-- Chevron icon (chevron-down) — stroke colour via --stroke-0 -->
 <svg viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -758,6 +758,28 @@
 
 .assignees.open .assignees__chevron { transform: rotate(180deg); }
 
+/* Unassigned state */
+.assignees--unassigned { gap: 4px; }
+
+.assignees__unassigned-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.assignees__unassigned-icon svg { width: 100%; height: 100%; display: block; }
+
+.assignees__unassigned-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-40, #999);
+  line-height: 1;
+  white-space: nowrap;
+}
+
 /* ── Sidebar Item (Figma node 6:92) ────────────────────────────────────────────
    3 states: default (no bg), hover (accent-black-8 bg, icon 24px),
    selected (accent-black-12 bg, icon 20px). Icon transitions via CSS.

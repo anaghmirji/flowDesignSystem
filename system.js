@@ -447,6 +447,7 @@ window.SYSTEM = {
         avatar2Url: 'https://www.figma.com/api/mcp/asset/e48e30d2-f0f0-4fc5-8733-9d4dced30960',
         avatar3Url: 'https://www.figma.com/api/mcp/asset/c7282667-898c-4558-b46c-a85b2bb9995f',
         variants: [
+          { id: 'assignees-unassigned', label: 'Unassigned', count: 0 },
           { id: 'assignees-2', label: '2 Assignees', count: 2 },
           { id: 'assignees-3', label: '3 Assignees', count: 3 },
           { id: 'assignees-overflow', label: '4+ Assignees', count: 4 },
