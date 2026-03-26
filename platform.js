@@ -2628,11 +2628,11 @@ function bindSidebarRows() {
 
 // ── Loan List Item ────────────────────────────────────────────────────────────
 
-function buildLoanListItemHtml(v) {
+function buildLoanListItemHtml(v, overrides = {}) {
   const comp   = SYSTEM.products.lenderPortal.loanListItem;
-  const s      = comp.sample;
+  const s      = { ...comp.sample, ...overrides };
   const stateClass = v.state === 'default' ? '' : ` loan-list-item--${v.state}`;
-  const iconName = comp.trailingIconName || 'user';
+  const iconName = overrides.iconName || comp.trailingIconName || 'user';
   const userIconSvg = iconSvg(iconName);
   return `<div class="loan-list-item${stateClass}">
   <div class="loan-list-item__left">
@@ -2875,6 +2875,206 @@ function bindLoanListItemRows() {
   });
 }
 
+// ── Loan Stage Group ──────────────────────────────────────────────────────────
+
+function buildLoanStageGroupHtml(v) {
+  const comp = SYSTEM.products.lenderPortal.loanStageGroup;
+  const s    = comp.sample;
+  const isExpanded  = v.expanded;
+  const stateClass  = isExpanded ? ' loan-stage-group--expanded' : ' loan-stage-group--collapsed';
+  const chevronHtml = iconSvg('chevron-down');
+
+  let bodyHtml = '';
+  if (isExpanded) {
+    bodyHtml = `\n  <div class="loan-stage-group__body">`;
+    s.loans.forEach((loan, i) => {
+      const loanState = i === 0 ? 'selected' : 'default';
+      bodyHtml += '\n' + buildLoanListItemHtml({ state: loanState }, loan);
+    });
+    bodyHtml += `\n  </div>`;
+  }
+
+  return `<div class="loan-stage-group${stateClass}">
+  <div class="loan-stage-group__header">
+    <span class="loan-stage-group__name">${s.stageName}</span>
+    <div class="loan-stage-group__meta">
+      <span class="loan-stage-group__count">${s.count}</span>
+      <span class="loan-stage-group__chevron">${chevronHtml}</span>
+    </div>
+  </div>${bodyHtml}
+</div>`;
+}
+
+function renderLenderLoanStageGroupPage() {
+  const comp = SYSTEM.products.lenderPortal.loanStageGroup;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table" style="max-width:320px">`;
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-loan-stage-group-variant="${v.id}" style="padding:16px 20px;align-items:flex-start">
+        <span class="ds-row-name" style="min-width:80px">${v.label}</span>
+        ${buildLoanStageGroupHtml(v)}
+      </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function loanStageGroupTabs(variantId) {
+  const comp = SYSTEM.products.lenderPortal.loanStageGroup;
+  const v    = comp.variants.find(x => x.id === variantId);
+  if (!v) return {};
+  const html = buildLoanStageGroupHtml(v);
+  const s    = comp.sample;
+  return {
+    'HTML': `<!-- Include global.css -->
+${html}`,
+
+    'CSS': `/* global.css — Loan Stage Group */
+.loan-stage-group {
+  width: 254px;
+  background: var(--accent-black-4, #f5f5f5);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0;
+  box-sizing: border-box;
+}
+.loan-stage-group--expanded { padding-bottom: 4px; }
+
+.loan-stage-group__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.loan-stage-group__name,
+.loan-stage-group__count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-black-60, #666);
+}
+
+.loan-stage-group__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.loan-stage-group__chevron {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  --stroke-0: var(--accent-black-60, #666);
+  transition: transform 0.25s var(--ease-smooth);
+}
+.loan-stage-group__chevron svg { width: 10.98px; height: 5.99px; display: block; }
+.loan-stage-group--expanded .loan-stage-group__chevron { transform: rotate(180deg); }
+
+.loan-stage-group__body {
+  display: flex;
+  flex-direction: column;
+  padding: 0 4px;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.35s var(--ease-smooth), padding-top 0.35s var(--ease-smooth);
+}
+.loan-stage-group--expanded .loan-stage-group__body {
+  max-height: 800px;
+  padding-top: 12px;
+}
+
+.loan-stage-group__body .loan-list-item { width: 100%; }
+.loan-stage-group__body .loan-list-item:last-child { border-bottom: none; }`,
+
+    'SVG': `<!-- Chevron icon — rotates 180° when expanded -->
+<!-- --stroke-0: var(--accent-black-60) set on .loan-stage-group__chevron in CSS -->
+<span class="loan-stage-group__chevron">
+  <svg width="100%" height="100%" viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10.5 0.5L5.5 5.5L0.5 0.5" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</span>`,
+
+    'React': `import 'flow-design-system/styles.css';
+import { useState } from 'react';
+import { ICONS } from './icons';
+
+function LoanStageGroup({ stageName, count, loans }) {
+  const [expanded, setExpanded] = useState(true);
+  return (
+    <div className={\`loan-stage-group\${expanded ? ' loan-stage-group--expanded' : ' loan-stage-group--collapsed'}\`}>
+      <div className="loan-stage-group__header" onClick={() => setExpanded(e => !e)}>
+        <span className="loan-stage-group__name">{stageName}</span>
+        <div className="loan-stage-group__meta">
+          <span className="loan-stage-group__count">{count}</span>
+          <span className="loan-stage-group__chevron">
+            <span className="icon" dangerouslySetInnerHTML={{ __html: ICONS['chevron-down'] }} />
+          </span>
+        </div>
+      </div>
+      <div className="loan-stage-group__body">
+        {loans.map((loan, i) => (
+          <LoanListItem key={loan.name} {...loan} state={i === 0 ? 'selected' : 'default'} />
+        ))}
+      </div>
+    </div>
+  );
+}`,
+
+    'Vue': `<!-- LoanStageGroup.vue -->
+<template>
+  <div :class="['loan-stage-group', expanded ? 'loan-stage-group--expanded' : 'loan-stage-group--collapsed']">
+    <div class="loan-stage-group__header" @click="expanded = !expanded">
+      <span class="loan-stage-group__name">{{ stageName }}</span>
+      <div class="loan-stage-group__meta">
+        <span class="loan-stage-group__count">{{ count }}</span>
+        <span class="loan-stage-group__chevron">
+          <span class="icon" v-html="ICONS['chevron-down']" />
+        </span>
+      </div>
+    </div>
+    <div class="loan-stage-group__body">
+      <LoanListItem v-for="(loan, i) in loans" :key="loan.name" v-bind="loan" :state="i === 0 ? 'selected' : 'default'" />
+    </div>
+  </div>
+</template>
+<script setup>
+import { ref } from 'vue';
+defineProps({ stageName: String, count: Number, loans: Array });
+const expanded = ref(true);
+</script>`,
+  };
+}
+
+function bindLoanStageGroupRows() {
+  document.querySelectorAll('[data-loan-stage-group-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.loanStageGroupVariant;
+      const comp = SYSTEM.products.lenderPortal.loanStageGroup;
+      const v    = comp.variants.find(x => x.id === variantId);
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
+      setActive(row);
+      openPanel({
+        type: 'Lender Portal · Loan Stage Group',
+        name: v?.label || variantId,
+        preview: buildLoanStageGroupHtml(v),
+        tabs: loanStageGroupTabs(variantId),
+        defaultLang: 'HTML',
+        relations: comp.relations || null,
+      });
+    });
+  });
+}
+
 const PAGE_RENDERERS = {
   'global-css':               renderGlobalCssPage,
   tokens:                     renderTokensPage,
@@ -2892,6 +3092,7 @@ const PAGE_RENDERERS = {
   'lender-people-dropdown':   renderLenderPeopleDropdownPage,
   'lender-role-picker':       renderLenderRolePickerPage,
   'lender-loan-list-item':    renderLenderLoanListItemPage,
+  'lender-loan-stage-group':  renderLenderLoanStageGroupPage,
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -2929,6 +3130,7 @@ function init() {
   bindPeopleDropdownRows();
   bindRolePickerRows();
   bindLoanListItemRows();
+  bindLoanStageGroupRows();
   initLpStatusOutsideClose();
   initSearch();
 }
@@ -3008,6 +3210,9 @@ function buildSearchIndex() {
   // Products — Lender Portal loan list item
   SYSTEM.products.lenderPortal.loanListItem.variants.forEach(v => {
     idx.push({ type: 'Loan List Item', label: v.label, pageId: 'lender-loan-list-item', sel: `[data-loan-list-item-variant="${v.id}"]` });
+  });
+  SYSTEM.products.lenderPortal.loanStageGroup.variants.forEach(v => {
+    idx.push({ type: 'Loan Stage Group', label: v.label, pageId: 'lender-loan-stage-group', sel: `[data-loan-stage-group-variant="${v.id}"]` });
   });
 
   return idx;
