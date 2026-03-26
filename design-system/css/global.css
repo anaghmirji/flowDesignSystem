@@ -773,7 +773,7 @@
   flex-shrink: 0;
 }
 
-.assignees.open .assignees__chevron { transform: rotate(180deg); }
+.assignees-wrap.open .assignees__chevron { transform: rotate(180deg); }
 
 /* Unassigned state — 32px circle (Figma node 545-2607) */
 .assignees--unassigned {
@@ -812,6 +812,401 @@
   height: 12px;
   display: block;
   flex-shrink: 0;
+}
+
+/* ── Assignees wrapper — positions pill + dropdown together ────────────────── */
+.assignees-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* ── Assignees Dropdown (Figma node 553:3849) ──────────────────────────────────
+   Popover below the pill. Hidden by default (opacity 0, pointer-events none).
+   .assignees-wrap.open → visible. .assignees-wrap.search-mode → search state. */
+.assignees-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 242px;
+  background: #fcfcfd;
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 16px;
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 100;
+  opacity: 0;
+  transform: scale(0.97) translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease-smooth), transform 0.2s var(--ease-smooth);
+}
+
+.assignees-wrap.open .assignees-dropdown,
+.assignees-dropdown--standalone {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+/* Standalone mode — shown directly on page without the pill wrapper */
+.assignees-dropdown--standalone {
+  position: static;
+}
+
+.assignees-dropdown__header {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--accent-black-80, #333);
+  padding: 8px 4px;
+}
+
+.assignees-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.assignees-dropdown__item:hover { background: var(--accent-black-8, #ebebeb); }
+
+.assignees-dropdown__person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assignees-dropdown__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--accent-black-8, #ebebeb);
+}
+
+.assignees-dropdown__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.assignees-dropdown__name {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--accent-black-80, #333);
+  white-space: nowrap;
+}
+
+/* Role badge — right side of each row */
+.assignees-dropdown__role {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 4px 4px 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.assignees-dropdown__role:hover { background: var(--accent-black-8, #ebebeb); }
+
+.assignees-dropdown__role-label {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 10px;
+  color: var(--accent-black-50, #808080);
+  white-space: nowrap;
+}
+
+/* Static role label — non-admin users, same style but no chevron or picker */
+.assignees-dropdown__role-label--static { flex-shrink: 0; }
+
+.assignees-dropdown__role-chevron {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  --stroke-0: var(--accent-black-50, #808080);
+}
+
+.assignees-dropdown__role-chevron svg { width: 10px; height: 10px; }
+
+/* Add Teammate button — animates out when search-mode */
+.assignees-dropdown__add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border-top: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 0;
+  width: 100%;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  max-height: 80px;
+  overflow: hidden;
+  opacity: 1;
+  transition: background 0.2s var(--ease-smooth),
+              border-radius 0.2s var(--ease-smooth),
+              border-top-color 0.2s var(--ease-smooth),
+              max-height 0.25s var(--ease-smooth),
+              opacity 0.15s var(--ease-smooth),
+              padding 0.25s var(--ease-smooth);
+}
+
+/* Hover — border-top disappears, full pill radius + background appears */
+.assignees-dropdown__add:hover {
+  background: #e6e6e6;
+  border-top-color: transparent;
+  border-radius: 100px;
+}
+
+.assignees-dropdown__add-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  --stroke-0: var(--accent-black-60, #666);
+}
+
+/* SVG renders at 12×12 inside 16px container — matches Figma inset-[12.5%] */
+.assignees-dropdown__add-icon svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.assignees-dropdown__add-text {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-60, #666);
+}
+
+/* Search section — expands in with animation */
+.assignees-dropdown__search-section {
+  border-top: 0.5px solid var(--accent-black-12, #e0e0e0);
+  padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 0;
+  overflow: visible; /* allow role-picker dropdown to overflow without clipping */
+  opacity: 0;
+  transition: max-height 0.35s var(--ease-smooth),
+              opacity 0.25s var(--ease-smooth),
+              padding-top 0.35s var(--ease-smooth);
+}
+
+/* search-mode — Add Teammate collapses, search section expands */
+.assignees-wrap.search-mode .assignees-dropdown__add {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+
+.assignees-wrap.search-mode .assignees-dropdown__search-section {
+  max-height: 260px;
+  overflow: visible;
+  opacity: 1;
+  padding-top: 8px;
+}
+
+.assignees-dropdown__search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assignees-dropdown__search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 180px;
+  padding: 2px 4px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.assignees-dropdown__search-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  --stroke-0: var(--accent-black-60, #666);
+}
+
+.assignees-dropdown__search-icon-wrap svg { width: 16px; height: 16px; }
+
+.assignees-dropdown__search-placeholder {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--accent-black-60, #666);
+  white-space: nowrap;
+}
+
+.assignees-dropdown__search-clear {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-black-8, #ebebeb);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  --stroke-0: var(--accent-black-80, #333);
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.assignees-dropdown__search-clear:hover { background: var(--accent-black-12, #e0e0e0); }
+.assignees-dropdown__search-clear svg { width: 16px; height: 16px; }
+
+.assignees-dropdown__suggested-label {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--accent-black-60, #666);
+}
+
+.assignees-dropdown__suggested {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Suggested role text — right-aligned, no role picker chevron */
+.assignees-dropdown__suggested-role {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--accent-black-40, #999);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Avatar with + overlay on hover */
+.assignees-dropdown__avatar--suggested {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.assignees-dropdown__avatar-add {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--accent-black-8, #ebebeb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-smooth);
+}
+
+.assignees-dropdown__avatar-add svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Show + overlay when hovering the suggested item */
+.assignees-dropdown__item--suggested:hover .assignees-dropdown__avatar-add {
+  opacity: 1;
+}
+
+/* Fade out the photo when + overlay appears */
+.assignees-dropdown__item--suggested:hover .assignees-dropdown__avatar--suggested img {
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-smooth);
+}
+
+/* ── Role Picker (Figma node 553:3003) ────────────────────────────────────────
+   Popover that shows when clicking a role badge in the people dropdown.
+   146px wide, roles list + separator section with transfer + remove actions. */
+.role-picker {
+  background: #fcfcfd;
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 16px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  width: 146px;
+  overflow: hidden;
+}
+
+.role-picker__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-80, #333);
+  white-space: nowrap;
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  text-align: left;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.role-picker__item:hover { background: var(--accent-black-4, #f5f5f5); }
+.role-picker__item--active { background: var(--accent-black-8, #ebebeb); }
+.role-picker__item--danger { color: var(--accent-red-100, #ff383c); }
+
+.role-picker__section {
+  display: flex;
+  flex-direction: column;
+  border-top: 0.5px solid var(--accent-black-12, #e0e0e0);
+}
+
+/* Role picker as a popover inside people dropdown — positioned absolute */
+.assignees-dropdown__role-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.assignees-dropdown__role-wrap .role-picker {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 200;
+  opacity: 0;
+  transform: scale(0.97) translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.18s var(--ease-smooth), transform 0.18s var(--ease-smooth);
+}
+
+.assignees-dropdown__role-wrap.open .role-picker {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
 }
 
 /* ── Sidebar Item (Figma node 6:92) ────────────────────────────────────────────

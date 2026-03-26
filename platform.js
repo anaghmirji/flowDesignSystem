@@ -1524,23 +1524,110 @@ function bindProfileRows() {
 
 // ── Assignees ─────────────────────────────────────────────────────────────────
 
+function buildRolePickerHtml(activeRole, personName) {
+  const roles = ['Loan Officer', 'Processor', 'Underwriter', 'Closer'];
+  const items = roles.map(r =>
+    `<button class="role-picker__item${r === activeRole ? ' role-picker__item--active' : ''}" data-role="${r}">${r}</button>`
+  ).join('');
+  return `<div class="role-picker">
+  ${items}
+  <div class="role-picker__section">
+    <button class="role-picker__item">Transfer Loan Officer...</button>
+    <button class="role-picker__item role-picker__item--danger">Remove ${personName}</button>
+  </div>
+</div>`;
+}
+
+function buildAssigneesDropdownHtml(viewerRole = "Loan Officer") {
+  const chevSmall   = `<svg viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 0.5L5.5 5.5L0.5 0.5" stroke="var(--stroke-0,#808080)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const magnifySvg  = iconSvg('magnifying-glass');
+  const userPlusSvg = iconSvg('user-plus');
+  const xMarkSvg    = iconSvg('x-mark');
+
+  const isLoanOfficer = viewerRole === 'Loan Officer';
+  const people = [
+    { name: 'Anagh (You)', role: viewerRole,    img: 'https://i.pravatar.cc/28?img=12', isAdmin: isLoanOfficer },
+    { name: 'Sarah K',     role: 'Underwriter', img: 'https://i.pravatar.cc/28?img=5',  isAdmin: isLoanOfficer },
+  ];
+  const suggested = [
+    { name: 'Rosy',  role: 'Underwriter', img: 'https://i.pravatar.cc/28?img=23' },
+    { name: 'James', role: 'Processor',   img: 'https://i.pravatar.cc/28?img=53' },
+    { name: 'Jeff',  role: 'Closer',      img: 'https://i.pravatar.cc/28?img=11' },
+  ];
+
+  const personRows = people.map(p => `
+    <div class="assignees-dropdown__item">
+      <div class="assignees-dropdown__person">
+        <div class="assignees-dropdown__avatar"><img src="${p.img}" alt="${p.name}"></div>
+        <span class="assignees-dropdown__name">${p.name}</span>
+      </div>
+      ${p.isAdmin ? `
+      <div class="assignees-dropdown__role-wrap">
+        <div class="assignees-dropdown__role">
+          <span class="assignees-dropdown__role-label">${p.role}</span>
+          <span class="assignees-dropdown__role-chevron">${chevSmall}</span>
+        </div>
+        ${buildRolePickerHtml(p.role, p.name.split(' ')[0])}
+      </div>` : `
+      <span class="assignees-dropdown__role-label assignees-dropdown__role-label--static">${p.role}</span>`}
+    </div>`).join('');
+
+  const plusSvg = `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 1v12M1 7h12" stroke="var(--stroke-0,#333)" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+
+  const suggestedRows = suggested.map(p => `
+    <div class="assignees-dropdown__item assignees-dropdown__item--suggested" data-name="${p.name}" data-role="${p.role}" data-img="${p.img}">
+      <div class="assignees-dropdown__person">
+        <div class="assignees-dropdown__avatar assignees-dropdown__avatar--suggested">
+          <img src="${p.img}" alt="${p.name}">
+          <div class="assignees-dropdown__avatar-add">${plusSvg}</div>
+        </div>
+        <span class="assignees-dropdown__name">${p.name}</span>
+      </div>
+      <span class="assignees-dropdown__suggested-role">${p.role}</span>
+    </div>`).join('');
+
+  return `<div class="assignees-dropdown">
+  <div class="assignees-dropdown__header">People this loan</div>
+  ${personRows}
+  ${isLoanOfficer ? `<button class="assignees-dropdown__add" type="button">
+    <span class="assignees-dropdown__add-icon">${userPlusSvg}</span>
+    <span class="assignees-dropdown__add-text">Add Teammate</span>
+  </button>` : ''}
+  <div class="assignees-dropdown__search-section">
+    <div class="assignees-dropdown__search-row">
+      <div class="assignees-dropdown__search">
+        <div class="assignees-dropdown__search-icon-wrap">${magnifySvg}</div>
+        <span class="assignees-dropdown__search-placeholder">Search Teammate</span>
+      </div>
+      <button class="assignees-dropdown__search-clear" type="button">${xMarkSvg}</button>
+    </div>
+    <div class="assignees-dropdown__suggested-label">Suggested Teammates</div>
+    <div class="assignees-dropdown__suggested">${suggestedRows}</div>
+  </div>
+</div>`;
+}
+
 function buildAssigneesHtml(v) {
   const comp  = SYSTEM.products.lenderPortal.assignees;
   const count = v?.count ?? 2;
   const chevronSvg = `<svg viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 0.5L5.5 5.5L0.5 0.5" stroke="var(--accent-black-50,#808080)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const dropdown = buildAssigneesDropdownHtml();
 
   // Unassigned state — circular 32px avatar placeholder with user-plus icon (Figma node 545-2607)
   if (count === 0) {
     const userPlusSvg = iconSvg('user-plus');
-    return `<button class="assignees assignees--unassigned" type="button" style="--stroke-0:var(--accent-black-60,#666)">
-  <span class="assignees__unassigned-avatar">
-    <span class="assignees__unassigned-icon">${userPlusSvg}</span>
-  </span>
-</button>`;
+    return `<div class="assignees-wrap">
+  <button class="assignees assignees--unassigned" type="button" style="--stroke-0:var(--accent-black-60,#666)">
+    <span class="assignees__unassigned-avatar">
+      <span class="assignees__unassigned-icon">${userPlusSvg}</span>
+    </span>
+  </button>
+  ${dropdown}
+</div>`;
   }
 
   // Build avatar stack — show max 3, then +N count bubble
-  const avatarUrls = [comp.avatar1Url, comp.avatar2Url, comp.avatar3Url];
+  const avatarUrls  = [comp.avatar1Url, comp.avatar2Url, comp.avatar3Url];
   const initialsArr = comp.initials || ['AM', 'JS', 'KP'];
   let avatarsHtml = '';
   const shown = Math.min(count, 3);
@@ -1561,10 +1648,13 @@ function buildAssigneesHtml(v) {
     avatarsHtml += `<span class="assignees__count">+${count - 3}</span>`;
   }
 
-  return `<button class="assignees" type="button">
-  <span class="assignees__avatars">${avatarsHtml}</span>
-  <span class="assignees__chevron">${chevronSvg}</span>
-</button>`;
+  return `<div class="assignees-wrap">
+  <button class="assignees" type="button">
+    <span class="assignees__avatars">${avatarsHtml}</span>
+    <span class="assignees__chevron">${chevronSvg}</span>
+  </button>
+  ${dropdown}
+</div>`;
 }
 
 function renderLenderAssigneesPage() {
@@ -1658,7 +1748,7 @@ ${buildAssigneesHtml(v)}`,
   transition: transform 0.28s var(--ease-spring);
 }
 .assignees__chevron svg { width: 7.5px; height: 3.75px; display: block; }
-.assignees.open .assignees__chevron { transform: rotate(180deg); }
+.assignees-wrap.open .assignees__chevron { transform: rotate(180deg); }
 
 /* Unassigned state — 32px circle (Figma node 545-2607) */
 .assignees--unassigned { width: 32px; height: 32px; padding: 2px; gap: 0; }
@@ -1676,27 +1766,109 @@ ${buildAssigneesHtml(v)}`,
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; overflow: hidden;
 }
-/* SVG fills 12×12 (inset 2px each side) — matches Figma inset-[12.5%] */
-.assignees__unassigned-icon svg { width: 12px; height: 12px; display: block; flex-shrink: 0; }`,
+.assignees__unassigned-icon svg { width: 12px; height: 12px; display: block; flex-shrink: 0; }
 
-    'SVG': `<!-- Chevron icon (chevron-down) — stroke colour via --stroke-0 -->
+/* ── Dropdown (Figma node 553:3849) ── */
+.assignees-wrap { position: relative; display: inline-flex; }
+
+.assignees-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0;
+  width: 242px; background: #fcfcfd;
+  border: 0.5px solid var(--accent-black-12); border-radius: 16px;
+  padding: 4px 8px; display: flex; flex-direction: column; gap: 4px;
+  z-index: 100; opacity: 0; pointer-events: none;
+  transform: scale(0.97) translateY(-4px);
+  transition: opacity 0.2s var(--ease-smooth), transform 0.2s var(--ease-smooth);
+}
+.assignees-wrap.open .assignees-dropdown { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+
+.assignees-dropdown__header { font-weight: 500; font-size: 12px; color: var(--accent-black-80); padding: 8px 4px; }
+.assignees-dropdown__item { display: flex; align-items: center; justify-content: space-between; padding: 4px; border-radius: 12px; cursor: pointer; transition: background 0.2s var(--ease-smooth); }
+.assignees-dropdown__item:hover { background: var(--accent-black-8); }
+.assignees-dropdown__person { display: flex; align-items: center; gap: 8px; }
+.assignees-dropdown__avatar { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 1px solid var(--accent-black-8); }
+.assignees-dropdown__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.assignees-dropdown__name { font-size: 12px; font-weight: 400; color: var(--accent-black-80); white-space: nowrap; }
+.assignees-dropdown__role { display: flex; align-items: center; gap: 4px; padding: 4px 4px 4px 6px; border-radius: 8px; cursor: pointer; transition: background 0.2s var(--ease-smooth); }
+.assignees-dropdown__role:hover { background: var(--accent-black-8); }
+.assignees-dropdown__role-label { font-size: 10px; font-weight: 400; color: var(--accent-black-50); white-space: nowrap; }
+.assignees-dropdown__role-chevron { width: 10px; height: 10px; display: flex; align-items: center; justify-content: center; --stroke-0: var(--accent-black-50); }
+.assignees-dropdown__role-chevron svg { width: 10px; height: 10px; }
+
+.assignees-dropdown__add { display: flex; align-items: center; gap: 8px; padding: 12px 8px; border-top: 0.5px solid var(--accent-black-12); border-left: none; border-right: none; border-bottom: none; border-radius: 16px; width: 100%; background: none; cursor: pointer; max-height: 80px; overflow: hidden; opacity: 1; transition: max-height 0.25s var(--ease-smooth), opacity 0.15s var(--ease-smooth), padding 0.25s var(--ease-smooth), background 0.2s var(--ease-smooth); }
+.assignees-dropdown__add:hover { background: #e6e6e6; } /* accent-black-10 */
+.assignees-dropdown__add-icon { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; --stroke-0: var(--accent-black-60); }
+.assignees-dropdown__add-icon svg { width: 12px; height: 12px; flex-shrink: 0; } /* Figma inset-[12.5%] */
+.assignees-dropdown__add-text { font-size: 12px; font-weight: 400; color: var(--accent-black-60); }
+
+.assignees-dropdown__search-section { border-top: 0.5px solid var(--accent-black-12); display: flex; flex-direction: column; gap: 8px; max-height: 0; overflow: hidden; opacity: 0; padding-top: 0; transition: max-height 0.35s var(--ease-smooth), opacity 0.25s var(--ease-smooth), padding-top 0.35s var(--ease-smooth); }
+.assignees-wrap.search-mode .assignees-dropdown__add { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; pointer-events: none; }
+.assignees-wrap.search-mode .assignees-dropdown__search-section { max-height: 260px; opacity: 1; padding-top: 8px; }
+
+.assignees-dropdown__search-row { display: flex; align-items: center; gap: 8px; }
+.assignees-dropdown__search { flex: 1; display: flex; align-items: center; background: white; border: 0.5px solid var(--accent-black-12); border-radius: 180px; padding: 2px 4px; overflow: hidden; }
+.assignees-dropdown__search-icon-wrap { width: 28px; height: 28px; border-radius: 160px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; --stroke-0: var(--accent-black-60); }
+.assignees-dropdown__search-icon-wrap svg { width: 16px; height: 16px; }
+.assignees-dropdown__search-placeholder { font-size: 11px; font-weight: 400; color: var(--accent-black-60); white-space: nowrap; }
+.assignees-dropdown__search-clear { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-black-8); border: none; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; --stroke-0: var(--accent-black-80); }
+.assignees-dropdown__search-clear svg { width: 16px; height: 16px; }
+.assignees-dropdown__suggested-label { font-size: 12px; font-weight: 500; color: var(--accent-black-60); }
+.assignees-dropdown__suggested { display: flex; flex-direction: column; gap: 4px; }
+
+/* Suggested role text */
+.assignees-dropdown__suggested-role { font-size: 11px; font-weight: 400; color: var(--accent-black-40); white-space: nowrap; flex-shrink: 0; }
+
+/* + overlay on suggested avatar */
+.assignees-dropdown__avatar--suggested { position: relative; flex-shrink: 0; }
+.assignees-dropdown__avatar-add {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: var(--accent-black-8); display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s var(--ease-smooth);
+  --stroke-0: var(--accent-black-80);
+}
+.assignees-dropdown__avatar-add svg { width: 14px; height: 14px; }
+.assignees-dropdown__item--suggested:hover .assignees-dropdown__avatar-add { opacity: 1; }
+.assignees-dropdown__item--suggested:hover .assignees-dropdown__avatar--suggested img { opacity: 0; transition: opacity 0.2s var(--ease-smooth); }`,
+
+    'SVG': `<!-- chevron-down (pill + role badges) — stroke via --stroke-0 -->
 <svg viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M10.5 0.5L5.5 5.5L0.5 0.5"
-    stroke="var(--stroke-0,#333)"
-    stroke-width="1.5"
-    stroke-linecap="round"
-    stroke-linejoin="round"/>
+    stroke="var(--stroke-0,#333)" stroke-width="1.5"
+    stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 
-<!-- User-plus icon (unassigned state) — stroke colour via --stroke-0 -->
+<!-- user-plus (unassigned state + Add Teammate) — stroke via --stroke-0 -->
 <svg viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M10.5 3.5V5.5M10.5 5.5V7.5M10.5 5.5H12.5M10.5 5.5H8.5M7 2.75C7 3.34674 6.76295 3.91903 6.34099 4.34099C5.91903 4.76295 5.34674 5 4.75 5C4.15326 5 3.58097 4.76295 3.15901 4.34099C2.73705 3.91903 2.5 3.34674 2.5 2.75C2.5 2.15326 2.73705 1.58097 3.15901 1.15901C3.58097 0.737053 4.15326 0.5 4.75 0.5C5.34674 0.5 5.91903 0.737053 6.34099 1.15901C6.76295 1.58097 7 2.15326 7 2.75ZM0.5 11.3233V11.25C0.5 10.1228 0.947767 9.04183 1.7448 8.2448C2.54183 7.44777 3.62283 7 4.75 7C5.87717 7 6.95817 7.44777 7.7552 8.2448C8.55223 9.04183 9 10.1228 9 11.25V11.3227C7.71699 12.0954 6.24707 12.5025 4.74933 12.5C3.19533 12.5 1.74133 12.07 0.5 11.3227V11.3233Z"
     stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 
-<!-- Set --stroke-0 on the container to change colour:
-  style="--stroke-0: var(--accent-black-40)" — unassigned (dimmed)
-  style="--stroke-0: var(--accent-black-50)" — chevron -->`,
+<!-- x-mark (search clear button) — stroke via --stroke-0 -->
+<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M4 4L12 12M12 4L4 12"
+    stroke="var(--stroke-0,#333)" stroke-width="1.2"
+    stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+<!-- magnifying-glass (search input icon) — stroke via --stroke-0 -->
+<svg viewBox="0 0 13.2005 13.2005" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12.6005 12.6005L9.13585 9.13585M9.13585 9.13585C10.0736 8.19814 10.6004 6.92632 10.6004 5.60019C10.6004 2.87786 8.3225 0.6 5.60019 0.6C2.87786 0.6 0.6 2.87786 0.6 5.60019C0.6 8.3225 2.87786 10.6004 5.60019 10.6004C6.92632 10.6004 8.19814 10.0736 9.13585 9.13585Z"
+    stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+<!-- plus (suggested avatar overlay) — stroke via --stroke-0 -->
+<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M7 1v12M1 7h12"
+    stroke="var(--stroke-0,#333)" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+
+<!-- --stroke-0 colour guide:
+  Pill chevron:    style="--stroke-0: var(--accent-black-50)"
+  Unassigned btn:  style="--stroke-0: var(--accent-black-60)"
+  Role chevron:    style="--stroke-0: var(--accent-black-50)"
+  Search icon:     style="--stroke-0: var(--accent-black-60)"
+  Clear button:    style="--stroke-0: var(--accent-black-80)"
+  Suggested +btn:  .assignees-dropdown__avatar-add { --stroke-0: var(--accent-black-80) } -->`,
 
     'React': `import { useState } from 'react';
 import { Assignees } from 'flow-design-system/react';
@@ -1744,13 +1916,377 @@ function bindAssigneesRows() {
         name: v?.label || variantId,
         preview: buildAssigneesHtml(v),
         onPreviewMount: (el) => {
-          const btn = el.querySelector('.assignees');
-          if (!btn) return;
-          btn.addEventListener('click', () => {
-            btn.classList.toggle('open');
+          const wrap = el.querySelector('.assignees-wrap');
+          const btn  = el.querySelector('.assignees');
+          if (!wrap || !btn) return;
+
+          // Pill click — toggle dropdown open/closed
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            wrap.classList.toggle('open');
+            wrap.classList.remove('search-mode');
+          });
+
+          // "Add Teammate" — switch to search mode
+          const addBtn = el.querySelector('.assignees-dropdown__add');
+          if (addBtn) addBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            wrap.classList.add('search-mode');
+          });
+
+          // X button — back to default list
+          const clearBtn = el.querySelector('.assignees-dropdown__search-clear');
+          if (clearBtn) clearBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            wrap.classList.remove('search-mode');
+          });
+
+          // Role badge clicks — toggle role picker
+          el.querySelectorAll('.assignees-dropdown__role').forEach(badge => {
+            badge.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const roleWrap = badge.closest('.assignees-dropdown__role-wrap');
+              if (!roleWrap) return;
+              const isOpen = roleWrap.classList.contains('open');
+              // Close all other role pickers first
+              el.querySelectorAll('.assignees-dropdown__role-wrap.open').forEach(w => w.classList.remove('open'));
+              if (!isOpen) roleWrap.classList.add('open');
+            });
+          });
+
+          // Role picker item clicks — update role label and close picker
+          el.querySelectorAll('.role-picker__item[data-role]').forEach(item => {
+            item.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const roleWrap = item.closest('.assignees-dropdown__role-wrap');
+              if (!roleWrap) return;
+              const newRole = item.dataset.role;
+              // Update active state
+              roleWrap.querySelectorAll('.role-picker__item').forEach(i => i.classList.remove('role-picker__item--active'));
+              item.classList.add('role-picker__item--active');
+              // Update label
+              const label = roleWrap.querySelector('.assignees-dropdown__role-label');
+              if (label) label.textContent = newRole;
+              roleWrap.classList.remove('open');
+            });
+          });
+
+          // Suggested item click — add to "People on this loan" + remove from suggested
+          el.querySelectorAll('.assignees-dropdown__item--suggested').forEach(item => {
+            item.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const name = item.dataset.name;
+              const role = item.dataset.role;
+              const img  = item.dataset.img;
+
+              // Build new person row with role picker
+              const chevSmall = `<svg viewBox="0 0 11 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 0.5L5.5 5.5L0.5 0.5" stroke="var(--stroke-0,#808080)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+              const newRow = document.createElement('div');
+              newRow.className = 'assignees-dropdown__item assignees-dropdown__item--new';
+              newRow.innerHTML = `
+                <div class="assignees-dropdown__person">
+                  <div class="assignees-dropdown__avatar"><img src="${img}" alt="${name}"></div>
+                  <span class="assignees-dropdown__name">${name}</span>
+                </div>
+                <div class="assignees-dropdown__role-wrap">
+                  <div class="assignees-dropdown__role">
+                    <span class="assignees-dropdown__role-label">${role}</span>
+                    <span class="assignees-dropdown__role-chevron">${chevSmall}</span>
+                  </div>
+                </div>`;
+
+              // Insert before the "Add Teammate" button
+              const addBtn = el.querySelector('.assignees-dropdown__add');
+              addBtn.parentNode.insertBefore(newRow, addBtn);
+
+              // Bind role badge on new row
+              const badge = newRow.querySelector('.assignees-dropdown__role');
+              if (badge) badge.addEventListener('click', (ev) => { ev.stopPropagation(); });
+
+              // Animate removal of suggested item
+              item.style.transition = 'opacity 0.2s, transform 0.2s';
+              item.style.opacity = '0';
+              item.style.transform = 'translateX(8px)';
+              setTimeout(() => item.remove(), 220);
+
+              // Animate new row entrance
+              newRow.style.opacity = '0';
+              newRow.style.transform = 'translateY(-6px)';
+              newRow.style.transition = 'opacity 0.25s var(--ease-smooth), transform 0.25s var(--ease-spring)';
+              requestAnimationFrame(() => requestAnimationFrame(() => {
+                newRow.style.opacity = '1';
+                newRow.style.transform = 'translateY(0)';
+              }));
+            });
+          });
+
+          // Click outside — close dropdown and role pickers
+          document.addEventListener('click', function outsideClick(e) {
+            if (!wrap.contains(e.target)) {
+              wrap.classList.remove('open', 'search-mode');
+              el.querySelectorAll('.assignees-dropdown__role-wrap.open').forEach(w => w.classList.remove('open'));
+            }
           });
         },
         tabs: assigneesTabs(variantId),
+        defaultLang: 'HTML',
+        relations: comp.relations || null,
+      });
+    });
+  });
+}
+
+// ── People Dropdown ───────────────────────────────────────────────────────────
+
+function buildPeopleDropdownHtml(v, standalone = false) {
+  const dropdown = buildAssigneesDropdownHtml(v?.viewerRole || "Loan Officer");
+  const cls = standalone ? 'class="assignees-dropdown assignees-dropdown--standalone"' : 'class="assignees-dropdown"';
+  return dropdown.replace('class="assignees-dropdown"', cls);
+}
+
+function renderLenderPeopleDropdownPage() {
+  const comp = SYSTEM.products.lenderPortal.peopleDropdown;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table" style="max-width:640px">`;
+  comp.variants.forEach(v => {
+    // For search-open variant, inline-override to show search section
+    const dropdownHtml = buildPeopleDropdownHtml(v, true);
+    const searchStyle = v.searchOpen
+      ? dropdownHtml
+          .replace('class="assignees-dropdown__add"', 'class="assignees-dropdown__add" style="max-height:0;opacity:0;padding:0;pointer-events:none"')
+          .replace('class="assignees-dropdown__search-section"', 'class="assignees-dropdown__search-section" style="max-height:260px;opacity:1;padding-top:8px;overflow:visible"')
+      : dropdownHtml;
+    html += `
+      <div class="ds-row" data-lp-people-dropdown-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:180px">${v.label}</span>
+        ${searchStyle}
+      </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function peopleDropdownTabs(variantId) {
+  const comp = SYSTEM.products.lenderPortal.peopleDropdown;
+  const v    = comp.variants.find(x => x.id === variantId);
+  return {
+    'HTML': `<!-- Include global.css (design-system/css/global.css) -->
+
+${buildPeopleDropdownHtml(v)}`,
+
+    'CSS': `/* global.css — .assignees-dropdown (People Dropdown) */
+
+.assignees-dropdown {
+  background: #fcfcfd;
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 16px;
+  padding: 4px 8px;
+  display: flex; flex-direction: column; gap: 4px;
+  width: 242px;
+}
+
+.assignees-dropdown__header { font-weight: 500; font-size: 12px; color: var(--accent-black-80); padding: 8px 4px; }
+.assignees-dropdown__item { display: flex; align-items: center; justify-content: space-between; padding: 4px; border-radius: 12px; cursor: pointer; }
+.assignees-dropdown__item:hover { background: var(--accent-black-8); }
+.assignees-dropdown__avatar { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; border: 1px solid var(--accent-black-8); }
+.assignees-dropdown__name { font-size: 12px; font-weight: 400; color: var(--accent-black-80); }
+.assignees-dropdown__role { display: flex; align-items: center; gap: 4px; padding: 4px 4px 4px 6px; border-radius: 8px; cursor: pointer; }
+.assignees-dropdown__role-label { font-size: 10px; color: var(--accent-black-50); }
+.assignees-dropdown__role-chevron { width: 10px; height: 10px; --stroke-0: var(--accent-black-50); }
+
+.assignees-dropdown__add { display: flex; align-items: center; padding: 12px 8px; border-top: 0.5px solid var(--accent-black-12); width: 100%; background: none; cursor: pointer; }
+.assignees-dropdown__add-icon { width: 16px; height: 16px; --stroke-0: var(--accent-black-60); }
+.assignees-dropdown__add-icon svg { width: 12px; height: 12px; }
+.assignees-dropdown__add-text { font-size: 12px; color: var(--accent-black-60); }
+
+.assignees-dropdown__search-section { border-top: 0.5px solid var(--accent-black-12); padding-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.assignees-dropdown__search { display: flex; align-items: center; background: white; border: 0.5px solid var(--accent-black-12); border-radius: 180px; padding: 2px 4px; }
+.assignees-dropdown__suggested-label { font-size: 12px; font-weight: 500; color: var(--accent-black-60); }`,
+
+    'SVG': `<!-- user-plus (Add Teammate icon) -->
+<svg viewBox="0 0 13 13" fill="none"><path d="M10.5 3.5V7.5M10.5 5.5H8.5M10.5 5.5H12.5..." stroke="var(--stroke-0,#666)" stroke-width="1.2" stroke-linecap="round"/></svg>
+
+<!-- x-mark (clear search) -->
+<svg viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+
+    'React': `import { PeopleDropdown } from 'flow-design-system/react';
+import 'flow-design-system/styles.css';
+
+export function PeopleDropdownDemo() {
+  const people = [
+    { id: '1', name: 'Anagh (You)', role: 'Loan Officer', avatarUrl: '/avatars/anagh.jpg' },
+    { id: '2', name: 'Sarah K',     role: 'Underwriter',  avatarUrl: '/avatars/sarah.jpg' },
+  ];
+  return (
+    <PeopleDropdown
+      people={people}
+      onRoleChange={(personId, newRole) => console.log(personId, newRole)}
+      onAddTeammate={() => console.log('open search')}
+    />
+  );
+}`,
+  };
+}
+
+function bindPeopleDropdownRows() {
+  document.querySelectorAll('[data-lp-people-dropdown-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.lpPeopleDropdownVariant;
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
+      setActive(row);
+      const comp = SYSTEM.products.lenderPortal.peopleDropdown;
+      const v    = comp.variants.find(x => x.id === variantId);
+
+      openPanel({
+        type: 'Lender Portal · People Dropdown',
+        name: v?.label || variantId,
+        preview: buildPeopleDropdownHtml(v, true),
+        onPreviewMount: (el) => {
+          // Search mode for search-open variant
+          if (v?.searchOpen) {
+            const addBtn = el.querySelector('.assignees-dropdown__add');
+            const searchSection = el.querySelector('.assignees-dropdown__search-section');
+            if (addBtn) { addBtn.style.maxHeight = '0'; addBtn.style.opacity = '0'; addBtn.style.padding = '0'; addBtn.style.pointerEvents = 'none'; }
+            if (searchSection) { searchSection.style.maxHeight = '260px'; searchSection.style.opacity = '1'; searchSection.style.paddingTop = '8px'; }
+          }
+          // Role badge interactions
+          el.querySelectorAll('.assignees-dropdown__role').forEach(badge => {
+            badge.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const roleWrap = badge.closest('.assignees-dropdown__role-wrap');
+              if (!roleWrap) return;
+              const isOpen = roleWrap.classList.contains('open');
+              el.querySelectorAll('.assignees-dropdown__role-wrap.open').forEach(w => w.classList.remove('open'));
+              if (!isOpen) roleWrap.classList.add('open');
+            });
+          });
+          el.querySelectorAll('.role-picker__item[data-role]').forEach(item => {
+            item.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const roleWrap = item.closest('.assignees-dropdown__role-wrap');
+              if (!roleWrap) return;
+              roleWrap.querySelectorAll('.role-picker__item').forEach(i => i.classList.remove('role-picker__item--active'));
+              item.classList.add('role-picker__item--active');
+              const label = roleWrap.querySelector('.assignees-dropdown__role-label');
+              if (label) label.textContent = item.dataset.role;
+              roleWrap.classList.remove('open');
+            });
+          });
+          document.addEventListener('click', (e) => {
+            if (!el.contains(e.target)) {
+              el.querySelectorAll('.assignees-dropdown__role-wrap.open').forEach(w => w.classList.remove('open'));
+            }
+          });
+        },
+        tabs: peopleDropdownTabs(variantId),
+        defaultLang: 'HTML',
+        relations: comp.relations || null,
+      });
+    });
+  });
+}
+
+// ── Role Picker ───────────────────────────────────────────────────────────────
+
+function renderLenderRolePickerPage() {
+  const comp = SYSTEM.products.lenderPortal.rolePicker;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table" style="max-width:640px">`;
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-lp-role-picker-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:140px">${v.label}</span>
+        ${buildRolePickerHtml(v.activeRole, v.personName)}
+      </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function rolePickerTabs(variantId) {
+  const comp = SYSTEM.products.lenderPortal.rolePicker;
+  const v    = comp.variants.find(x => x.id === variantId);
+  return {
+    'HTML': `<!-- Include global.css (design-system/css/global.css) -->
+
+${buildRolePickerHtml(v?.activeRole || 'Loan Officer', v?.personName || 'Sarah')}`,
+
+    'CSS': `/* global.css — .role-picker (Figma node 553:3003) */
+
+.role-picker {
+  background: #fcfcfd;
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 16px;
+  padding: 4px;
+  display: flex; flex-direction: column;
+  width: 146px; overflow: hidden;
+}
+
+.role-picker__item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px; border-radius: 12px;
+  font-size: 12px; font-weight: 400; color: var(--accent-black-80);
+  width: 100%; background: none; border: none; cursor: pointer;
+  text-align: left; transition: background 0.2s var(--ease-smooth);
+}
+.role-picker__item:hover { background: var(--accent-black-4, #f5f5f5); }
+.role-picker__item--active { background: var(--accent-black-8, #ebebeb); }
+.role-picker__item--danger { color: var(--accent-red-100, #ff383c); }
+
+.role-picker__section {
+  display: flex; flex-direction: column;
+  border-top: 0.5px solid var(--accent-black-12);
+}`,
+
+    'React': `import { RolePicker } from 'flow-design-system/react';
+import 'flow-design-system/styles.css';
+
+export function RolePickerDemo() {
+  const [role, setRole] = useState('Loan Officer');
+  return (
+    <RolePicker
+      roles={['Loan Officer', 'Processor', 'Underwriter', 'Closer']}
+      activeRole={role}
+      personName="Sarah"
+      onRoleChange={setRole}
+      onTransfer={() => console.log('transfer')}
+      onRemove={() => console.log('remove')}
+    />
+  );
+}`,
+  };
+}
+
+function bindRolePickerRows() {
+  document.querySelectorAll('[data-lp-role-picker-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.lpRolePickerVariant;
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
+      setActive(row);
+      const comp = SYSTEM.products.lenderPortal.rolePicker;
+      const v    = comp.variants.find(x => x.id === variantId);
+
+      openPanel({
+        type: 'Lender Portal · Role Picker',
+        name: v?.label || variantId,
+        preview: buildRolePickerHtml(v?.activeRole || 'Loan Officer', v?.personName || 'Sarah'),
+        onPreviewMount: (el) => {
+          el.querySelectorAll('.role-picker__item[data-role]').forEach(item => {
+            item.addEventListener('click', () => {
+              el.querySelectorAll('.role-picker__item').forEach(i => i.classList.remove('role-picker__item--active'));
+              item.classList.add('role-picker__item--active');
+            });
+          });
+        },
+        tabs: rolePickerTabs(variantId),
         defaultLang: 'HTML',
         relations: comp.relations || null,
       });
@@ -2088,6 +2624,8 @@ const PAGE_RENDERERS = {
   'lender-sidebar-item':      renderLenderSidebarItemPage,
   'lender-sidebar':           renderLenderSidebarPage,
   'lender-assignees':         renderLenderAssigneesPage,
+  'lender-people-dropdown':   renderLenderPeopleDropdownPage,
+  'lender-role-picker':       renderLenderRolePickerPage,
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -2122,6 +2660,8 @@ function init() {
   bindSidebarItemRows();
   bindSidebarRows();
   bindAssigneesRows();
+  bindPeopleDropdownRows();
+  bindRolePickerRows();
   initLpStatusOutsideClose();
   initSearch();
 }

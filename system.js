@@ -107,6 +107,16 @@ window.SYSTEM = {
           label: 'Assignees',
           icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="5" cy="6" r="2.5" stroke="currentColor" stroke-width="1.25"/><circle cx="11" cy="6" r="2.5" stroke="currentColor" stroke-width="1.25"/><path d="M1 14c0-2.209 1.791-4 4-4s4 1.791 4 4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M9 14c0-2.209 1.791-4 4-4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
         },
+        {
+          id: 'lender-people-dropdown',
+          label: 'People Dropdown',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.25"/><circle cx="5.5" cy="7" r="1.5" fill="currentColor" opacity=".6"/><circle cx="10.5" cy="7" r="1.5" fill="currentColor" opacity=".6"/><path d="M3 11h10" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
+        },
+        {
+          id: 'lender-role-picker',
+          label: 'Role Picker',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.25"/><path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        },
       ],
     },
   ],
@@ -239,6 +249,10 @@ window.SYSTEM = {
       svg: '<svg width="100%" height="100%" viewBox="0 0 14 11.9281" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.5 10C4.05707 9.9971 7.59867 10.4681 11.0313 11.4007C11.516 11.5327 12 11.1727 12 10.67V10M1.5 0.5V1C1.5 1.13261 1.44732 1.25979 1.35355 1.35355C1.25979 1.44732 1.13261 1.5 1 1.5H0.5M0.5 1.5V1.25C0.5 0.836 0.836 0.5 1.25 0.5H12.5M0.5 1.5V7.5M12.5 0.5V1C12.5 1.276 12.724 1.5 13 1.5H13.5M12.5 0.5H12.75C13.164 0.5 13.5 0.836 13.5 1.25V7.75C13.5 8.164 13.164 8.5 12.75 8.5H12.5M0.5 7.5V7.75C0.5 7.94891 0.579018 8.13968 0.71967 8.28033C0.860322 8.42098 1.05109 8.5 1.25 8.5H1.5M0.5 7.5H1C1.13261 7.5 1.25979 7.55268 1.35355 7.64645C1.44732 7.74022 1.5 7.86739 1.5 8V8.5M12.5 8.5V8C12.5 7.86739 12.5527 7.74022 12.6464 7.64645C12.7402 7.55268 12.8674 7.5 13 7.5H13.5M12.5 8.5H1.5M9 4.5C9 5.03043 8.78929 5.53914 8.41421 5.91421C8.03914 6.28929 7.53043 6.5 7 6.5C6.46957 6.5 5.96086 6.28929 5.58579 5.91421C5.21071 5.53914 5 5.03043 5 4.5C5 3.96957 5.21071 3.46086 5.58579 3.08579C5.96086 2.71071 6.46957 2.5 7 2.5C7.53043 2.5 8.03914 2.71071 8.41421 3.08579C8.78929 3.46086 9 3.96957 9 4.5ZM11 4.5H11.0053V4.50533H11V4.5ZM3 4.5H3.00533V4.50533H3V4.5Z" stroke="var(--stroke-0,#333)" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
     { name: 'user-plus',
       svg: '<svg width="100%" height="100%" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 3.5V5.5M10.5 5.5V7.5M10.5 5.5H12.5M10.5 5.5H8.5M7 2.75C7 3.34674 6.76295 3.91903 6.34099 4.34099C5.91903 4.76295 5.34674 5 4.75 5C4.15326 5 3.58097 4.76295 3.15901 4.34099C2.73705 3.91903 2.5 3.34674 2.5 2.75C2.5 2.15326 2.73705 1.58097 3.15901 1.15901C3.58097 0.737053 4.15326 0.5 4.75 0.5C5.34674 0.5 5.91903 0.737053 6.34099 1.15901C6.76295 1.58097 7 2.15326 7 2.75ZM0.5 11.3233V11.25C0.5 10.1228 0.947767 9.04183 1.7448 8.2448C2.54183 7.44777 3.62283 7 4.75 7C5.87717 7 6.95817 7.44777 7.7552 8.2448C8.55223 9.04183 9 10.1228 9 11.25V11.3227C7.71699 12.0954 6.24707 12.5025 4.74933 12.5C3.19533 12.5 1.74133 12.07 0.5 11.3227V11.3233Z" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+    { name: 'arrow-up',
+      svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 13V4M4.5 7.5L8 4L11.5 7.5" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+    { name: 'x-mark',
+      svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4L12 12M12 4L4 12" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
   ],
 
   // ── Components ──────────────────────────────────────────────────────────────
@@ -443,8 +457,10 @@ window.SYSTEM = {
         cssFile: 'global.css',
         relations: {
           uses: [
-            { name: 'chevron-down', pageId: 'icon-chevron-down' },
-            { name: 'user-plus',    pageId: 'icon-user-plus'    },
+            { name: 'chevron-down',    pageId: 'icon-chevron-down'    },
+            { name: 'user-plus',       pageId: 'icon-user-plus'       },
+            { name: 'magnifying-glass',pageId: 'icon-magnifying-glass'},
+            { name: 'x-mark',         pageId: 'icon-x-mark'          },
           ],
         },
         // Avatar URLs — replace with real user photos in production
@@ -462,6 +478,44 @@ window.SYSTEM = {
           { id: 'assignees-initials-1',    label: '1 (Initials)',        count: 1, initials: true },
           { id: 'assignees-initials-2',    label: '2 (Initials)',        count: 2, initials: true },
           { id: 'assignees-initials-3',    label: '3 (Initials)',        count: 3, initials: true },
+        ],
+      },
+      peopleDropdown: {
+        title: 'People Dropdown',
+        subtitle: 'Source: Figma › Lender Exploration · node 553-3849 · click a variant for code',
+        figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=553-3849',
+        cssFile: 'global.css',
+        relations: {
+          uses: [
+            { name: 'Role Picker',      pageId: 'lender-role-picker'   },
+            { name: 'Assignees',        pageId: 'lender-assignees'     },
+            { name: 'user-plus',        pageId: 'icon-user-plus'       },
+            { name: 'magnifying-glass', pageId: 'icon-magnifying-glass'},
+            { name: 'x-mark',          pageId: 'icon-x-mark'          },
+          ],
+        },
+        variants: [
+          { id: 'people-dropdown-loan-officer',        label: 'Loan Officer',             viewerRole: 'Loan Officer', searchOpen: false },
+          { id: 'people-dropdown-loan-officer-search', label: 'Loan Officer — Search Open', viewerRole: 'Loan Officer', searchOpen: true  },
+          { id: 'people-dropdown-underwriter',         label: 'Underwriter',              viewerRole: 'Underwriter',  searchOpen: false },
+          { id: 'people-dropdown-processor',           label: 'Processor',                viewerRole: 'Processor',    searchOpen: false },
+          { id: 'people-dropdown-closer',              label: 'Closer',                   viewerRole: 'Closer',       searchOpen: false },
+        ],
+      },
+      rolePicker: {
+        title: 'Role Picker',
+        subtitle: 'Source: Figma › Lender Exploration · node 553-3003 · click a variant for code',
+        figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=553-3003',
+        cssFile: 'global.css',
+        roles: ['Loan Officer', 'Processor', 'Underwriter', 'Closer'],
+        relations: {
+          usedBy: [{ name: 'People Dropdown', pageId: 'lender-people-dropdown' }],
+        },
+        variants: [
+          { id: 'role-loan-officer', label: 'Loan Officer', activeRole: 'Loan Officer', personName: 'Sarah' },
+          { id: 'role-processor',    label: 'Processor',    activeRole: 'Processor',    personName: 'Sarah' },
+          { id: 'role-underwriter',  label: 'Underwriter',  activeRole: 'Underwriter',  personName: 'Sarah' },
+          { id: 'role-closer',       label: 'Closer',       activeRole: 'Closer',       personName: 'Sarah' },
         ],
       },
       sidebar: {
