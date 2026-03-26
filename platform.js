@@ -1615,7 +1615,7 @@ ${buildAssigneesHtml(v)}`,
 .assignees__avatars {
   display: flex;
   align-items: center;
-  padding-right: 12px;
+  padding-right: 8px;
   isolation: isolate;
 }
 .assignees__avatar {
@@ -1624,7 +1624,7 @@ ${buildAssigneesHtml(v)}`,
   border: 1px solid var(--accent-black-8);
   background: var(--accent-white-100);
   overflow: hidden; flex-shrink: 0;
-  margin-right: -12px;
+  margin-right: -8px;
   position: relative;
   transition: transform 0.2s var(--ease-spring), z-index 0s;
 }
@@ -1646,7 +1646,7 @@ ${buildAssigneesHtml(v)}`,
   background: var(--accent-black-12);
   display: flex; align-items: center; justify-content: center;
   font-size: 9px; font-weight: 500; color: var(--accent-black-60);
-  flex-shrink: 0; margin-right: -12px; z-index: 0;
+  flex-shrink: 0; margin-right: -8px; z-index: 0;
 }
 
 /* Chevron — springs 180° when open. --stroke-0 sets icon colour */
