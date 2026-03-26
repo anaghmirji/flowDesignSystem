@@ -557,8 +557,13 @@ window.SYSTEM = {
         title: 'Loan List Item',
         subtitle: 'Source: Figma › Lender Exploration · node 217-473 · state: default, hover, selected · type: Individual',
         figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=217-473',
+        cssFile: 'global.css',
         /** Must match `name` in SYSTEM.icons — same SVG as Icons › user */
         trailingIconName: 'user',
+        relations: {
+          uses:   [{ label: 'user icon', pageId: 'icons' }],
+          usedBy: [{ label: 'Loans', pageId: 'lender-loans' }],
+        },
         sample: {
           name: 'Michael Brown',
           amount: '$370,000',

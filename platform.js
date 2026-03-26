@@ -2783,6 +2783,12 @@ ${html}`,
 
 .loan-list-item__badge--active { background: var(--accent-green-20, #D6F4DE); color: var(--accent-green-100, #34C759); }
 
+.loan-list-item__badge--active   { background: var(--accent-green-20, #D6F4DE); color: var(--accent-green-100, #34C759); }
+.loan-list-item__badge--on-hold  { background: #FFF1CC; color: #996600; }
+.loan-list-item__badge--withdrawn,
+.loan-list-item__badge--cancelled,
+.loan-list-item__badge--denied   { background: #FFE5E5; color: #CC3333; }
+
 .loan-list-item__icon {
   width: 16px;
   height: 16px;
@@ -2790,6 +2796,7 @@ ${html}`,
   display: flex;
   align-items: center;
   justify-content: center;
+  --stroke-0: var(--accent-black-50, #808080); /* controls trailing icon colour */
 }
 
 /* Same wrapper as Icons page — SVG from SYSTEM.icons[name] */
@@ -2833,6 +2840,18 @@ import { computed } from 'vue';
 const props = defineProps({ name: String, amount: String, loanType: String, time: String, status: String, state: { default: 'default' } });
 const statusLabel = computed(() => ({ active: 'Active', 'on-hold': 'On Hold' })[props.status] ?? props.status);
 </script>`,
+
+    'SVG': `<!-- Trailing icon: user (Icons › user) -->
+<!-- Container sets --stroke-0 to control colour -->
+<span class="loan-list-item__icon">
+  <!-- --stroke-0: var(--accent-black-50) set on .loan-list-item__icon in CSS -->
+  <span class="icon">
+    <svg width="100%" height="100%" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8.75 2.75C8.75 3.34674 8.51295 3.91903 8.09099 4.34099C7.66903 4.76295 7.09674 5 6.5 5C5.90326 5 5.33097 4.76295 4.90901 4.34099C4.48705 3.91903 4.25 3.34674 4.25 2.75C4.25 2.15326 4.48705 1.58097 4.90901 1.15901C5.33097 0.737053 5.90326 0.5 6.5 0.5C7.09674 0.5 7.66903 0.737053 8.09099 1.15901C8.51295 1.58097 8.75 2.15326 8.75 2.75ZM2.25 11.3233V11.25C2.25 10.1228 2.697767 9.04183 3.4948 8.2448C4.29183 7.44777 5.37283 7 6.5 7C7.62717 7 8.70817 7.44777 9.5052 8.2448C10.3022 9.04183 10.75 10.1228 10.75 11.25V11.3227C9.46699 12.0954 7.99707 12.5025 6.49933 12.5C4.94533 12.5 3.49133 12.07 2.25 11.3227V11.3233Z"
+        stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </span>
+</span>`,
   };
 }
 
@@ -2850,6 +2869,7 @@ function bindLoanListItemRows() {
         preview: buildLoanListItemHtml(v),
         tabs: loanListItemTabs(variantId),
         defaultLang: 'HTML',
+        relations: comp.relations || null,
       });
     });
   });
