@@ -74,7 +74,17 @@ Every time a component is added or changed, go through every item below without 
 - [ ] Interactive behaviour works (hover, click, toggle, open/close)
 - [ ] No console errors
 
-## 15. Git
+## 15. Prototype — reuse, never duplicate
+
+**Rule: The prototype NEVER re-implements anything already in the design system.**
+
+- [ ] Any component that exists in platform.js is used by calling its existing `buildXHtml()` function directly — never by copying its HTML structure
+- [ ] Any icon is rendered via `iconSvg('name')` from platform.js — never via a hand-written inline SVG
+- [ ] Any button is rendered via `buildBtnPreviewHtml(variant)` — never by hand-writing `btn__icon-wrap` HTML
+- [ ] Any design system CSS class (`.btn`, `.assignees`, `.profile`, `.sidebar-nav`, etc.) is used as-is — never re-styled or overridden in prototype.css unless it's a layout-only context override
+- [ ] Before writing any new HTML in prototype.js, ask: does `platform.js` already have a `buildXHtml()` for this? If yes, call it.
+
+## 16. Git
 - [ ] Working on a feature branch (not directly on main)
 - [ ] Commit message is descriptive (`feat:`, `fix:`, `refactor:`)
 - [ ] Merged to main and pushed only after browser verification passes

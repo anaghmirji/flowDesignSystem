@@ -1,0 +1,186 @@
+/* ── Reset ──────────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, sans-serif);
+  background: var(--accent-bg-0, #f3f3f4);
+  color: var(--accent-black-80, #333);
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; cursor: pointer; background: none; border: none; padding: 0; outline: none; }
+
+/* ── #app ───────────────────────────────────────────────────────────────────── */
+
+#app {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* sidebar fills full height */
+#app .sidebar-nav { height: 100%; }
+
+/* ── .proto-content ─────────────────────────────────────────────────────────── */
+
+.proto-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── .proto-topbar ──────────────────────────────────────────────────────────── */
+
+.proto-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 8px 16px;
+  gap: 8px;
+}
+
+.proto-topbar__tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.proto-topbar__tabs::-webkit-scrollbar { display: none; }
+
+.proto-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* ── .proto-tab ─────────────────────────────────────────────────────────────── */
+
+.proto-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  height: 32px;
+  width: 124px;
+  padding: 0 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-80, #333);
+  background: var(--accent-bg-1, #fcfcfd);
+  border: 0.5px solid transparent;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: border-color 0.15s var(--ease-smooth, ease),
+              box-shadow 0.15s var(--ease-smooth, ease);
+}
+
+.proto-tab--active {
+  border-color: var(--accent-black-8, #ebebeb);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 4px rgba(0,0,0,0.02), 0 10px 6px rgba(0,0,0,0.01);
+}
+
+.proto-tab__label {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;
+}
+
+.proto-tab__close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0;
+  color: var(--accent-black-40, #999);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.proto-tab__close:hover { background: var(--accent-black-8, #ebebeb); color: var(--accent-black-80, #333); }
+.proto-tab__close svg { width: 10px; height: 10px; --stroke-0: currentColor; }
+
+/* action btns use .btn .btn--s1 from global.css */
+
+/* ── .proto-body ────────────────────────────────────────────────────────────── */
+
+.proto-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  padding: 0 10px 10px 0;
+  overflow: hidden;
+}
+
+/* ── .proto-card ────────────────────────────────────────────────────────────── */
+
+.proto-card {
+  flex: 1;
+  display: flex;
+  border-radius: 20px;
+  border: 0.5px solid var(--accent-black-12, #E0E0E0);
+  background: var(--accent-bg-1, #FCFCFD);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ── .proto-main ────────────────────────────────────────────────────────────── */
+
+.proto-main {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+  border-radius: 0 20px 20px 0;
+  border-right: 0.5px solid var(--accent-black-12, #E0E0E0);
+  background: var(--accent-bg-1, #FCFCFD);
+  box-shadow: 70px 0 20px 0 rgba(0,0,0,0.00), 45px 0 18px 0 rgba(0,0,0,0.00), 25px 0 15px 0 rgba(0,0,0,0.01), 11px 0 11px 0 rgba(0,0,0,0.01), 3px 0 6px 0 rgba(0,0,0,0.01);
+}
+
+/* ── .proto-resize-handle ───────────────────────────────────────────────────── */
+
+.proto-resize-handle {
+  width: 4px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 3;
+  cursor: col-resize;
+  margin-left: -2px;
+  margin-right: -2px;
+  transition: background 0.15s var(--ease-smooth, ease);
+}
+
+.proto-resize-handle::after {
+  content: '';
+  position: absolute;
+  inset: 0 -3px;   /* wider invisible hit area */
+}
+
+.proto-resize-handle:hover,
+.proto-resize-handle--active {
+  background: var(--accent-black-12, #e0e0e0);
+}
+
+/* ── .proto-ai-panel ────────────────────────────────────────────────────────── */
+
+.proto-ai-panel {
+  width: 372px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px;
+  overflow-y: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.proto-ai-panel__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent-black-30, #b2b2b2);
+}
