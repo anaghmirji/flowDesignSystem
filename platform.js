@@ -3056,6 +3056,73 @@ const expanded = ref(true);
   };
 }
 
+function mountLoanStageGroupInteractive(el) {
+  const group  = el.querySelector('.loan-stage-group');
+  if (!group) return;
+  const header = group.querySelector('.loan-stage-group__header');
+  const body   = group.querySelector('.loan-stage-group__body');
+  if (!header || !body) return;
+
+  const DUR   = 340;
+  const EASE  = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+  let running = false;
+
+  // Prime inline styles to match initial class so CSS doesn't fight JS
+  const startExpanded = group.classList.contains('loan-stage-group--expanded');
+  body.style.overflow   = 'hidden';
+  body.style.maxHeight  = startExpanded ? 'none' : '0px';
+  body.style.paddingTop = startExpanded ? '12px'  : '0px';
+
+  function animateTo(open) {
+    if (running) return;
+    running = true;
+
+    if (open) {
+      // Measure natural height before the reveal
+      body.style.maxHeight = 'none';
+      const fullH = body.scrollHeight;
+      body.style.maxHeight  = '0px';
+      body.style.paddingTop = '0px';
+      group.classList.add('loan-stage-group--expanded');
+      group.classList.remove('loan-stage-group--collapsed');
+
+      // Double-rAF ensures the browser sees the starting values before we animate
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        body.style.transition = `max-height ${DUR}ms ${EASE}, padding-top ${DUR}ms ${EASE}`;
+        body.style.maxHeight  = fullH + 'px';
+        body.style.paddingTop = '12px';
+        setTimeout(() => {
+          body.style.transition = '';
+          body.style.maxHeight  = 'none';
+          running = false;
+        }, DUR + 20);
+      }));
+    } else {
+      // Snapshot the live height so we animate from the real pixel value
+      const curH = body.scrollHeight;
+      body.style.maxHeight  = curH + 'px';
+      body.style.paddingTop = '12px';
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        body.style.transition = `max-height ${DUR}ms ${EASE}, padding-top ${DUR}ms ${EASE}`;
+        body.style.maxHeight  = '0px';
+        body.style.paddingTop = '0px';
+        setTimeout(() => {
+          body.style.transition = '';
+          group.classList.remove('loan-stage-group--expanded');
+          group.classList.add('loan-stage-group--collapsed');
+          running = false;
+        }, DUR + 20);
+      }));
+    }
+  }
+
+  header.style.cursor = 'pointer';
+  header.addEventListener('click', () => {
+    animateTo(!group.classList.contains('loan-stage-group--expanded'));
+  });
+}
+
 function bindLoanStageGroupRows() {
   document.querySelectorAll('[data-loan-stage-group-variant]').forEach(row => {
     row.addEventListener('click', () => {
@@ -3071,6 +3138,7 @@ function bindLoanStageGroupRows() {
         tabs: loanStageGroupTabs(variantId),
         defaultLang: 'HTML',
         relations: comp.relations || null,
+        onPreviewMount: mountLoanStageGroupInteractive,
       });
     });
   });
