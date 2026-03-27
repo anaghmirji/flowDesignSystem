@@ -1513,6 +1513,7 @@
   gap: 0;
   padding: 12px 0 12px 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .loan-stage-group--expanded {
@@ -1584,9 +1585,10 @@
   overflow: visible;
 }
 
-/* Items inside the group fill the container width */
+/* Items inside the group fill the container — remove hardcoded 288px */
 .loan-stage-group__body .loan-list-item {
   width: 100%;
+  min-width: 0;
 }
 
 /* Last item in group: no bottom border */

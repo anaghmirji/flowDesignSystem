@@ -2943,6 +2943,7 @@ ${html}`,
   flex-direction: column;
   padding: 12px 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 .loan-stage-group--expanded { padding-bottom: 4px; }
 
