@@ -1554,6 +1554,7 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
+  transition: transform 340ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
   justify-content: center;
   --stroke-0: var(--accent-black-60, #666);
   transition: transform 0.25s var(--ease-smooth);
@@ -1575,14 +1576,11 @@
   padding: 0 4px;
   overflow: hidden;
   max-height: 0;
-  transition: max-height 0.35s var(--ease-smooth), padding-top 0.35s var(--ease-smooth);
 }
 
 .loan-stage-group--expanded .loan-stage-group__body {
-  max-height: 800px;
+  max-height: none;
   padding-top: 12px;
-  padding-bottom: 0;
-  overflow: visible;
 }
 
 /* Items inside the group fill the container — remove hardcoded 288px */
