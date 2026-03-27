@@ -1554,10 +1554,9 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  transition: transform 340ms var(--ease-smooth);
   justify-content: center;
   --stroke-0: var(--accent-black-60, #666);
-  transition: transform 0.25s var(--ease-smooth);
+  transition: transform 340ms var(--ease-smooth);
 }
 
 .loan-stage-group__chevron svg {

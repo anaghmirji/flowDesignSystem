@@ -581,10 +581,10 @@ window.SYSTEM = {
         ],
         relations: {
           uses:   [
-            { label: 'Loan List Item',      pageId: 'lender-loan-list-item' },
-            { label: 'chevron-down icon',   pageId: 'icons' },
+            { name: 'Loan List Item',     pageId: 'lender-loan-list-item' },
+            { name: 'chevron-down icon',  pageId: 'icons' },
           ],
-          usedBy: [{ label: 'Loans', pageId: 'lender-loans' }],
+          usedBy: [{ name: 'Loans', pageId: 'lender-loans' }],
         },
       },
       loanListItem: {

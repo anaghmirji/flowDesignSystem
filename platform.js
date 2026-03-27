@@ -3007,8 +3007,8 @@ ${html}`,
 </span>`,
 
     'React': `import 'flow-design-system/styles.css';
+import { LoanStageGroup, LoanListItem } from 'flow-design-system/react';
 import { useState } from 'react';
-import { ICONS } from './icons';
 
 function LoanStageGroup({ stageName, count, loans }) {
   const [expanded, setExpanded] = useState(true);
