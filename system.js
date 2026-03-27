@@ -500,6 +500,7 @@ window.SYSTEM = {
         variants: [
           { id: 'assignees-unassigned',    label: 'Unassigned',          count: 0 },
           { id: 'assignees-1',             label: '1 Assignee',          count: 1 },
+          { id: 'assignees-1-hover',       label: '1 Assignee — Hover',  count: 1, forceHover: true },
           { id: 'assignees-2',             label: '2 Assignees',         count: 2 },
           { id: 'assignees-3',             label: '3 Assignees',         count: 3 },
           { id: 'assignees-overflow',      label: '4+ Assignees',        count: 4 },

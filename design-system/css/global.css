@@ -742,9 +742,16 @@
   transition: opacity 0.15s var(--ease-smooth), transform 0.15s var(--ease-smooth);
   z-index: 20;
 }
-.assignees__avatar:hover .assignees__tooltip {
+.assignees__avatar:hover .assignees__tooltip,
+.assignees__avatar--hover .assignees__tooltip {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+}
+
+/* Force hover state — used for static variant preview */
+.assignees__avatar--hover {
+  transform: translateY(-2px);
+  z-index: 10;
 }
 
 .assignees__avatar img {

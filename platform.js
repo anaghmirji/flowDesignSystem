@@ -1647,13 +1647,14 @@ function buildAssigneesHtml(v) {
     const name     = namesArr[i];
     const role     = rolesArr[i];
     const tooltip  = `${name} (${role})`;
+    const hoverClass = (v?.forceHover && i === 0) ? ' assignees__avatar--hover' : '';
     if (v?.initials) {
-      avatarsHtml += `<span class="assignees__avatar assignees__avatar--initials" style="z-index:${3 - i}">
+      avatarsHtml += `<span class="assignees__avatar assignees__avatar--initials${hoverClass}" style="z-index:${3 - i}">
         <span class="assignees__initials">${initials}</span>
         <span class="assignees__tooltip">${tooltip}</span>
       </span>`;
     } else {
-      avatarsHtml += `<span class="assignees__avatar" style="z-index:${3 - i}">
+      avatarsHtml += `<span class="assignees__avatar${hoverClass}" style="z-index:${3 - i}">
         <img src="${avatarUrls[i]}" alt="${name}">
         <span class="assignees__tooltip">${tooltip}</span>
       </span>`;
