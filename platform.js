@@ -2912,7 +2912,7 @@ function renderLenderLoanStageGroupPage() {
       <div class="section-title">${comp.title}</div>
       <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
     </div>
-    <div class="ds-table" style="max-width:320px">`;
+    <div class="ds-table">`;
   comp.variants.forEach(v => {
     html += `
       <div class="ds-row" data-loan-stage-group-variant="${v.id}" style="padding:16px 20px;align-items:flex-start">
