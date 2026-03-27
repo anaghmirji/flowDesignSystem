@@ -2976,25 +2976,26 @@ ${html}`,
   align-items: center;
   justify-content: center;
   --stroke-0: var(--accent-black-60, #666);
-  transition: transform 0.25s var(--ease-smooth);
+  transition: transform 340ms var(--ease-smooth);
 }
 .loan-stage-group__chevron svg { width: 10.98px; height: 5.99px; display: block; }
 .loan-stage-group--expanded .loan-stage-group__chevron { transform: rotate(180deg); }
 
+/* Body open/close is JS-driven (animates from real scrollHeight → 0).
+   CSS only defines the collapsed default; JS sets max-height inline. */
 .loan-stage-group__body {
   display: flex;
   flex-direction: column;
   padding: 0 4px;
   overflow: hidden;
   max-height: 0;
-  transition: max-height 0.35s var(--ease-smooth), padding-top 0.35s var(--ease-smooth);
 }
 .loan-stage-group--expanded .loan-stage-group__body {
-  max-height: 800px;
+  max-height: none;
   padding-top: 12px;
 }
 
-.loan-stage-group__body .loan-list-item { width: 100%; }
+.loan-stage-group__body .loan-list-item { width: 100%; min-width: 0; }
 .loan-stage-group__body .loan-list-item:last-child { border-bottom: none; }`,
 
     'SVG': `<!-- Chevron icon — rotates 180° when expanded -->
