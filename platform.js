@@ -1741,6 +1741,10 @@ ${buildAssigneesHtml(v)}`,
 .assignees__avatar:hover { transform: translateY(-2px); z-index: 10; }
 .assignees__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+/* Force hover state — used for static variant preview */
+.assignees__avatar--hover { transform: translateY(-2px); z-index: 10; }
+.assignees__avatar--hover .assignees__tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 /* Initials avatar — no photo (Figma node 553-2540) */
 .assignees__avatar--initials { background: var(--background-1, #fcfcfd); display: flex; align-items: center; justify-content: center; }
 .assignees__initials { font-size: 12px; font-weight: 400; color: var(--accent-black-100, #000); line-height: 1; white-space: nowrap; }
