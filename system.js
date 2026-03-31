@@ -127,6 +127,11 @@ window.SYSTEM = {
           label: 'Loan Stage Group',
           icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="5" rx="2" stroke="currentColor" stroke-width="1.25"/><rect x="2" y="9" width="12" height="5" rx="2" stroke="currentColor" stroke-width="1.25"/><path d="M5 4.5h6M5 11.5h4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>',
         },
+        {
+          id: 'lender-search-bar',
+          label: 'Search Bar',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4" stroke="currentColor" stroke-width="1.25"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
+        },
       ],
     },
     {
@@ -286,42 +291,26 @@ window.SYSTEM = {
   // the live row preview — no HTML needed here, just data.
   components: {
     buttons: {
-      title: 'Button / Primary',
-      subtitle: 'Source: Figma › Button/Primary · click a variant for code',
+      title: 'Buttons',
+      subtitle: 'Source: Figma › Button/Primary + Button/Secondary · click a variant for code',
       cssFile: 'global.css',
-      // relations → shown in the panel's relationship graph for every button variant
       relations: {
         uses: [{ name: 'Icons', pageId: 'icons' }],
       },
-      variants: [
-        {
-          id: 's1',
-          label: 'Symbol 1',
-          // icons[] → array of icon names used in icon-wrap slots
-          icons: ['magnifying-glass'],
-        },
-        {
-          id: 's2',
-          label: 'Symbol 2',
-          icons: ['magnifying-glass', 'magnifying-glass'],
-        },
-        {
-          id: 's3',
-          label: 'Symbol 3',
-          icons: ['magnifying-glass', 'magnifying-glass', 'magnifying-glass'],
-        },
-        {
-          id: 'label',
-          label: 'Symbol + Text',
-          leadIcon: 'magnifying-glass',
-        },
-        {
-          id: 'label-trail',
-          label: 'Symbol + Text + Symbol',
-          leadIcon: 'magnifying-glass',
-          trailIcon: 'chevron-down',
-        },
+      primaryVariants: [
+        { id: 's1',          label: 'Primary — Symbol 1',              icons: ['magnifying-glass'] },
+        { id: 's2',          label: 'Primary — Symbol 2',              icons: ['magnifying-glass', 'magnifying-glass'] },
+        { id: 's3',          label: 'Primary — Symbol 3',              icons: ['magnifying-glass', 'magnifying-glass', 'magnifying-glass'] },
+        { id: 'label',       label: 'Primary — Symbol + Text',         leadIcon: 'magnifying-glass' },
+        { id: 'label-trail', label: 'Primary — Symbol + Text + Symbol',leadIcon: 'magnifying-glass', trailIcon: 'chevron-down' },
       ],
+      secondaryVariants: [
+        { id: 'secondary-s1', label: 'Secondary — Symbol 1', icons: ['funnel'] },
+        { id: 'secondary-s2', label: 'Secondary — Symbol 2', icons: ['funnel', 'x-mark'] },
+        { id: 'secondary-s3', label: 'Secondary — Symbol 3', icons: ['magnifying-glass', 'funnel', 'x-mark'] },
+      ],
+      // keep variants as combined list for search index
+      get variants() { return [...this.primaryVariants, ...this.secondaryVariants]; },
     },
 
     // ── Dropdown Item ──────────────────────────────────────────────────────────
@@ -611,6 +600,20 @@ window.SYSTEM = {
           { id: 'loan-list-item-default',  label: 'Default',  state: 'default'  },
           { id: 'loan-list-item-hover',    label: 'Hover',    state: 'hover'    },
           { id: 'loan-list-item-selected', label: 'Selected', state: 'selected' },
+        ],
+      },
+
+      // ── Search Bar ─────────────────────────────────────────────────────────
+      searchBar: {
+        title: 'Search Bar',
+        subtitle: 'Source: Figma › Lender Exploration · node 270-1958',
+        figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=270-1958',
+        cssFile: 'global.css',
+        relations: {
+          uses: [{ name: 'Icons', pageId: 'icons' }],
+        },
+        variants: [
+          { id: 'search-bar-default', label: 'Default' },
         ],
       },
     },

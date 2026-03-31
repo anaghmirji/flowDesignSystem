@@ -345,18 +345,164 @@ function renderButtonsPage() {
       <div class="section-title">${comp.title}</div>
       <div class="section-subtitle">${comp.subtitle}</div>
     </div>
+    <div class="ds-table ds-table--section-label">
+      <span style="font-size:11px;font-weight:600;color:var(--accent-black-40,#999);letter-spacing:.06em;text-transform:uppercase">Primary</span>
+    </div>
     <div class="ds-table">`;
 
-  comp.variants.forEach(v => {
+  comp.primaryVariants.forEach(v => {
     html += `
       <div class="ds-row" data-variant="${v.id}">
-        <span class="ds-row-name" style="min-width:220px">${v.label}</span>
+        <span class="ds-row-name" style="min-width:220px">${v.label.replace('Primary — ','')}</span>
         ${buildBtnPreviewHtml(v)}
+      </div>`;
+  });
+
+  html += `</div>
+    <div class="ds-table ds-table--section-label">
+      <span style="font-size:11px;font-weight:600;color:var(--accent-black-40,#999);letter-spacing:.06em;text-transform:uppercase">Secondary</span>
+    </div>
+    <div class="ds-table">`;
+
+  comp.secondaryVariants.forEach(v => {
+    html += `
+      <div class="ds-row" data-btn-secondary-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:220px">${v.label.replace('Secondary — ','')}</span>
+        ${buildBtnSecondaryPreviewHtml(v)}
       </div>`;
   });
 
   html += `</div>`;
   return html;
+}
+
+// ─── Button / Secondary ───────────────────────────────────────────────────────
+
+function buildBtnSecondaryPreviewHtml(v) {
+  const wrap = (name) =>
+    `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg(name)}</div></div></div>`;
+  return `<button class="btn btn--secondary" tabindex="-1">${v.icons.map(wrap).join('')}</button>`;
+}
+
+function btnSecondaryTabs(variantId) {
+  const comp = SYSTEM.components.buttons;
+  const v    = comp.secondaryVariants.find(x => x.id === variantId);
+  if (!v) return null;
+  const wrap = (name) =>
+    `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg(name)}</div></div></div>`;
+  const iconsHtml = v.icons.map(wrap).join('');
+  const css = `/* Button / Secondary — ${v.label} */
+.btn--secondary {
+  background: var(--accent-black-8, #ebebeb);
+  border: none;
+  border-radius: 100px;
+  padding: 2px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.btn--secondary .btn__icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 160px;
+  background: var(--accent-black-8, #ebebeb);
+  --stroke-0: var(--accent-black-80, #333);
+}
+@media (hover: hover) {
+  .btn--secondary .btn__icon-wrap:hover {
+    background: var(--accent-black-16, #d6d6d6);
+  }
+}`;
+  const react = `import { BtnSecondary } from 'flow-design-system/react';
+
+<BtnSecondary icons={[${v.icons.map(i => `'${i}'`).join(', ')}]} />`;
+  const vue = `<BtnSecondary :icons="[${v.icons.map(i => `'${i}'`).join(', ')}]" />`;
+  return {
+    'HTML':  `<button class="btn btn--secondary">\n${iconsHtml}\n</button>`,
+    'CSS':   css,
+    'React': react,
+    'Vue':   vue,
+  };
+}
+
+// ─── Search Bar ───────────────────────────────────────────────────────────────
+
+function buildSearchBarHtml() {
+  const wrap = (name) =>
+    `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg(name)}</div></div></div>`;
+  return `<div class="search-bar">
+  <div class="search-bar__input">
+    ${wrap('magnifying-glass')}
+    <span class="search-bar__placeholder">Search</span>
+  </div>
+</div>`;
+}
+
+function renderLenderSearchBarPage() {
+  const comp = SYSTEM.products.lenderPortal.searchBar;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table">
+      <div class="ds-row" data-search-bar-variant="search-bar-default" style="padding:16px 20px;align-items:flex-start">
+        <span class="ds-row-name" style="min-width:80px">Default</span>
+        <div style="width:260px">${buildSearchBarHtml()}</div>
+      </div>
+    </div>`;
+  return html;
+}
+
+function lenderSearchBarTabs(variantId) {
+  const comp = SYSTEM.products.lenderPortal.searchBar;
+  const wrap = (name) =>
+    `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg(name)}</div></div></div>`;
+  const css = `/* Search Bar */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--background-1, #fcfcfd);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.12);
+  width: 100%;
+  box-sizing: border-box;
+}
+.search-bar__input {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  height: 36px;
+  padding: 4px;
+  background: #fff;
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 180px;
+  overflow: hidden;
+  cursor: text;
+}
+.search-bar__input .btn__icon-wrap {
+  background: unset;
+  background-color: var(--accent-white-100);
+  --stroke-0: var(--accent-black-60, #666);
+}
+.search-bar__placeholder {
+  font-family: 'Circular Std', -apple-system, sans-serif;
+  font-size: 11px;
+  color: var(--accent-black-60, #666);
+  padding-left: 0px;
+}`;
+  const react = `import { SearchBar } from 'flow-design-system/react';
+
+<SearchBar placeholder="Search" />`;
+  const vue = `<SearchBar placeholder="Search" />`;
+  return {
+    'HTML':  buildSearchBarHtml(),
+    'CSS':   css,
+    'React': react,
+    'Vue':   vue,
+  };
 }
 
 // ─── Lender Portal — preview builders ────────────────────────────────────────
@@ -3168,6 +3314,7 @@ const PAGE_RENDERERS = {
   'lender-role-picker':       renderLenderRolePickerPage,
   'lender-loan-list-item':    renderLenderLoanListItemPage,
   'lender-loan-stage-group':  renderLenderLoanStageGroupPage,
+  'lender-search-bar':        renderLenderSearchBarPage,
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -3193,6 +3340,7 @@ function init() {
   bindTokenRows();
   bindIconRows();
   bindButtonRows();
+  bindButtonSecondaryRows();
   bindDropdownItemRows();
   bindLenderRows();
   bindLpStatusRows();
@@ -3206,6 +3354,7 @@ function init() {
   bindRolePickerRows();
   bindLoanListItemRows();
   bindLoanStageGroupRows();
+  bindSearchBarRows();
   initLpStatusOutsideClose();
   initSearch();
 }
@@ -3288,6 +3437,12 @@ function buildSearchIndex() {
   });
   SYSTEM.products.lenderPortal.loanStageGroup.variants.forEach(v => {
     idx.push({ type: 'Loan Stage Group', label: v.label, pageId: 'lender-loan-stage-group', sel: `[data-loan-stage-group-variant="${v.id}"]` });
+  });
+  SYSTEM.components.buttons.secondaryVariants.forEach(v => {
+    idx.push({ type: 'Button / Secondary', label: v.label, pageId: 'buttons-secondary', sel: `[data-btn-secondary-variant="${v.id}"]` });
+  });
+  SYSTEM.products.lenderPortal.searchBar.variants.forEach(v => {
+    idx.push({ type: 'Search Bar', label: v.label, pageId: 'lender-search-bar', sel: `[data-search-bar-variant="${v.id}"]` });
   });
 
   return idx;
@@ -3438,6 +3593,44 @@ function bindIconRows() {
         tabs: iconTabs(name),
         defaultLang: 'HTML',
         relations: iconDef?.relations || null,
+      });
+    });
+  });
+}
+
+function bindButtonSecondaryRows() {
+  document.querySelectorAll('[data-btn-secondary-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.btnSecondaryVariant;
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
+      setActive(row);
+      const variantDef = SYSTEM.components.buttons.secondaryVariants.find(x => x.id === variantId);
+      const btn = row.querySelector('.btn');
+      openPanel({
+        type: 'Button / Secondary',
+        name: variantDef ? variantDef.label : variantId,
+        preview: btn ? btn.outerHTML : '',
+        tabs: btnSecondaryTabs(variantId),
+        defaultLang: 'HTML',
+        relations: SYSTEM.components.buttons.relations || null,
+      });
+    });
+  });
+}
+
+function bindSearchBarRows() {
+  document.querySelectorAll('[data-search-bar-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.searchBarVariant;
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
+      setActive(row);
+      openPanel({
+        type: 'Component · Lender Portal',
+        name: 'Default',
+        preview: buildSearchBarHtml(),
+        tabs: lenderSearchBarTabs(variantId),
+        defaultLang: 'HTML',
+        relations: SYSTEM.products.lenderPortal.searchBar.relations || null,
       });
     });
   });
