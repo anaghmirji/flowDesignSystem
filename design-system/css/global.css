@@ -379,16 +379,7 @@
   background: var(--accent-black-20, #cccccc);
 }
 
-/* ── Search Bar ──────────────────────────────────────────────────────────── */
-.search-bar {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  background: var(--background-1, #fcfcfd);
-  border-top: 0.5px solid rgba(0, 0, 0, 0.12);
-  width: 100%;
-  box-sizing: border-box;
-}
+/* ── Search Bar — standalone pill input ──────────────────────────────────── */
 .search-bar__input {
   display: flex;
   align-items: center;
@@ -402,6 +393,7 @@
   overflow: hidden;
   cursor: text;
   box-sizing: border-box;
+  transition: border-color 0.2s var(--ease-smooth);
 }
 .search-bar__input .btn__icon-wrap {
   background: unset;
@@ -409,14 +401,67 @@
   --stroke-0: var(--accent-black-60, #666);
   flex-shrink: 0;
 }
+/* Focus state — triggered by :focus-within (real input) or --focused modifier (static preview) */
+.search-bar__input:focus-within,
+.search-bar__input--focused {
+  border-color: var(--accent-black-30, #b3b3b3);
+}
+/* Placeholder text (static display) */
 .search-bar__placeholder {
   font-family: 'Circular Std', -apple-system, sans-serif;
   font-size: 11px;
   font-weight: 400;
   color: var(--accent-black-60, #666);
   white-space: nowrap;
-  padding-left: 0px;
+  padding-left: 0;
   flex-shrink: 0;
+  pointer-events: none;
+}
+/* Value text (static filled display) */
+.search-bar__value {
+  font-family: 'Circular Std', -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--accent-black-80, #333);
+  white-space: nowrap;
+  padding-left: 0;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+/* Real input field (interactive preview) */
+.search-bar__field {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Circular Std', -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--accent-black-80, #333);
+  white-space: nowrap;
+}
+.search-bar__field::placeholder {
+  color: var(--accent-black-60, #666);
+}
+
+/* ── Search Section — sticky bottom bar with search input + actions ──────── */
+.search-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 12px;
+  background: var(--background-1, #fcfcfd);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.12);
+  width: 100%;
+  box-sizing: border-box;
+}
+.search-section__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  width: 100%;
 }
 
 
@@ -769,7 +814,7 @@
   margin-right: -8px;
   background: var(--accent-white-100);
   position: relative;
-  transition: transform 0.2s var(--ease-spring), z-index 0s;
+  transition: transform 0.2s var(--ease-spring), z-index 0s var(--ease-smooth);
 }
 
 /* Clip the image itself while keeping overflow visible for tooltip */
@@ -1467,9 +1512,10 @@
   border-bottom-color: transparent;
 }
 
-/* Hide the bottom border of the item directly above a hovered item */
+/* Hide the bottom border of the item directly above a hovered or selected item */
 .loan-list-item:has(+ .loan-list-item:hover),
-.loan-list-item:has(+ .loan-list-item--hover) {
+.loan-list-item:has(+ .loan-list-item--hover),
+.loan-list-item:has(+ .loan-list-item--selected) {
   border-bottom-color: transparent;
 }
 
@@ -1581,7 +1627,6 @@
   gap: 0;
   padding: 12px 0 12px 0;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 .loan-stage-group--expanded {
@@ -1659,4 +1704,84 @@
 /* Last item in group: no bottom border */
 .loan-stage-group__body .loan-list-item:last-child {
   border-bottom: none;
+}
+
+
+/* ── Loans Panel ──────────────────────────────────────────────────────────────
+   Figma node: 270:1895
+   Full sidebar panel composing Loans Pill, Loan Stage Groups, and Search Section.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.loans-panel {
+  display: flex;
+  flex-direction: column;
+  width: 278px;
+  height: 100%;
+  background: var(--background-1, #fcfcfd);
+  border-right: 0.5px solid var(--accent-black-12, #e0e0e0);
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+.loans-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--background-1, #fcfcfd);
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.loans-panel__body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* stable gutter permanently reserves scrollbar space so content
+     width never shifts when the scrollbar appears or disappears */
+  scrollbar-gutter: stable;
+  /* Right padding minus scrollbar gutter width (6px) keeps both sides visually equal */
+  padding: 0 6px 0 12px;
+  z-index: 1;
+}
+
+.loans-panel__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.loans-panel__body::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 2px;
+}
+
+.loans-panel__body::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 6px;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.loans-panel__body:hover::-webkit-scrollbar-thumb {
+  background: var(--accent-black-20, rgba(0, 0, 0, 0.2));
+}
+
+.loans-panel__body::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-black-40, rgba(0, 0, 0, 0.4));
+}
+
+.loans-panel__footer {
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+/* Override loan-stage-group inside the panel — fill width, block stacking with gap */
+.loans-panel .loan-stage-group {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.loans-panel .loan-stage-group:last-child {
+  margin-bottom: 0;
 }

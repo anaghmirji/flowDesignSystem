@@ -16,3 +16,6 @@ export { BorrowerProfile, type BorrowerProfileProps } from './BorrowerProfile.js
 export { SidebarItem, type SidebarItemProps } from './SidebarItem.js';
 export { Sidebar, type SidebarProps, type SidebarNavItem } from './Sidebar.js';
 export { Assignees, type AssigneesProps, type Assignee } from './Assignees.js';
+export { SearchBarInput, type SearchBarInputProps } from './SearchBarInput.js';
+export { SearchSection, type SearchSectionProps } from './SearchSection.js';
+export { LoansPanel, type LoansPanelProps, type LoanStageGroupData } from './LoansPanel.js';

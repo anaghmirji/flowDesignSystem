@@ -22,6 +22,35 @@
         "reveal": "silent",
         "panel": "shared"
       }
+    },
+    {
+      "label": "Open design system in Simple Browser",
+      "type": "shell",
+      "command": "echo ${input:openSimpleBrowser}",
+      "presentation": {
+        "reveal": "never",
+        "echo": false,
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Serve design system and open in Simple Browser",
+      "dependsOn": [
+        "Serve design system (static)",
+        "Open design system in Simple Browser"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "openSimpleBrowser",
+      "type": "command",
+      "command": "simpleBrowser.show",
+      "args": ["http://localhost:8080/"]
     }
   ]
 }

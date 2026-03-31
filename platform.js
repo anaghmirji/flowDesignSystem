@@ -414,13 +414,16 @@ function btnSecondaryTabs(variantId) {
     background: var(--accent-black-16, #d6d6d6);
   }
 }`;
-  const react = `import { BtnSecondary } from 'flow-design-system/react';
+  const react = `import 'flow-design-system/styles.css';
+import { BtnSecondary } from 'flow-design-system/react';
 
 <BtnSecondary icons={[${v.icons.map(i => `'${i}'`).join(', ')}]} />`;
   const vue = `<BtnSecondary :icons="[${v.icons.map(i => `'${i}'`).join(', ')}]" />`;
+  const svgParts = v.icons.map(n => `<!-- ${n} -->\n<!-- .btn--secondary .btn__icon-wrap { --stroke-0: var(--accent-black-80, #333); } -->\n${SYSTEM.icons.find(i => i.name === n)?.svg || ''}`);
   return {
     'HTML':  `<button class="btn btn--secondary">\n${iconsHtml}\n</button>`,
     'CSS':   css,
+    'SVG':   svgParts.join('\n\n'),
     'React': react,
     'Vue':   vue,
   };
@@ -428,15 +431,55 @@ function btnSecondaryTabs(variantId) {
 
 // ─── Search Bar ───────────────────────────────────────────────────────────────
 
-function buildSearchBarHtml() {
+function buildSearchBarHtml(v = {}) {
   const wrap = (name) =>
     `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg(name)}</div></div></div>`;
-  return `<div class="search-bar">
-  <div class="search-bar__input">
-    ${wrap('magnifying-glass')}
-    <span class="search-bar__placeholder">Search</span>
+  const state = v.state || 'default';
+  const stateClass = state !== 'default' ? ` search-bar__input--${state}` : '';
+  const content = v.value
+    ? `<span class="search-bar__value">${v.value}</span>`
+    : `<span class="search-bar__placeholder">Search</span>`;
+  return `<div class="search-bar__input${stateClass}">
+  ${wrap('magnifying-glass')}
+  ${content}
+</div>`;
+}
+
+function buildSearchSectionHtml() {
+  const wrap = (name) =>
+    `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg(name)}</div></div></div>`;
+  return `<div class="search-section">
+  <div class="search-section__row">
+    <div class="search-bar__input">
+      ${wrap('magnifying-glass')}
+      <span class="search-bar__placeholder">Search</span>
+    </div>
+    <button class="btn btn--secondary" aria-label="Filter and archive">
+      ${wrap('funnel')}
+      ${wrap('archive-box')}
+    </button>
   </div>
 </div>`;
+}
+
+function mountSearchBarInteractive(el) {
+  el.querySelectorAll('.search-bar__input').forEach(wrap => {
+    const span = wrap.querySelector('.search-bar__placeholder, .search-bar__value');
+    if (!span) return;
+    const initialVal = wrap.classList.contains('search-bar__input--filled') ? (span.textContent || '') : '';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'search-bar__field';
+    input.placeholder = 'Search';
+    input.value = initialVal;
+    span.replaceWith(input);
+    if (wrap.classList.contains('search-bar__input--focused')) {
+      setTimeout(() => input.focus(), 50);
+    }
+    input.addEventListener('focus', () => wrap.classList.add('search-bar__input--focused'));
+    input.addEventListener('blur',  () => { if (!input.value) wrap.classList.remove('search-bar__input--focused'); });
+    wrap.addEventListener('click', (e) => { e.stopPropagation(); input.focus(); });
+  });
 }
 
 function renderLenderSearchBarPage() {
@@ -446,10 +489,28 @@ function renderLenderSearchBarPage() {
       <div class="section-title">${comp.title}</div>
       <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
     </div>
+    <div class="ds-table" style="max-width:420px">`;
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-search-bar-variant="${v.id}" style="padding:16px 20px;align-items:center">
+        <span class="ds-row-name" style="min-width:80px">${v.label}</span>
+        <div style="flex:1;max-width:260px">${buildSearchBarHtml(v)}</div>
+      </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function renderLenderSearchSectionPage() {
+  const comp = SYSTEM.products.lenderPortal.searchSection;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
     <div class="ds-table">
-      <div class="ds-row" data-search-bar-variant="search-bar-default" style="padding:16px 20px;align-items:flex-start">
-        <span class="ds-row-name" style="min-width:80px">Default</span>
-        <div style="width:260px">${buildSearchBarHtml()}</div>
+      <div class="ds-row" data-search-section-variant="search-section-default" style="padding:0;align-items:flex-start;overflow:hidden">
+        <div style="width:320px">${buildSearchSectionHtml()}</div>
       </div>
     </div>`;
   return html;
@@ -457,49 +518,153 @@ function renderLenderSearchBarPage() {
 
 function lenderSearchBarTabs(variantId) {
   const comp = SYSTEM.products.lenderPortal.searchBar;
-  const wrap = (name) =>
-    `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg(name)}</div></div></div>`;
-  const css = `/* Search Bar */
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  background: var(--background-1, #fcfcfd);
-  border-top: 0.5px solid rgba(0, 0, 0, 0.12);
-  width: 100%;
-  box-sizing: border-box;
-}
+  const v    = comp.variants.find(x => x.id === variantId) || comp.variants[0];
+  const magnifySvg = SYSTEM.icons.find(i => i.name === 'magnifying-glass')?.svg || '';
+  const css = `/* Search Bar — standalone input pill */
 .search-bar__input {
   display: flex;
   align-items: center;
   flex: 1;
+  min-width: 0;
   height: 36px;
   padding: 4px;
-  background: #fff;
+  background: var(--accent-white-100, #ffffff);
   border: 0.5px solid var(--accent-black-12, #e0e0e0);
-  border-radius: 180px;
+  border-radius: 100px;
   overflow: hidden;
   cursor: text;
+  box-sizing: border-box;
+  transition: border-color 0.2s var(--ease-smooth);
 }
 .search-bar__input .btn__icon-wrap {
   background: unset;
   background-color: var(--accent-white-100);
   --stroke-0: var(--accent-black-60, #666);
+  flex-shrink: 0;
 }
+/* Focused */
+.search-bar__input:focus-within,
+.search-bar__input--focused {
+  border-color: var(--accent-black-30, #b3b3b3);
+}
+/* Placeholder (static) */
 .search-bar__placeholder {
   font-family: 'Circular Std', -apple-system, sans-serif;
   font-size: 11px;
+  font-weight: 400;
   color: var(--accent-black-60, #666);
-  padding-left: 0px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+/* Value text (static filled) */
+.search-bar__value {
+  font-family: 'Circular Std', -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--accent-black-80, #333);
+  white-space: nowrap;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+/* Interactive input field */
+.search-bar__field {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Circular Std', -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--accent-black-80, #333);
+}
+.search-bar__field::placeholder {
+  color: var(--accent-black-60, #666);
 }`;
-  const react = `import { SearchBar } from 'flow-design-system/react';
+  const react = `import 'flow-design-system/styles.css';
+import { SearchBarInput } from 'flow-design-system/react';
 
-<SearchBar placeholder="Search" />`;
-  const vue = `<SearchBar placeholder="Search" />`;
+<SearchBarInput placeholder="Search" />`;
+  const vue = `<!-- import 'flow-design-system/styles.css' in app root -->
+<SearchBarInput placeholder="Search" />`;
+  const svg = `<!-- magnifying-glass icon (stroke colour set via --stroke-0 on .btn__icon-wrap) -->
+<!-- Set icon colour on the parent: -->
+<!-- .search-bar__input .btn__icon-wrap { --stroke-0: var(--accent-black-60, #666); } -->
+
+${magnifySvg}`;
   return {
-    'HTML':  buildSearchBarHtml(),
+    'HTML':  buildSearchBarHtml(v),
     'CSS':   css,
+    'SVG':   svg,
+    'React': react,
+    'Vue':   vue,
+  };
+}
+
+function lenderSearchSectionTabs(variantId) {
+  const magnifySvg  = SYSTEM.icons.find(i => i.name === 'magnifying-glass')?.svg  || '';
+  const funnelSvg   = SYSTEM.icons.find(i => i.name === 'funnel')?.svg             || '';
+  const archiveSvg  = SYSTEM.icons.find(i => i.name === 'archive-box')?.svg        || '';
+  const css = `/* Search Section — sticky bottom bar */
+.search-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 12px;
+  background: var(--background-1, #fcfcfd);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.12);
+  width: 100%;
+  box-sizing: border-box;
+}
+.search-section__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  width: 100%;
+}
+/* Search Bar pill (nested) — see Search Bar component for full rules */
+.search-bar__input {
+  flex: 1;
+  height: 36px;
+  padding: 4px;
+  background: var(--accent-white-100, #ffffff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 100px;
+  transition: border-color 0.2s var(--ease-smooth);
+}
+.search-bar__input .btn__icon-wrap {
+  --stroke-0: var(--accent-black-60, #666);
+}
+/* Action buttons (btn--secondary) — see Button/Secondary for full rules */
+.btn--secondary .btn__icon-wrap {
+  background: var(--accent-black-8, #ebebeb);
+  --stroke-0: var(--accent-black-80, #333);
+}`;
+  const react = `import 'flow-design-system/styles.css';
+import { SearchSection } from 'flow-design-system/react';
+
+<SearchSection placeholder="Search" />`;
+  const vue = `<!-- import 'flow-design-system/styles.css' in app root -->
+<SearchSection placeholder="Search" />`;
+  const svg = `<!-- Icons used in Search Section -->
+<!-- Stroke colour set via --stroke-0 on the .btn__icon-wrap container -->
+
+<!-- magnifying-glass (search input icon) -->
+<!-- .search-bar__input .btn__icon-wrap { --stroke-0: var(--accent-black-60, #666); } -->
+${magnifySvg}
+
+<!-- funnel (filter action) -->
+<!-- .btn--secondary .btn__icon-wrap { --stroke-0: var(--accent-black-80, #333); } -->
+${funnelSvg}
+
+<!-- archive-box (archive action) -->
+${archiveSvg}`;
+  return {
+    'HTML':  buildSearchSectionHtml(),
+    'CSS':   css,
+    'SVG':   svg,
     'React': react,
     'Vue':   vue,
   };
@@ -599,7 +764,7 @@ function lenderLoansTabs(variant) {
   border: 0.5px solid var(--accent-black-12);
   border-radius: 100px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 .loans-pill:hover {
   background: var(--accent-black-2);
@@ -715,7 +880,7 @@ function lenderDropdownTabs() {
   padding: 8px;
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 .loans-dropdown__item:hover { background: var(--accent-black-4); }
 .loans-dropdown__item--active { background: var(--accent-black-8); }
@@ -884,7 +1049,7 @@ ${stateComment}
   padding: 8px;
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 
 /* Hover state — applied on :hover or .--hover modifier */
@@ -1191,7 +1356,7 @@ ${buildLpStatusInteractiveHtml(v)}`,
   padding: 8px 12px;
   background: var(--accent-black-8);
   border-radius: 100px 4px 4px 100px;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 .lp-status:hover { background: var(--accent-black-12); }
 .lp-status__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -1266,7 +1431,7 @@ ${buildLpStageHtml(v)}`,
   background: var(--accent-black-8);
   border-radius: 4px 100px 100px 4px;
   overflow: hidden;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
 }
 .lp-stage:hover { background: var(--accent-black-12); }
 .lp-stage__label { font-size: 12px; color: var(--accent-black-80); white-space: nowrap; }
@@ -1282,9 +1447,16 @@ ${buildLpStageHtml(v)}`,
   width: 28px; height: 28px; border-radius: 100px;
   background: var(--accent-black-8); overflow: hidden;
   display: flex; align-items: center; justify-content: center;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
+}
+.lp-stage__btn-inner {
+  --stroke-0: var(--accent-black-80, #333);
 }
 .lp-stage__btn:hover .lp-stage__btn-inner { background: var(--accent-black-20); }`,
+
+    'SVG': `<!-- forward icon (stroke colour set via --stroke-0 on .lp-stage__btn-inner) -->
+<!-- .lp-stage__btn-inner { --stroke-0: var(--accent-black-80, #333); } -->
+${SYSTEM.icons.find(i => i.name === 'forward')?.svg || ''}`,
 
     'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
 import { LpStage } from 'flow-design-system-react';
@@ -1350,7 +1522,7 @@ ${buildLpStatusStageInteractiveHtml(v)}`,
   display: inline-flex; align-items: center; gap: 8px;
   height: 32px; padding: 8px 12px;
   background: var(--accent-black-8);
-  border-radius: 100px 4px 4px 100px; transition: background 0.1s;
+  border-radius: 100px 4px 4px 100px; transition: background 0.2s var(--ease-smooth);
 }
 .lp-status:hover { background: var(--accent-black-12); }
 .lp-status__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -1362,7 +1534,7 @@ ${buildLpStatusStageInteractiveHtml(v)}`,
   display: inline-flex; align-items: center; gap: 10px;
   height: 32px; padding-left: 12px;
   background: var(--accent-black-8);
-  border-radius: 4px 100px 100px 4px; overflow: hidden; transition: background 0.1s;
+  border-radius: 4px 100px 100px 4px; overflow: hidden; transition: background 0.2s var(--ease-smooth);
 }
 .lp-stage:hover { background: var(--accent-black-12); }
 .lp-stage__label { font-size: 12px; color: var(--accent-black-80); white-space: nowrap; }
@@ -1377,9 +1549,13 @@ ${buildLpStatusStageInteractiveHtml(v)}`,
   width: 28px; height: 28px; border-radius: 100px;
   background: var(--accent-black-8); overflow: hidden;
   display: flex; align-items: center; justify-content: center;
-  transition: background 0.1s;
+  transition: background 0.2s var(--ease-smooth);
+  --stroke-0: var(--accent-black-80, #333);
 }
 .lp-stage__btn:hover .lp-stage__btn-inner { background: var(--accent-black-20); }`,
+
+    'SVG': `<!-- forward icon (stroke colour set via --stroke-0 on .lp-stage__btn-inner) -->
+${SYSTEM.icons.find(i => i.name === 'forward')?.svg || ''}`,
 
     'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
 import { LpStatusWithMenu, LpStage } from 'flow-design-system-react';
@@ -1512,6 +1688,7 @@ function bindLpStageRows() {
         preview: buildLpStageHtml(v),
         tabs: lpStageTabs(variantId),
         defaultLang: 'HTML',
+        relations: comp.relations || null,
       });
     });
   });
@@ -1621,6 +1798,14 @@ ${buildProfileHtml()}`,
 }
 /* Favourited: set --fill-0:#FFCC00 via inline style on the element */`,
 
+    'SVG': `<!-- star (outline — unfavourited) -->
+<!-- .profile__star { --stroke-0: var(--accent-black-50); } -->
+${SYSTEM.icons.find(i => i.name === 'star')?.svg || ''}
+
+<!-- star-filled (favourited) -->
+<!-- .profile__star { --fill-0: #FFCC00; } -->
+${SYSTEM.icons.find(i => i.name === 'star-filled')?.svg || ''}`,
+
     'React': `import { useState } from 'react';
 import { BorrowerProfile } from 'flow-design-system/react';
 import 'flow-design-system/styles.css';
@@ -1671,6 +1856,7 @@ function bindProfileRows() {
         },
         tabs: profileTabs(variantId),
         defaultLang: 'HTML',
+        relations: comp.relations || null,
       });
     });
   });
@@ -1879,7 +2065,7 @@ ${buildAssigneesHtml(v)}`,
   overflow: hidden; flex-shrink: 0;
   margin-right: -8px;
   position: relative;
-  transition: transform 0.2s var(--ease-spring), z-index 0s;
+  transition: transform 0.2s var(--ease-spring), z-index 0s var(--ease-smooth);
 }
 .assignees__avatar:first-child  { z-index: 2; }
 .assignees__avatar:nth-child(2) { z-index: 1; }
@@ -2525,7 +2711,7 @@ ${html}`,
   align-items: center;
   justify-content: center;
   background: transparent;
-  transition: background 0.15s ease;
+  transition: background 0.2s var(--ease-smooth);
 }
 
 .sidebar-item__icon {
@@ -2534,7 +2720,7 @@ ${html}`,
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: width 0.15s ease, height 0.15s ease;
+  transition: width 0.2s var(--ease-smooth), height 0.2s var(--ease-smooth);
 }
 
 .sidebar-item__label {
@@ -2555,7 +2741,21 @@ ${html}`,
 /* Selected */
 .sidebar-item--selected .sidebar-item__icon-wrap {
   background: var(--accent-black-12);
+}
+
+/* Icon colour */
+.sidebar-item__icon {
+  --stroke-0: var(--accent-black-80, #333);
 }`,
+
+    'SVG': `<!-- Sidebar item icons (stroke colour set via --stroke-0 on .sidebar-item__icon) -->
+<!-- .sidebar-item__icon { --stroke-0: var(--accent-black-80, #333); } -->
+
+<!-- clipboard-document-list (Worklist) -->
+${SYSTEM.icons.find(i => i.name === 'clipboard-document-list')?.svg || ''}
+
+<!-- banknotes (Loans) -->
+${SYSTEM.icons.find(i => i.name === 'banknotes')?.svg || ''}`,
 
     'React': `import 'flow-design-system/styles.css';
 import { SidebarItem } from 'flow-design-system-react';
@@ -2697,7 +2897,21 @@ ${html}`,
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* Icon colour on sidebar items */
+.sidebar-item__icon {
+  --stroke-0: var(--accent-black-80, #333);
 }`,
+
+    'SVG': `<!-- Sidebar nav icons (stroke colour set via --stroke-0 on .sidebar-item__icon) -->
+<!-- .sidebar-item__icon { --stroke-0: var(--accent-black-80, #333); } -->
+
+<!-- clipboard-document-list (Worklist) -->
+${SYSTEM.icons.find(i => i.name === 'clipboard-document-list')?.svg || ''}
+
+<!-- banknotes (Loans) -->
+${SYSTEM.icons.find(i => i.name === 'banknotes')?.svg || ''}`,
 
     'React': `import 'flow-design-system/styles.css';
 import { Sidebar } from 'flow-design-system-react';
@@ -2853,6 +3067,12 @@ ${html}`,
 .loan-list-item--hover {
   background: var(--accent-black-8, #EBEBEB);
   border-radius: 16px;
+  border-bottom-color: transparent;
+}
+
+.loan-list-item:has(+ .loan-list-item:hover),
+.loan-list-item:has(+ .loan-list-item--hover),
+.loan-list-item:has(+ .loan-list-item--selected) {
   border-bottom-color: transparent;
 }
 
@@ -3028,22 +3248,19 @@ function bindLoanListItemRows() {
 
 // ── Loan Stage Group ──────────────────────────────────────────────────────────
 
-function buildLoanStageGroupHtml(v) {
+function buildLoanStageGroupHtml(v, sampleOverrides = {}, selectFirst = false) {
   const comp = SYSTEM.products.lenderPortal.loanStageGroup;
-  const s    = comp.sample;
+  const s    = { ...comp.sample, ...sampleOverrides };
   const isExpanded  = v.expanded;
   const stateClass  = isExpanded ? ' loan-stage-group--expanded' : ' loan-stage-group--collapsed';
   const chevronHtml = iconSvg('chevron-down');
 
-  let bodyHtml = '';
-  if (isExpanded) {
-    bodyHtml = `\n  <div class="loan-stage-group__body">`;
-    s.loans.forEach((loan, i) => {
-      const loanState = i === 0 ? 'selected' : 'default';
-      bodyHtml += '\n' + buildLoanListItemHtml({ state: loanState }, loan);
-    });
-    bodyHtml += `\n  </div>`;
-  }
+  let bodyHtml = `\n  <div class="loan-stage-group__body">`;
+  s.loans.forEach((loan, i) => {
+    const loanState = selectFirst && i === 0 ? 'selected' : 'default';
+    bodyHtml += '\n' + buildLoanListItemHtml({ state: loanState }, loan);
+  });
+  bodyHtml += `\n  </div>`;
 
   return `<div class="loan-stage-group${stateClass}">
   <div class="loan-stage-group__header">
@@ -3092,11 +3309,14 @@ ${html}`,
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  padding: 12px 0;
+  gap: 0;
+  padding: 12px 0 12px 0;
   box-sizing: border-box;
-  overflow: hidden;
 }
-.loan-stage-group--expanded { padding-bottom: 4px; }
+
+.loan-stage-group--expanded {
+  padding-bottom: 4px;
+}
 
 .loan-stage-group__header {
   display: flex;
@@ -3107,11 +3327,11 @@ ${html}`,
   user-select: none;
 }
 
-.loan-stage-group__name,
-.loan-stage-group__count {
+.loan-stage-group__name {
   font-size: 12px;
   font-weight: 500;
   color: var(--accent-black-60, #666);
+  white-space: nowrap;
 }
 
 .loan-stage-group__meta {
@@ -3120,20 +3340,36 @@ ${html}`,
   gap: 4px;
 }
 
+.loan-stage-group__count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-black-60, #666);
+}
+
 .loan-stage-group__chevron {
   width: 16px;
   height: 16px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   --stroke-0: var(--accent-black-60, #666);
   transition: transform 340ms var(--ease-smooth);
 }
-.loan-stage-group__chevron svg { width: 10.98px; height: 5.99px; display: block; }
-.loan-stage-group--expanded .loan-stage-group__chevron { transform: rotate(180deg); }
+
+.loan-stage-group__chevron svg {
+  width: 10.98px;
+  height: 5.99px;
+  display: block;
+}
+
+.loan-stage-group--expanded .loan-stage-group__chevron {
+  transform: rotate(180deg);
+}
 
 /* Body open/close is JS-driven (animates from real scrollHeight → 0).
-   CSS only defines the collapsed default; JS sets max-height inline. */
+   CSS only defines the collapsed default; JS sets max-height inline.
+   overflow switches to visible after expand so item box-shadows show. */
 .loan-stage-group__body {
   display: flex;
   flex-direction: column;
@@ -3141,13 +3377,22 @@ ${html}`,
   overflow: hidden;
   max-height: 0;
 }
+
 .loan-stage-group--expanded .loan-stage-group__body {
   max-height: none;
   padding-top: 12px;
 }
 
-.loan-stage-group__body .loan-list-item { width: 100%; min-width: 0; }
-.loan-stage-group__body .loan-list-item:last-child { border-bottom: none; }`,
+/* Items inside the group fill the container */
+.loan-stage-group__body .loan-list-item {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Last item in group: no bottom border */
+.loan-stage-group__body .loan-list-item:last-child {
+  border-bottom: none;
+}`,
 
     'SVG': `<!-- Chevron icon — rotates 180° when expanded -->
 <!-- --stroke-0: var(--accent-black-60) set on .loan-stage-group__chevron in CSS -->
@@ -3209,7 +3454,9 @@ const expanded = ref(true);
 }
 
 function mountLoanStageGroupInteractive(el) {
-  const group  = el.querySelector('.loan-stage-group');
+  const group  = el.classList?.contains('loan-stage-group')
+    ? el
+    : el.querySelector('.loan-stage-group');
   if (!group) return;
   const header = group.querySelector('.loan-stage-group__header');
   const body   = group.querySelector('.loan-stage-group__body');
@@ -3221,7 +3468,7 @@ function mountLoanStageGroupInteractive(el) {
 
   // Prime inline styles to match initial class so CSS doesn't fight JS
   const startExpanded = group.classList.contains('loan-stage-group--expanded');
-  body.style.overflow   = 'hidden';
+  body.style.overflow   = startExpanded ? 'visible' : 'hidden';
   body.style.maxHeight  = startExpanded ? 'none' : '0px';
   body.style.paddingTop = startExpanded ? '12px'  : '0px';
 
@@ -3230,6 +3477,8 @@ function mountLoanStageGroupInteractive(el) {
     running = true;
 
     if (open) {
+      // Lock overflow during animation so height clip works correctly
+      body.style.overflow = 'hidden';
       // Measure natural height before the reveal
       body.style.maxHeight = 'none';
       const fullH = body.scrollHeight;
@@ -3246,10 +3495,14 @@ function mountLoanStageGroupInteractive(el) {
         setTimeout(() => {
           body.style.transition = '';
           body.style.maxHeight  = 'none';
+          // Release overflow so box-shadows on items aren't clipped
+          body.style.overflow   = 'visible';
           running = false;
         }, DUR + 20);
       }));
     } else {
+      // Lock overflow before collapsing
+      body.style.overflow = 'hidden';
       // Snapshot the live height so we animate from the real pixel value
       const curH = body.scrollHeight;
       body.style.maxHeight  = curH + 'px';
@@ -3315,6 +3568,8 @@ const PAGE_RENDERERS = {
   'lender-loan-list-item':    renderLenderLoanListItemPage,
   'lender-loan-stage-group':  renderLenderLoanStageGroupPage,
   'lender-search-bar':        renderLenderSearchBarPage,
+  'lender-search-section':    renderLenderSearchSectionPage,
+  'lender-loans-panel':       renderLenderLoansPanelPage,
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -3355,6 +3610,11 @@ function init() {
   bindLoanListItemRows();
   bindLoanStageGroupRows();
   bindSearchBarRows();
+  bindSearchSectionRows();
+  bindLoansPanelRows();
+  // Mount interactive inputs on the page-level ds-table so typed states are live
+  document.querySelectorAll('[data-search-bar-variant]').forEach(row => mountSearchBarInteractive(row));
+  document.querySelectorAll('[data-search-section-variant]').forEach(row => mountSearchBarInteractive(row));
   initLpStatusOutsideClose();
   initSearch();
 }
@@ -3443,6 +3703,12 @@ function buildSearchIndex() {
   });
   SYSTEM.products.lenderPortal.searchBar.variants.forEach(v => {
     idx.push({ type: 'Search Bar', label: v.label, pageId: 'lender-search-bar', sel: `[data-search-bar-variant="${v.id}"]` });
+  });
+  SYSTEM.products.lenderPortal.searchSection.variants.forEach(v => {
+    idx.push({ type: 'Search Section', label: v.label, pageId: 'lender-search-section', sel: `[data-search-section-variant="${v.id}"]` });
+  });
+  SYSTEM.products.lenderPortal.loansPanel.variants.forEach(v => {
+    idx.push({ type: 'Loans Panel', label: v.label, pageId: 'lender-loans-panel', sel: `[data-loans-panel-variant="${v.id}"]` });
   });
 
   return idx;
@@ -3574,6 +3840,7 @@ function bindTokenRows() {
         preview: `<div style="width:48px;height:48px;border-radius:12px;background:${hex};border:0.5px solid #e0e0e0"></div>`,
         tabs: tokenTabs(token, figma, hex),
         defaultLang: 'CSS',
+        relations: null,
       });
     });
   });
@@ -3624,13 +3891,308 @@ function bindSearchBarRows() {
       const variantId = row.dataset.searchBarVariant;
       if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
       setActive(row);
+      const comp = SYSTEM.products.lenderPortal.searchBar;
+      const v    = comp.variants.find(x => x.id === variantId) || comp.variants[0];
+      openPanel({
+        type: 'Component · Lender Portal',
+        name: v?.label || variantId,
+        preview: buildSearchBarHtml(v),
+        onPreviewMount: mountSearchBarInteractive,
+        tabs: lenderSearchBarTabs(variantId),
+        defaultLang: 'HTML',
+        relations: comp.relations || null,
+      });
+    });
+  });
+}
+
+function bindSearchSectionRows() {
+  document.querySelectorAll('[data-search-section-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.searchSectionVariant;
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
+      setActive(row);
       openPanel({
         type: 'Component · Lender Portal',
         name: 'Default',
-        preview: buildSearchBarHtml(),
-        tabs: lenderSearchBarTabs(variantId),
+        preview: buildSearchSectionHtml(),
+        onPreviewMount: mountSearchBarInteractive,
+        tabs: lenderSearchSectionTabs(variantId),
         defaultLang: 'HTML',
-        relations: SYSTEM.products.lenderPortal.searchBar.relations || null,
+        relations: SYSTEM.products.lenderPortal.searchSection.relations || null,
+      });
+    });
+  });
+}
+
+// ─── Lender Portal — Loans Panel (composed sidebar) ─────────────────────────
+
+function buildLoansPanelHtml() {
+  const comp      = SYSTEM.products.lenderPortal.loansPanel;
+  const loansPill = SYSTEM.products.lenderPortal.loans.variants.find(x => x.id === 'loans-pill');
+  const plusSvg   = iconSvg('plus');
+
+  const wrap = (name) =>
+    `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg(name)}</div></div></div>`;
+
+  let stageGroupsHtml = '';
+  comp.stageGroups.forEach((sg, i) => {
+    stageGroupsHtml += buildLoanStageGroupHtml(
+      { expanded: sg.expanded },
+      { stageName: sg.stageName, count: sg.count, loans: sg.loans || undefined },
+      i === 0
+    );
+  });
+
+  const dropdownItems = (SYSTEM.products.lenderPortal.loans.variants.find(v => v.id === 'loans-dropdown')?.items || [])
+    .map(item => `<div class="loans-dropdown__item${item.active ? ' loans-dropdown__item--active' : ''}">
+      <span class="loans-dropdown__item-label">${item.label}</span>
+      <span class="loans-dropdown__item-count">${item.count}</span>
+    </div>`).join('');
+
+  return `<div class="loans-panel">
+  <div class="loans-panel__header">
+    <div style="position:relative">
+      <div class="loans-pill" style="cursor:pointer">
+        <span class="loans-pill__label">${loansPill.defaultText}</span>
+        <div class="loans-pill__badge">
+          <span class="loans-pill__count">${loansPill.defaultCount}</span>
+          <div class="loans-pill__icon"><span class="icon">${loansPill.iconSvg || ''}</span></div>
+        </div>
+      </div>
+      <div class="loans-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:10">${dropdownItems}</div>
+    </div>
+    <button class="btn btn--s1" tabindex="-1">${wrap('plus')}</button>
+  </div>
+  <div class="loans-panel__body">
+    ${stageGroupsHtml}
+  </div>
+  <div class="loans-panel__footer">
+    ${buildSearchSectionHtml()}
+  </div>
+</div>`;
+}
+
+function renderLenderLoansPanelPage() {
+  const comp = SYSTEM.products.lenderPortal.loansPanel;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle} · <a href="${comp.figmaUrl}" target="_blank" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table">`;
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-loans-panel-variant="${v.id}" style="padding:16px 20px;align-items:flex-start">
+        <span class="ds-row-name" style="min-width:80px">${v.label}</span>
+        <div style="height:551px;overflow:hidden;border-radius:12px;border:0.5px solid var(--accent-black-8)">
+          ${buildLoansPanelHtml()}
+        </div>
+      </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function loansPanelTabs() {
+  const comp = SYSTEM.products.lenderPortal.loansPanel;
+  const plusSvg      = iconSvg('plus');
+  const magnifySvg   = SYSTEM.icons.find(i => i.name === 'magnifying-glass')?.svg || '';
+  const funnelSvg    = SYSTEM.icons.find(i => i.name === 'funnel')?.svg           || '';
+  const archiveSvg   = SYSTEM.icons.find(i => i.name === 'archive-box')?.svg      || '';
+  const chevronSvg   = SYSTEM.icons.find(i => i.name === 'chevron-down')?.svg     || '';
+
+  const html = buildLoansPanelHtml();
+
+  const css = `/* Loans Panel — composed sidebar */
+.loans-panel {
+  display: flex;
+  flex-direction: column;
+  width: 278px;
+  height: 100%;
+  background: var(--background-1, #fcfcfd);
+  border-right: 0.5px solid var(--accent-black-12, #e0e0e0);
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+.loans-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--background-1, #fcfcfd);
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+.loans-panel__body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  padding: 0 6px 0 12px;
+  z-index: 1;
+}
+
+.loans-panel__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.loans-panel__body::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 2px;
+}
+
+.loans-panel__body::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 6px;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.loans-panel__body:hover::-webkit-scrollbar-thumb {
+  background: var(--accent-black-20, rgba(0, 0, 0, 0.2));
+}
+
+.loans-panel__body::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-black-40, rgba(0, 0, 0, 0.4));
+}
+.loans-panel__footer {
+  flex-shrink: 0;
+  z-index: 2;
+}
+.loans-panel .loan-stage-group { width: 100%; margin-bottom: 12px; }
+.loans-panel .loan-stage-group:last-child { margin-bottom: 0; }
+
+/* Sub-component styles — see individual component pages for full rules:
+   Loans Pill, Button/Primary, Loan Stage Group, Loan List Item, Search Section */`;
+
+  const react = `import 'flow-design-system/styles.css';
+import { LoansPanel } from 'flow-design-system';
+
+const getIconSrc = (name) => \`/icons/\${name}.svg\`;
+
+export default function App() {
+  return (
+    <LoansPanel
+      getIconSrc={getIconSrc}
+      pillLabel="My Loans"
+      pillCount={52}
+      pillIconSrc="/icons/sort.svg"
+      magnifyIconSrc="/icons/magnifying-glass.svg"
+      funnelIconSrc="/icons/funnel.svg"
+      archiveIconSrc="/icons/archive-box.svg"
+      chevronIconSrc="/icons/chevron-down.svg"
+      stageGroups={[
+        { stageName: 'Application',  count: 4, expanded: true,  body: <>{/* LoanListItems */}</> },
+        { stageName: 'Underwriting', count: 4, expanded: true,  body: <>{/* LoanListItems */}</> },
+        { stageName: 'Closing',      count: 4, expanded: false },
+        { stageName: 'Funded',       count: 4, expanded: false },
+      ]}
+      onAddClick={() => {}}
+      onStageToggle={(name, expanded) => {}}
+    />
+  );
+}`;
+
+  const svg = `<!-- SVGs used in the Loans Panel -->
+<!-- Set icon colour via --stroke-0 on the container:
+     .btn__icon-wrap { --stroke-0: var(--accent-black-80, #333); }
+-->
+
+<!-- Plus icon (header add button) -->
+${plusSvg}
+
+<!-- Chevron-down (stage group expand/collapse) -->
+${chevronSvg}
+
+<!-- Magnifying glass (search bar) -->
+${magnifySvg}
+
+<!-- Funnel (filter action) -->
+${funnelSvg}
+
+<!-- Archive box (archive action) -->
+${archiveSvg}`;
+
+  return {
+    'HTML': `<!-- Include global.css -->\n${html}`,
+    'CSS':  css,
+    'SVG':  svg,
+    'React': react,
+  };
+}
+
+function mountLoansPanelInteractive(el) {
+  mountSearchBarInteractive(el);
+  el.querySelectorAll('.loan-stage-group').forEach(group => {
+    mountLoanStageGroupInteractive(group);
+  });
+
+  // Panel-wide single selection for loan list items
+  const panelBody = el.querySelector('.loans-panel__body');
+  if (panelBody) {
+    panelBody.addEventListener('click', (e) => {
+      const item = e.target.closest('.loan-list-item');
+      if (!item) return;
+      panelBody.querySelectorAll('.loan-list-item').forEach(i =>
+        i.classList.remove('loan-list-item--selected')
+      );
+      item.classList.add('loan-list-item--selected');
+    });
+  }
+
+  // Wire up pill → dropdown toggle
+  const pill     = el.querySelector('.loans-pill');
+  const dropdown = el.querySelector('.loans-dropdown');
+  if (pill && dropdown) {
+    pill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = dropdown.style.display !== 'none';
+      dropdown.style.display = isOpen ? 'none' : 'flex';
+    });
+
+    dropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const item = e.target.closest('.loans-dropdown__item');
+      if (!item) return;
+      dropdown.querySelectorAll('.loans-dropdown__item').forEach(i =>
+        i.classList.remove('loans-dropdown__item--active')
+      );
+      item.classList.add('loans-dropdown__item--active');
+      const label = item.querySelector('.loans-dropdown__item-label')?.textContent || '';
+      const count = item.querySelector('.loans-dropdown__item-count')?.textContent || '';
+      const pillLabel = pill.querySelector('.loans-pill__label');
+      const pillCount = pill.querySelector('.loans-pill__count');
+      if (pillLabel) pillLabel.textContent = label;
+      if (pillCount) pillCount.textContent = count;
+      dropdown.style.display = 'none';
+    });
+
+    document.addEventListener('click', function closeHandler() {
+      dropdown.style.display = 'none';
+      document.removeEventListener('click', closeHandler);
+    });
+  }
+}
+
+function bindLoansPanelRows() {
+  document.querySelectorAll('[data-loans-panel-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.loansPanelVariant;
+      const comp = SYSTEM.products.lenderPortal.loansPanel;
+      const v    = comp.variants.find(x => x.id === variantId);
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
+      setActive(row);
+      openPanel({
+        type: 'Lender Portal · Loans Panel',
+        name: v?.label || variantId,
+        preview: buildLoansPanelHtml(),
+        tabs: loansPanelTabs(),
+        defaultLang: 'HTML',
+        relations: comp.relations || null,
+        onPreviewMount: mountLoansPanelInteractive,
       });
     });
   });
@@ -3804,7 +4366,9 @@ export const tokens = {
 // Usage
 import { tokens } from './tokens';
 element.style.color = tokens['${figma}'];`,
-    'React': `// Inline style
+    'React': `import 'flow-design-system/styles.css';
+
+// Inline style
 <div style={{ color: 'var(--${token})' }} />
 
 // CSS Module
@@ -3878,13 +4442,14 @@ function iconTabs(name) {
   display: block;
 }
 
-/* Theming — override stroke/fill colour */
-:root {
-  --stroke-0: #333333;
-  --fill-0:   #333333;
+/* Theming — override stroke/fill colour on any container */
+.icon-container {
+  --stroke-0: var(--accent-black-80, #333);
+  --fill-0:   var(--accent-black-80, #333);
 }`,
 
-    'React': `// Icon.tsx — inline SVGs, no assets needed
+    'React': `import 'flow-design-system/styles.css';
+// Icon.tsx — inline SVGs, no assets needed
 import { ICONS } from './icons'; // map of name → svg string
 
 type IconName = ${iconNames};
@@ -4102,6 +4667,9 @@ function btnCss(variant) {
   align-items: center;
   overflow: hidden;
   cursor: pointer;
+}
+.btn .btn__icon-wrap {
+  --stroke-0: var(--accent-black-80, #333);
 }
 
 /* ── Variant ─────────────────────────────────── */
@@ -4471,9 +5039,13 @@ ${tailwindColorsBlock()}
 }
 
 function btnTabs(variant) {
+  const v = SYSTEM.components.buttons.variants.find(x => x.id === variant);
+  const iconNames = v ? (v.icons || [v.leadIcon, v.trailIcon].filter(Boolean)) : ['magnifying-glass'];
+  const svgParts = iconNames.map(n => `<!-- ${n} -->\n<!-- .btn__icon-wrap { --stroke-0: var(--accent-black-80, #333); } -->\n${SYSTEM.icons.find(i => i.name === n)?.svg || ''}`);
   return {
     'HTML':     btnHtml(variant),
     'CSS':      btnCss(variant),
+    'SVG':      svgParts.join('\n\n'),
     'React':    btnReact(variant),
     'Vue':      btnVue(variant),
     'Tailwind': btnTailwind(variant),
