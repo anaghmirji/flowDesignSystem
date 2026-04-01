@@ -58,6 +58,7 @@ Every time a component is added or changed, go through every item below without 
 
 ## 12. System — system.js (Icons)
 - [ ] Any new icon is added to `SYSTEM.icons` array
+- [ ] Optional: keep a matching file under `design-system/icons/{name}.svg` for Figma paste / source of truth (e.g. `eye-open`, `pencil` for View/Edit)
 - [ ] SVG uses `stroke="var(--stroke-0,#333)"` or `fill="var(--fill-0,#333)"`
 - [ ] Icon name is kebab-case and consistent with usage in `iconSvg('name')`
 
@@ -112,13 +113,12 @@ All JS-driven animations in the prototype MUST follow the animation vocabulary d
 
 ### Pattern-specific checks
 
-**Mode toggle (Edit/View pill):**
-- [ ] Thumb position measured from `getBoundingClientRect()` on the active button
-- [ ] Initial `positionThumb(false)` on mount — no transition
-- [ ] Thumb stretch uses `scaleX(1.18)` at 36% midpoint with spring easing
-- [ ] Both buttons have `data-mode-edit` / `data-mode-view` attributes
-- [ ] Thumb element `.proto-mode-toggle__thumb` exists inside `.proto-mode-toggle`
-- [ ] Active class `proto-mode-toggle__option--active` swaps correctly
+**Overview mode dropdown (View / Edit + future modes):**
+- [ ] Edit bar uses `.proto-mode-dropdown` (`data-mode-dropdown`), trigger (`data-mode-trigger`), menu (`data-mode-menu`); borrower **Individual/Entity** still uses `.proto-toggle` only
+- [ ] `PROTO_PAGE_MODES` in `prototype.js` (View / Edit only; menu `left:0` under trigger like status dropdown)
+- [ ] Default: `.proto-main` has `data-view-mode`; trigger shows **View** + `eye-open` + chevron
+- [ ] `bindEditMode()`: `applyMainMode`, `syncModeDropdownUI`, `exitViewMode`; click-outside + Escape close menu; tooltip “Enable editing” switches to Edit
+- [ ] `bindFormInteractions()` — WAAPI pill animation for `[data-toggle]` **only** (no page-mode branch)
 
 **View mode field animation:**
 - [ ] `.proto-field__value` has CSS transitions on: `padding-left`, `border-color`, `border-radius`, `background`
@@ -161,11 +161,9 @@ All JS-driven animations in the prototype MUST follow the animation vocabulary d
 - [ ] `buildTopBar()` uses `buildBtnPreviewHtml()` for action buttons
 - [ ] `buildFormHtml()` sections use `buildBtnPreviewHtml({ id: 's1', icons: ['chevron-down'] })` for chevrons
 
-### Edit bar / Mode toggle
-- [ ] Edit bar contains: `.proto-edit-bar__title` ("Overview") + `.proto-edit-bar__right` with `.proto-mode-toggle`
-- [ ] Toggle has `.proto-mode-toggle__thumb` div + two buttons (`data-mode-edit`, `data-mode-view`)
-- [ ] Edit button is first (default active); View button is second
-- [ ] `data-edit-toggle` attribute on both buttons (legacy compat)
+### Edit bar / Mode dropdown
+- [ ] Edit bar contains: `.proto-edit-bar__title` ("Overview") + `.proto-edit-bar__right` with `buildProtoModeDropdownHtml('view')` output
+- [ ] `.proto-main` opens with `data-view-mode` (read-only default)
 - [ ] Edit bar has `padding: 0 16px 0` (no bottom padding)
 
 ### Form sections
@@ -178,8 +176,9 @@ All JS-driven animations in the prototype MUST follow the animation vocabulary d
 - [ ] `bindInteractions()` — sidebar items, tabs, tab close
 - [ ] `bindResizeHandle()` — AI panel drag resize
 - [ ] `bindBorrowerHeader()` — profile star, assignees dropdown, stage forward button, status dropdown
-- [ ] `bindEditMode()` — Edit/View toggle, thumb animation, field commit/sync
-- [ ] `bindFormInteractions()` — Individual/Entity toggle, click-to-edit fields, keyboard shortcuts
+- [ ] `bindEditMode()` — mode dropdown, view-mode tooltip, field commit/sync, `applyMainMode` / `exitViewMode`
+- [ ] `bindFormInteractions()` — Individual/Entity `proto-toggle` only; click-to-edit fields, keyboard shortcuts
+- [ ] Init order: `initTogglePills()` → … → `bindEditMode()` before `bindFormInteractions()` (unchanged)
 - [ ] `bindPropertyTabs()` — property sidebar selection, set primary, remove, add
 - [ ] `bindSectionCollapse()` — accordion expand/collapse
 - [ ] `bindInfoTooltips()` — info button popovers (feeders & eaters)
@@ -207,11 +206,8 @@ All JS-driven animations in the prototype MUST follow the animation vocabulary d
 - [ ] `[data-view-mode]` override: transparent border/bg, 0 radius, 0 left padding
 - [ ] `.proto-field--readonly` values: fafafa bg, 808080 colour, ebebeb border
 
-### Mode toggle
-- [ ] `.proto-mode-toggle`: flex, 2px gap, e6e6e6 bg, pill radius, 4px padding, relative + overflow hidden
-- [ ] `.proto-mode-toggle__thumb`: absolute, glassy bg (rgba 0.92 + backdrop blur), pill radius, inner highlight shadow
-- [ ] `.proto-mode-toggle__option`: flex:1, 12px font, transparent bg, relative z-index:1, colour transition
-- [ ] `.proto-mode-toggle__option--active`: darker text colour only (no bg — thumb provides the white pill)
+### Mode dropdown (edit bar)
+- [ ] Styles: `.proto-mode-dropdown`, `__trigger`, `__menu`, `__option`, `__soon` — pill trigger matches gray track + 100px radius; menu matches card shadow / radius used elsewhere in the prototype
 
 ---
 
@@ -228,4 +224,5 @@ All JS-driven animations in the prototype MUST follow the animation vocabulary d
 - `relations` must be passed to `openPanel()` AND defined in `system.js` — both are required
 - All CSS transitions: `var(--ease-smooth)` for standard, `var(--ease-spring)` for interactive/toggle
 - All JS animations: follow `ANIMATION_STYLE.md` — four easing curves only, exits faster than entrances
+- **Prototype overview mode** uses `.proto-mode-dropdown` on the edit bar; borrower **Individual/Entity** still uses `.proto-toggle`. Do not reintroduce `.proto-mode-toggle`.
 - Branch first → make changes → verify in browser → commit → merge to main → push

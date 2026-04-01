@@ -2,18 +2,24 @@
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
+/** Overview edit-bar modes (dropdown). `triggerLabel` = pill (Figma Button/Primary); `menuLabel` = menu row. */
+const PROTO_PAGE_MODES = [
+  { val: 'view', label: 'View', menuLabel: 'Viewing', triggerLabel: 'Viewing', icon: 'eye-open' },
+  { val: 'edit', label: 'Edit', menuLabel: 'Editing', triggerLabel: 'Editing', icon: 'pencil' },
+];
+
 const PROPERTIES = [
   {
     id: 0, primary: true, tab: '123 Main St',
-    street: '123 Main St', city: 'San Francisco', state: 'CA', zip: '94105',
+    street: '123 Main St', street2: 'Apt 402', city: 'San Francisco', state: 'CA', zip: '94105',
     type: 'SFR', typeLabel: 'SFR (Single Family)', occupancy: 'Investment', use: 'Fix & Flip',
-    units: '1', sqft: '1,000', yearBuilt: '2015',
-    purchase: '$380,000', appraised: '$400,000', arv: '$410,000',
+    units: '1', sqft: '1000', yearBuilt: '2015',
+    purchase: '$380,000', appraised: '$400,000', arv: '$410000',
     rent: '$4,200', dscr: '1.24',
   },
   {
     id: 1, primary: false, tab: '456 Oak Ave',
-    street: '456 Oak Ave', city: 'Oakland', state: 'CA', zip: '94601',
+    street: '456 Oak Ave', street2: '—', city: 'Oakland', state: 'CA', zip: '94601',
     type: 'Condo', typeLabel: 'Condo', occupancy: 'Investment', use: 'Rental',
     units: '1', sqft: '900', yearBuilt: '2005',
     purchase: '$380,000', appraised: '$395,000', arv: '$430,000',
@@ -21,9 +27,9 @@ const PROPERTIES = [
   },
   {
     id: 2, primary: false, tab: '789 West Parmer',
-    street: '789 West Parmer', city: 'Austin', state: 'TX', zip: '78753',
+    street: '789 West Parmer', street2: '—', city: 'Austin', state: 'TX', zip: '78753',
     type: 'Multi-Family', typeLabel: 'Multi-Family (4)', occupancy: 'Investment', use: 'Rental',
-    units: '4', sqft: '3,200', yearBuilt: '1978',
+    units: '4', sqft: '3200', yearBuilt: '1978',
     purchase: '$380,000', appraised: '$410,000', arv: '$480,000',
     rent: '$7,800', dscr: '1.31',
   },
@@ -300,14 +306,14 @@ function buildLoanStatsHtml() {
 
 function buildPropSidebarHtml(activeIdx = 0) {
   const items = PROPERTIES.map((p, i) => `
-    <button class="proto-prop-item${i === activeIdx ? ' proto-prop-item--active' : ''}" data-prop-item="${i}">
+    <button type="button" class="proto-prop-item${i === activeIdx ? ' proto-prop-item--active' : ''}" data-prop-item="${i}">
       <div class="proto-prop-item__info">
         <span class="proto-prop-item__addr">${p.street}</span>
         <span class="proto-prop-item__price">${p.purchase}</span>
       </div>
       <span class="proto-prop-item__type">${p.type}</span>
     </button>`).join('');
-  return items + `<button class="proto-prop-add-item">${iconSvg('plus')} Add property</button>`;
+  return items + `<button type="button" class="proto-prop-add-item">${iconSvg('plus')} Add property</button>`;
 }
 
 function buildPropControlsHtml(activeIdx) {
@@ -354,6 +360,8 @@ function buildFormHtml() {
       ? `<a class="proto-field__value proto-field__value--link" href="#">${value}</a>`
       : opts.masked
       ? `<span class="proto-field__value proto-field__value--masked"${attrs}>${value}</span>`
+      : editable
+      ? `<span class="proto-field__value" contenteditable="true" spellcheck="false"${attrs}>${value || ''}</span>`
       : `<span class="proto-field__value"${attrs}>${value || '—'}</span>`;
 
     let inputEl = '';
@@ -411,7 +419,7 @@ function buildFormHtml() {
           <div class="proto-section__head-left">
             <span class="proto-section__title">${title}</span>
             ${opts.badge  ? `<span class="proto-section__badge">${opts.badge}</span>` : ''}
-            ${opts.count != null ? `<span class="proto-prop-count"><span class="proto-prop-count__dot">·</span><span class="proto-prop-count__num">${opts.count}</span></span>` : ''}
+            ${opts.count != null ? `<span class="proto-prop-head__sep">·</span><span class="proto-prop-head__num">${opts.count}</span>` : ''}
           </div>
           <div class="proto-section__head-right">
             <span class="proto-section__chevron">${buildBtnPreviewHtml({ id: 's1', icons: ['chevron-down'] })}</span>
@@ -476,22 +484,24 @@ function buildFormHtml() {
       <div class="proto-prop-detail">
         <div class="proto-prop-controls" data-prop-controls>${buildPropControlsHtml(0)}</div>
         ${sub('Location', `
-          ${f('Street', p0.street, { span: 2, propKey: 'street', placeholder: 'Enter street address' })}
-          ${f('City',   p0.city,   {          propKey: 'city',   placeholder: 'City'                 })}
-          ${f('State',  p0.state,  {          propKey: 'state',  type: 'select', options: US_STATES  })}
-          ${f('Zip',    p0.zip,    {          propKey: 'zip',    placeholder: '00000'                })}
+          ${f('Street Address Line 1', p0.street,  { propKey: 'street',  placeholder: 'Street address' })}
+          ${f('Street Address Line 2', p0.street2, { propKey: 'street2', placeholder: 'Apt, suite, unit' })}
+          ${f('City',                  p0.city,    { propKey: 'city',    placeholder: 'City' })}
+          ${f('State',                 p0.state,   { propKey: 'state',   type: 'select', options: US_STATES })}
+          ${f('Zip Code',              p0.zip,     { propKey: 'zip',     placeholder: '00000' })}
+          <div class="proto-field proto-field--location-spacer" aria-hidden="true"></div>
         `)}
         ${sub('Property Details', `
-          ${f('Property type', p0.typeLabel, { span: 2, propKey: 'typeLabel', type: 'select', options: ['SFR (Single Family)', 'Condo', 'Multi-Family (4)', 'Commercial', 'Mixed-Use', 'Land'] })}
-          ${f('Occupancy',     p0.occupancy, {          propKey: 'occupancy', type: 'select', options: ['Owner-Occupied', 'Investment', 'Second Home']             })}
-          ${f('Intended use',  p0.use,       {          propKey: 'use',       type: 'select', options: ['Primary Residence', 'Investment', 'Fix & Flip', 'Rental', 'Other'] })}
-          ${f('Units',         p0.units,     {          propKey: 'units',     type: 'number', placeholder: 'Number of units' })}
-          ${f('Sq. footage',   p0.sqft,      {          propKey: 'sqft',      type: 'number', placeholder: 'Square footage'  })}
-          ${f('Year built',    p0.yearBuilt, {          propKey: 'yearBuilt', type: 'number', placeholder: 'YYYY'            })}
+          ${f('Property Type', p0.typeLabel, { propKey: 'typeLabel', type: 'select', options: ['SFR (Single Family)', 'Condo', 'Multi-Family (4)', 'Commercial', 'Mixed-Use', 'Land'] })}
+          ${f('Units',         p0.units,     { propKey: 'units',     type: 'number', placeholder: 'Number of units' })}
+          ${f('Occupancy',     p0.occupancy, { propKey: 'occupancy', type: 'select', options: ['Owner-Occupied', 'Investment', 'Second Home'] })}
+          ${f('Intended use',  p0.use,       { propKey: 'use',       type: 'select', options: ['Primary Residence', 'Investment', 'Fix & Flip', 'Rental', 'Other'] })}
+          ${f('Square Footage', p0.sqft,     { propKey: 'sqft',      type: 'number', placeholder: 'Square footage' })}
+          ${f('Year Built',    p0.yearBuilt, { propKey: 'yearBuilt', type: 'number', placeholder: 'YYYY' })}
         `)}
         ${sub('Valuation', `
-          ${f('Purchase price',  p0.purchase,  { propKey: 'purchase',  calcKey: 'purchasePrice', type: 'currency', infoKey: 'purchasePrice' })}
-          ${f('Appraised value', p0.appraised, { propKey: 'appraised',                           type: 'currency', infoKey: 'appraised'     })}
+          ${f('Purchase Price',  p0.purchase,  { propKey: 'purchase',  calcKey: 'purchasePrice', type: 'currency', infoKey: 'purchasePrice' })}
+          ${f('Appraised Value', p0.appraised, { propKey: 'appraised',                           type: 'currency', infoKey: 'appraised'     })}
           ${f('ARV',             p0.arv,       { propKey: 'arv',        meta: 'estimated',        type: 'currency', infoKey: 'arv'           })}
         `)}
         ${sub('Investment Details', `
@@ -544,22 +554,44 @@ function buildFormHtml() {
 
 // ─── Body (main + ai panel) ───────────────────────────────────────────────────
 
+function buildProtoModeDropdownHtml(activeVal = 'view') {
+  const current = PROTO_PAGE_MODES.find(m => m.val === activeVal) || PROTO_PAGE_MODES[0];
+  const leadIcon = current.icon ? iconSvg(current.icon) : '';
+  const options = PROTO_PAGE_MODES.map(m => {
+    const active = m.val === activeVal ? ' loans-dropdown__item--active' : '';
+    const optIcon = m.icon ? iconSvg(m.icon) : '';
+    return `<div class="loans-dropdown__item${active}" role="option" data-mode-val="${m.val}">
+      <span class="proto-mode-menu__icon" aria-hidden="true">${optIcon}</span>
+      <span class="loans-dropdown__item-label">${m.menuLabel || m.label}</span>
+    </div>`;
+  }).join('');
+  return `
+    <div class="lp-status-dropdown-wrap proto-mode-dropdown-wrap" data-amoeba-wrap data-proto-mode-wrap>
+      <div class="proto-overview-mode-trigger" data-proto-mode-trigger role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+        <span class="proto-overview-mode-trigger__main">
+          <span class="proto-overview-mode-trigger__icon" data-mode-trigger-icon>${leadIcon}</span>
+          <span class="proto-overview-mode-trigger__label" data-mode-trigger-label>${current.triggerLabel}</span>
+        </span>
+        <span class="proto-overview-mode-trigger__chev" aria-hidden="true">${iconSvg('chevron-down')}</span>
+      </div>
+      <div class="loans-dropdown loans-dropdown--status-menu loans-dropdown--proto-mode" data-proto-mode-menu role="listbox" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:30">
+        ${options}
+      </div>
+    </div>`;
+}
+
 function buildBody() {
   return `
     <div class="proto-body">
       <div class="proto-card">
         ${buildLoansPanelHtml()}
-        <div class="proto-main">
+        <div class="proto-main" data-view-mode>
           ${buildBorrowerHeader()}
           ${buildLoanStatsHtml()}
           <div class="proto-edit-bar">
             <span class="proto-edit-bar__title">Overview</span>
             <div class="proto-edit-bar__right">
-              <div class="proto-mode-toggle">
-                <div class="proto-mode-toggle__thumb"></div>
-                <button class="proto-mode-toggle__option proto-mode-toggle__option--active" data-mode-edit data-edit-toggle>Edit</button>
-                <button class="proto-mode-toggle__option" data-mode-view data-edit-toggle>View</button>
-              </div>
+              ${buildProtoModeDropdownHtml('view')}
             </div>
           </div>
           <div class="proto-main__scroll">
@@ -813,6 +845,94 @@ function recalcLTV() {
   setTimeout(() => ltvEl.classList.remove('proto-field__value--saved'), 700);
 }
 
+/** Entity Details sub-card — max-height + opacity + slide (matches toggle pill easing). */
+const ENTITY_SUB_MS_SHOW = 420;
+const ENTITY_SUB_MS_HIDE = 300;
+const ENTITY_SUB_EASE_SHOW = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const ENTITY_SUB_EASE_HIDE = 'cubic-bezier(0.4, 0, 0.25, 1)';
+
+function cancelEntitySubAnims(entitySub) {
+  if (!entitySub) return;
+  entitySub.getAnimations().forEach(a => {
+    try {
+      a.cancel();
+    } catch (_) { /* ignore */ }
+  });
+}
+
+function setEntitySubVisible(entitySub, visible) {
+  if (!entitySub) return;
+  cancelEntitySubAnims(entitySub);
+  entitySub.style.maxHeight = '';
+  entitySub.style.opacity = '';
+  entitySub.style.overflow = '';
+  entitySub.style.transform = '';
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    entitySub.classList.toggle('proto-sub--hidden', !visible);
+    return;
+  }
+
+  const isHidden = entitySub.classList.contains('proto-sub--hidden');
+
+  if (visible) {
+    if (!isHidden) return;
+    entitySub.classList.remove('proto-sub--hidden');
+    entitySub.style.overflow = 'hidden';
+    entitySub.style.maxHeight = '0px';
+    entitySub.style.opacity = '0';
+    entitySub.style.transform = 'translateY(-8px)';
+    void entitySub.offsetHeight;
+    const h = entitySub.scrollHeight;
+    if (h <= 0) {
+      entitySub.style.maxHeight = '';
+      entitySub.style.opacity = '';
+      entitySub.style.overflow = '';
+      entitySub.style.transform = '';
+      return;
+    }
+    const anim = entitySub.animate(
+      [
+        { maxHeight: '0px', opacity: 0, transform: 'translateY(-8px)' },
+        { maxHeight: `${h}px`, opacity: 1, transform: 'translateY(0)' },
+      ],
+      { duration: ENTITY_SUB_MS_SHOW, easing: ENTITY_SUB_EASE_SHOW, fill: 'none' }
+    );
+    anim.onfinish = () => {
+      entitySub.style.maxHeight = '';
+      entitySub.style.opacity = '';
+      entitySub.style.overflow = '';
+      entitySub.style.transform = '';
+    };
+    return;
+  }
+
+  if (isHidden) return;
+  const h = entitySub.scrollHeight;
+  if (h <= 0) {
+    entitySub.classList.add('proto-sub--hidden');
+    return;
+  }
+  entitySub.style.maxHeight = `${h}px`;
+  entitySub.style.overflow = 'hidden';
+  void entitySub.offsetHeight;
+  const anim = entitySub.animate(
+    [
+      { maxHeight: `${h}px`, opacity: 1, transform: 'translateY(0)' },
+      { maxHeight: '0px', opacity: 0, transform: 'translateY(-6px)' },
+    ],
+    { duration: ENTITY_SUB_MS_HIDE, easing: ENTITY_SUB_EASE_HIDE, fill: 'none' }
+  );
+  anim.onfinish = () => {
+    entitySub.classList.add('proto-sub--hidden');
+    entitySub.style.maxHeight = '';
+    entitySub.style.opacity = '';
+    entitySub.style.overflow = '';
+    entitySub.style.transform = '';
+  };
+}
+
 function bindFormInteractions() {
   // Individual / Entity toggle — WAAPI FLIP sliding pill
   document.addEventListener('click', e => {
@@ -820,6 +940,19 @@ function bindFormInteractions() {
     if (!btn) return;
     const toggleEl = btn.closest('[data-toggle]');
     if (!toggleEl) return;
+
+    // In view mode — block interaction, show tooltip
+    if (document.querySelector('[data-view-mode]')) {
+      e.stopImmediatePropagation();
+      const viewTooltip = document.querySelector('.proto-view-tooltip');
+      if (viewTooltip) {
+        const r = toggleEl.getBoundingClientRect();
+        viewTooltip.style.left = `${r.left}px`;
+        viewTooltip.style.top  = `${r.bottom + 6}px`;
+        viewTooltip.classList.add('proto-view-tooltip--visible');
+      }
+      return;
+    }
 
     const oldBtn = toggleEl.querySelector('.proto-toggle__btn--active');
     if (!oldBtn || oldBtn === btn) return;
@@ -893,7 +1026,7 @@ function bindFormInteractions() {
 
     const isEntity = btn.dataset.toggleVal === 'entity';
     const entitySub = document.querySelector('[data-entity-sub]');
-    if (entitySub) entitySub.classList.toggle('proto-sub--hidden', !isEntity);
+    setEntitySubVisible(entitySub, isEntity);
     document.querySelectorAll('[data-individual-only]').forEach(el => {
       el.classList.toggle('proto-field--hidden', isEntity);
     });
@@ -1127,80 +1260,120 @@ function bindPropertyTabs() {
     const sidebarEl = document.querySelector('[data-prop-sidebar]');
     if (sidebarEl) sidebarEl.innerHTML = buildPropSidebarHtml(0);
     selectPropItem(0);
-    const countEl = document.querySelector('.proto-prop-count');
-    if (countEl) countEl.textContent = PROPERTIES.length;
+    const countNum = document.querySelector('.proto-prop-head__num');
+    if (countNum) countNum.textContent = PROPERTIES.length;
   });
 
   // Add property (prototype: clones first property with new address)
   document.addEventListener('click', e => {
     if (!e.target.closest('.proto-prop-add-item')) return;
     const newProp = { ...PROPERTIES[0], id: PROPERTIES.length, primary: false,
-      tab: 'New Property', street: 'New Property', city: '—', state: '—', zip: '—' };
+      tab: 'New Property', street: 'New Property', street2: '—', city: '—', state: '—', zip: '—' };
     PROPERTIES.push(newProp);
     const sidebarEl = document.querySelector('[data-prop-sidebar]');
     if (sidebarEl) sidebarEl.innerHTML = buildPropSidebarHtml(PROPERTIES.length - 1);
     selectPropItem(PROPERTIES.length - 1);
-    const countEl = document.querySelector('.proto-prop-count');
-    if (countEl) countEl.textContent = PROPERTIES.length;
+    const countNum = document.querySelector('.proto-prop-head__num');
+    if (countNum) countNum.textContent = PROPERTIES.length;
   });
 }
 
 function bindEditMode() {
-  const main     = document.querySelector('.proto-main');
-  const toggle   = document.querySelector('.proto-mode-toggle');
-  const thumb    = document.querySelector('.proto-mode-toggle__thumb');
-  const editBtn  = document.querySelector('[data-mode-edit]');
-  const viewBtn  = document.querySelector('[data-mode-view]');
-  if (!editBtn || !viewBtn || !main) return;
+  const main = document.querySelector('.proto-main');
+  if (!main) return;
 
-  let thumbAnim = null;
+  const wrap       = document.querySelector('[data-proto-mode-wrap]');
+  const trigger    = wrap?.querySelector('[data-proto-mode-trigger]');
+  const menu       = wrap?.querySelector('[data-proto-mode-menu]');
 
-  function positionThumb(animate) {
-    const activeBtn = toggle?.querySelector('.proto-mode-toggle__option--active');
-    if (!thumb || !activeBtn || !toggle) return;
+  /** Tooltip hide — assigned after tooltip node exists. */
+  let hideTooltip = () => {};
 
-    const tRect = toggle.getBoundingClientRect();
-    const bRect = activeBtn.getBoundingClientRect();
-    const toX   = bRect.left - tRect.left;
-    const toW   = bRect.width;
-
-    if (!animate) {
-      if (thumbAnim) { thumbAnim.onfinish = null; thumbAnim.cancel(); thumbAnim = null; }
-      thumb.style.width     = toW + 'px';
-      thumb.style.transform = `translateX(${toX}px) scaleX(1)`;
-      return;
-    }
-
-    // Capture current visual position before cancelling any running animation
-    const mat   = new DOMMatrix(getComputedStyle(thumb).transform);
-    const fromX = mat.m41;
-
-    // Freeze at current position so cancel() doesn't snap back
-    thumb.style.transform = `translateX(${fromX}px) scaleX(1)`;
-    if (thumbAnim) { thumbAnim.onfinish = null; thumbAnim.cancel(); thumbAnim = null; }
-
-    thumb.style.width = toW + 'px';
-
-    const midX    = fromX + (toX - fromX) * 0.38;
-    const stretch = 1.18;
-
-    thumbAnim = thumb.animate([
-      { transform: `translateX(${fromX}px) scaleX(1)`,         offset: 0    },
-      { transform: `translateX(${midX}px)  scaleX(${stretch})`, offset: 0.36 },
-      { transform: `translateX(${toX}px)   scaleX(1)`,          offset: 1    },
-    ], {
-      duration: 440,
-      easing:   'cubic-bezier(0.34, 1.48, 0.64, 1)',
-      fill:     'none',
+  function syncModeDropdownUI(activeVal) {
+    if (!menu || !wrap) return;
+    const m = PROTO_PAGE_MODES.find(x => x.val === activeVal) || PROTO_PAGE_MODES[0];
+    const triggerLbl = wrap.querySelector('[data-mode-trigger-label]');
+    const iconEl     = wrap.querySelector('[data-mode-trigger-icon]');
+    if (triggerLbl) triggerLbl.textContent = m.triggerLabel;
+    if (iconEl) iconEl.innerHTML = m.icon ? iconSvg(m.icon) : '';
+    menu.querySelectorAll('.loans-dropdown__item').forEach(opt => {
+      opt.classList.toggle('loans-dropdown__item--active', opt.dataset.modeVal === activeVal);
     });
-
-    thumbAnim.onfinish = () => {
-      thumb.style.transform = `translateX(${toX}px) scaleX(1)`;
-      thumbAnim = null;
-    };
   }
 
-  positionThumb(false);
+  function applyMainMode(val) {
+    if (!val) return;
+    if (val === 'view') {
+      hideTooltip();
+      if (!main.hasAttribute('data-view-mode')) {
+        document.querySelectorAll('.proto-field--editable [contenteditable]').forEach(s => { s.contentEditable = 'false'; });
+        main.removeAttribute('data-edit-mode');
+        main.setAttribute('data-view-mode', '');
+      }
+    } else if (val === 'edit') {
+      hideTooltip();
+      if (main.hasAttribute('data-view-mode')) {
+        main.removeAttribute('data-view-mode');
+        document.querySelectorAll('.proto-field--editable .proto-field__value').forEach(s => { s.contentEditable = 'true'; });
+      }
+    }
+    syncModeDropdownUI(val);
+  }
+
+  let protoModeApi = null;
+  function exitViewMode() {
+    applyMainMode('edit');
+    if (protoModeApi && protoModeApi.isOpen()) protoModeApi.closeMenu();
+  }
+
+  document.querySelectorAll('.proto-field--editable [contenteditable]').forEach(s => { s.contentEditable = 'false'; });
+  syncModeDropdownUI('view');
+
+  if (wrap && trigger && menu && typeof mountAmoebaDropdownPair === 'function') {
+    protoModeApi = mountAmoebaDropdownPair(trigger, menu);
+    menu.querySelectorAll('.loans-dropdown__item').forEach(opt => {
+      opt.addEventListener('click', e => {
+        e.stopPropagation();
+        if (opt.classList.contains('loans-dropdown__item--disabled')) return;
+        applyMainMode(opt.dataset.modeVal);
+        protoModeApi.closeMenu();
+      });
+    });
+  }
+
+  // ── View-mode tooltip ────────────────────────────────────────────────────────
+  const tooltip = document.createElement('div');
+  tooltip.className = 'proto-view-tooltip';
+  tooltip.innerHTML = `<span class="proto-view-tooltip__text">Enable edit mode to make changes</span>
+    <button class="proto-view-tooltip__btn">Enable editing</button>`;
+  document.body.appendChild(tooltip);
+
+  function showTooltip(anchorEl) {
+    const r = anchorEl.getBoundingClientRect();
+    tooltip.style.left = `${r.left}px`;
+    tooltip.style.top  = `${r.bottom + 6}px`;
+    tooltip.classList.add('proto-view-tooltip--visible');
+  }
+  hideTooltip = () => {
+    tooltip.classList.remove('proto-view-tooltip--visible');
+  };
+
+  tooltip.querySelector('.proto-view-tooltip__btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    hideTooltip();
+    if (main.hasAttribute('data-view-mode')) exitViewMode();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!main.hasAttribute('data-view-mode')) return;
+    const field = e.target.closest('.proto-field--editable');
+    if (field) {
+      e.preventDefault();
+      showTooltip(e.target.closest('.proto-field__value') || field);
+      return;
+    }
+    if (!tooltip.contains(e.target)) hideTooltip();
+  }, true);
 
   function getFieldInputs(field) {
     return {
@@ -1237,39 +1410,10 @@ function bindEditMode() {
     field.classList.remove('proto-field--editing');
   }
 
-  function enterViewMode() {
-    document.querySelectorAll('.proto-field--editable').forEach(commitToSpan);
-    main.removeAttribute('data-edit-mode');
-    main.setAttribute('data-view-mode', '');
-    viewBtn.classList.add('proto-mode-toggle__option--active');
-    editBtn.classList.remove('proto-mode-toggle__option--active');
-    positionThumb(true);
-  }
-
-  function exitViewMode() {
-    main.removeAttribute('data-view-mode');
-    editBtn.classList.add('proto-mode-toggle__option--active');
-    viewBtn.classList.remove('proto-mode-toggle__option--active');
-    positionThumb(true);
-  }
-
-  viewBtn.addEventListener('click', () => {
-    if (!main.hasAttribute('data-view-mode')) enterViewMode();
-  });
-  editBtn.addEventListener('click', () => {
-    if (main.hasAttribute('data-view-mode')) exitViewMode();
-  });
-
-  // Live sync — text / number / currency inputs
+  // Live recalc — contenteditable spans (loan amount / purchase price)
   document.addEventListener('input', e => {
-    if (!main.hasAttribute('data-edit-mode')) return;
-    const input = e.target.closest('.proto-field__input');
-    if (!input) return;
-    const field = input.closest('.proto-field');
-    const span  = field?.querySelector('.proto-field__value');
+    const span = e.target.closest('.proto-field__value[contenteditable]');
     if (!span) return;
-    const isCurr = !!input.closest('.proto-field__currency-wrap');
-    span.textContent = isCurr ? formatCurrency(input.value) : input.value.trim();
     const calcKey = span.dataset.calcKey;
     if (calcKey === 'loanAmount' || calcKey === 'purchasePrice') recalcLTV();
   });
@@ -1348,10 +1492,202 @@ function bindInfoTooltips() {
   });
 }
 
+// ─── Loan Card Drag & Drop ────────────────────────────────────────────────────
+
+function bindLoanDragDrop() {
+  const panel = document.querySelector('.proto-card .loans-panel');
+  if (!panel) return;
+
+  const LONG_PRESS_MS = 300;
+
+  let pressTimer   = null;
+  let dragItem     = null;   // the .loan-list-item being dragged
+  let ghost        = null;   // the floating clone
+  let ghostOffX    = 0;
+  let ghostOffY    = 0;
+  let activeTarget = null;   // the .loan-stage-group__body currently hovered
+  let dragging     = false;
+
+  /* ── helpers ── */
+
+  function getPos(e) {
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX, y: t.clientY };
+  }
+
+  function allBodies() {
+    return [...panel.querySelectorAll('.loan-stage-group__body')];
+  }
+
+  function bodyForPoint(x, y) {
+    // Temporarily hide ghost so elementFromPoint works
+    if (ghost) ghost.style.pointerEvents = 'none';
+    const el = document.elementFromPoint(x, y);
+    if (ghost) ghost.style.pointerEvents = '';
+    if (!el) return null;
+    return el.closest('.loan-stage-group__body') || null;
+  }
+
+  function updateCount(group) {
+    const countEl = group.querySelector('.loan-stage-group__count');
+    if (!countEl) return;
+    const n = group.querySelectorAll('.loan-list-item').length;
+    countEl.textContent = n;
+  }
+
+  function updateGroupState(group) {
+    const body = group.querySelector('.loan-stage-group__body');
+    if (!body) return;
+    const hasItems = body.querySelector('.loan-list-item') !== null;
+    // keep expanded state — only update max-height when open
+    if (group.classList.contains('loan-stage-group--expanded')) {
+      body.style.maxHeight = body.scrollHeight + 'px';
+      // let it settle then clear so it grows naturally
+      requestAnimationFrame(() => { body.style.maxHeight = 'none'; });
+    }
+  }
+
+  /* ── start drag ── */
+
+  function startDrag(item, x, y) {
+    dragging  = true;
+    dragItem  = item;
+    // Prevent text selection across the whole page while dragging
+    document.body.style.userSelect       = 'none';
+    document.body.style.webkitUserSelect = 'none';
+
+    // Mark original as ghost-source
+    item.classList.add('loan-list-item--dragging');
+
+    // Build visual clone
+    const rect = item.getBoundingClientRect();
+    ghostOffX  = x - rect.left;
+    ghostOffY  = y - rect.top;
+
+    ghost = item.cloneNode(true);
+    ghost.classList.remove('loan-list-item--dragging');
+    ghost.classList.add('loan-drag-ghost');
+    ghost.style.width  = rect.width  + 'px';
+    ghost.style.height = rect.height + 'px';
+    ghost.style.left   = (x - ghostOffX) + 'px';
+    ghost.style.top    = (y - ghostOffY) + 'px';
+    document.body.appendChild(ghost);
+  }
+
+  /* ── move ── */
+
+  function onMove(x, y) {
+    if (!dragging) return;
+    ghost.style.left = (x - ghostOffX) + 'px';
+    ghost.style.top  = (y - ghostOffY) + 'px';
+
+    const body = bodyForPoint(x, y);
+
+    if (body !== activeTarget) {
+      if (activeTarget) activeTarget.classList.remove('loan-stage-group__body--drop-target');
+      activeTarget = body && body !== dragItem.parentElement ? body : null;
+      if (activeTarget) activeTarget.classList.add('loan-stage-group__body--drop-target');
+    }
+  }
+
+  /* ── end drag ── */
+
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+
+    // Move item to new body
+    if (activeTarget) {
+      const srcGroup  = dragItem.parentElement?.closest('.loan-stage-group');
+      const destGroup = activeTarget.closest('.loan-stage-group');
+
+      activeTarget.appendChild(dragItem);
+
+      // Re-bind click-to-select for moved item (panel-wide handler still works)
+      // Update counts
+      if (srcGroup)  updateCount(srcGroup);
+      if (destGroup) updateCount(destGroup);
+      if (srcGroup)  updateGroupState(srcGroup);
+      if (destGroup) updateGroupState(destGroup);
+
+      activeTarget.classList.remove('loan-stage-group__body--drop-target');
+    }
+
+    // Restore text selection
+    document.body.style.userSelect       = '';
+    document.body.style.webkitUserSelect = '';
+    // Clean up
+    dragItem.classList.remove('loan-list-item--dragging');
+    ghost.remove();
+    ghost        = null;
+    dragItem     = null;
+    activeTarget = null;
+  }
+
+  function cancel() {
+    clearTimeout(pressTimer);
+    pressTimer = null;
+    if (!dragging) return;
+    // Cancel drag without dropping
+    if (activeTarget) activeTarget.classList.remove('loan-stage-group__body--drop-target');
+    dragItem?.classList.remove('loan-list-item--dragging');
+    ghost?.remove();
+    // Restore text selection
+    document.body.style.userSelect       = '';
+    document.body.style.webkitUserSelect = '';
+    ghost = null; dragItem = null; activeTarget = null; dragging = false;
+  }
+
+  /* ── event wiring ── */
+
+  panel.addEventListener('mousedown', (e) => {
+    const item = e.target.closest('.loan-list-item');
+    if (!item) return;
+    const { x, y } = getPos(e);
+    pressTimer = setTimeout(() => { startDrag(item, x, y); }, LONG_PRESS_MS);
+  });
+
+  panel.addEventListener('touchstart', (e) => {
+    const item = e.target.closest('.loan-list-item');
+    if (!item) return;
+    const { x, y } = getPos(e);
+    pressTimer = setTimeout(() => { startDrag(item, x, y); }, LONG_PRESS_MS);
+  }, { passive: true });
+
+  document.addEventListener('mousemove', (e) => {
+    if (pressTimer && !dragging) { clearTimeout(pressTimer); pressTimer = null; }
+    if (!dragging) return;
+    e.preventDefault();
+    const { x, y } = getPos(e);
+    onMove(x, y);
+  });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    const { x, y } = getPos(e);
+    onMove(x, y);
+  }, { passive: true });
+
+  document.addEventListener('mouseup', () => {
+    clearTimeout(pressTimer); pressTimer = null;
+    endDrag();
+  });
+
+  document.addEventListener('touchend', () => {
+    clearTimeout(pressTimer); pressTimer = null;
+    endDrag();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') cancel();
+  });
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('app').innerHTML = buildApp();
+  if (typeof initLpStatusOutsideClose === 'function') initLpStatusOutsideClose();
   initTogglePills();
   bindInteractions();
   bindResizeHandle();
@@ -1374,4 +1710,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Mount loans panel interactivity (expand/collapse, pill dropdown, selection)
   const loansPanelEl = document.querySelector('.proto-card .loans-panel');
   if (loansPanelEl) mountLoansPanelInteractive(loansPanelEl);
+  bindLoanDragDrop();
+
+  // Loans panel body top-fade on scroll
+  const loansPanelBody = document.querySelector('.proto-card .loans-panel__body');
+  if (loansPanelBody) {
+    loansPanelBody.addEventListener('scroll', () => {
+      loansPanelBody.classList.toggle('loans-panel__body--scrolled', loansPanelBody.scrollTop > 4);
+    }, { passive: true });
+  }
 });

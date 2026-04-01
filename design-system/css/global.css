@@ -589,6 +589,21 @@
   justify-content: flex-start;
 }
 
+.loans-dropdown__item--disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.loans-dropdown__item-soon {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--accent-black-40);
+}
+
 /* ── LP Status ─────────────────────────────────────────────────────────────────
    Figma node: 438:3508
    Left pill — green dot + status label, left-rounded.

@@ -18,6 +18,8 @@ Before writing any HTML, JS, or CSS — check platform.js first.
 | Profile button              | reuse `.profile` CSS class                        |
 | Status + Stage pill         | reuse `.lp-status-stage` CSS class                |
 | Any icon SVG                | `iconSvg('icon-name')` — never hand-write SVG     |
+| Sliding two-option control (segment picker) | `.proto-toggle` + pill + buttons — same markup/JS as Individual/Entity (borrower type) |
+| Overview page mode (View / Edit / …)       | `.proto-mode-dropdown` in the edit bar — extend `PROTO_PAGE_MODES` in `prototype.js` for new modes |
 
 If a `buildXHtml()` function exists in platform.js → call it. Full stop.
 
@@ -33,9 +35,10 @@ If a `buildXHtml()` function exists in platform.js → call it. Full stop.
 
 ## 3. Icons
 
-- Always use `iconSvg('name')` from platform.js
+- Always use `iconSvg('name')` from platform.js (reads `SYSTEM.icons` in `system.js`)
 - Never write a raw `<svg>` inline in prototype.js unless the icon does not exist in `SYSTEM.icons`
-- If an icon is missing, add it to `SYSTEM.icons` in system.js first, then use `iconSvg()`
+- If an icon is missing: add it to `SYSTEM.icons` in `system.js`, optionally add `design-system/icons/{name}.svg` as the paste target for Figma **Copy as SVG**, then use `iconSvg('name')`
+- Naming should match the design system when applicable (e.g. `eye-open`, `pencil` for View/Edit — not ad-hoc names unless the DS uses something else)
 
 ---
 

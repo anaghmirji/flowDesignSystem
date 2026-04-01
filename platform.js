@@ -1471,7 +1471,7 @@ function buildStatusMenuInnerHtml(selectedLabel) {
 
 /** Interactive row + panel preview: click pill → loans-dropdown menu (design system pattern). */
 function buildLpStatusInteractiveHtml(v) {
-  return `<div class="lp-status-dropdown-wrap">
+  return `<div class="lp-status-dropdown-wrap" data-amoeba-wrap>
     <div class="lp-status lp-status--clickable" data-lp-status-trigger role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
       <div class="lp-status__dot lp-status__dot--${v.dot}"></div>
       <span class="lp-status__label">${v.statusLabel}</span>
@@ -1482,23 +1482,32 @@ function buildLpStatusInteractiveHtml(v) {
   </div>`;
 }
 
-function mountLpStatusDropdown(root) {
-  const trigger = root.querySelector('[data-lp-status-trigger]');
-  const menu    = root.querySelector('[data-lp-status-menu]');
-  if (!trigger || !menu) return;
+/** WeakMap: wrap element → { isOpen, closeMenu, openMenu } for outside-click / Escape. */
+const amoebaWrapToApi = new WeakMap();
+/** All mounted amoeba APIs — close others when opening one. */
+const amoebaDropdownApis = new Set();
 
+/**
+ * Shared “amoeba” open/close (LP status menu + prototype overview mode).
+ * Trigger/menu markup: absolute menu, display:none → flex, same keyframes as lp-status.
+ */
+function mountAmoebaDropdownPair(trigger, menu) {
+  if (!trigger || !menu) return null;
+
+  const wrap = trigger.closest('[data-amoeba-wrap]');
   let menuAnim = null;
 
-  function isOpen() {
-    return trigger.getAttribute('aria-expanded') === 'true';
-  }
+  const api = {
+    isOpen() {
+      return trigger.getAttribute('aria-expanded') === 'true';
+    },
+    closeMenu: null,
+    openMenu: null,
+  };
 
   function closeOthers() {
-    document.querySelectorAll('[data-lp-status-menu]').forEach(m => {
-      if (m !== menu) m.style.display = 'none';
-    });
-    document.querySelectorAll('[data-lp-status-trigger]').forEach(t => {
-      if (t !== trigger) t.setAttribute('aria-expanded', 'false');
+    amoebaDropdownApis.forEach(other => {
+      if (other !== api && other.isOpen()) other.closeMenu();
     });
   }
 
@@ -1523,8 +1532,8 @@ function mountLpStatusDropdown(root) {
     menu.style.transformOrigin = `${originX}px top`;
   }
 
-  function closeMenu() {
-    if (!isOpen()) return;
+  api.closeMenu = function closeMenu() {
+    if (!api.isOpen()) return;
     trigger.setAttribute('aria-expanded', 'false');
     animateTriggerMerge();
     setOriginToTriggerCenter();
@@ -1540,9 +1549,9 @@ function mountLpStatusDropdown(root) {
       menu.style.display = 'none';
       menuAnim = null;
     };
-  }
+  };
 
-  function openMenu() {
+  api.openMenu = function openMenu() {
     closeOthers();
     trigger.setAttribute('aria-expanded', 'true');
     menu.style.display = 'flex';
@@ -1558,19 +1567,31 @@ function mountLpStatusDropdown(root) {
     ], { duration: 520, easing: 'linear', fill: 'none' });
 
     menuAnim.onfinish = () => { menuAnim = null; };
-  }
+  };
+
+  amoebaDropdownApis.add(api);
+  if (wrap) amoebaWrapToApi.set(wrap, api);
 
   trigger.addEventListener('click', (e) => {
     e.stopPropagation();
-    isOpen() ? closeMenu() : openMenu();
+    api.isOpen() ? api.closeMenu() : api.openMenu();
   });
 
   trigger.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     e.preventDefault();
     e.stopPropagation();
-    isOpen() ? closeMenu() : openMenu();
+    api.isOpen() ? api.closeMenu() : api.openMenu();
   });
+
+  return api;
+}
+
+function mountLpStatusDropdown(root) {
+  const trigger = root.querySelector('[data-lp-status-trigger]');
+  const menu    = root.querySelector('[data-lp-status-menu]');
+  const api     = mountAmoebaDropdownPair(trigger, menu);
+  if (!api) return;
 
   menu.querySelectorAll('.loans-dropdown__item').forEach(opt => {
     opt.addEventListener('click', (e) => {
@@ -1584,7 +1605,7 @@ function mountLpStatusDropdown(root) {
       if (statusLabel) statusLabel.textContent = text;
       menu.querySelectorAll('.loans-dropdown__item').forEach(x => x.classList.remove('loans-dropdown__item--active'));
       opt.classList.add('loans-dropdown__item--active');
-      closeMenu();
+      api.closeMenu();
     });
   });
 }
@@ -3964,15 +3985,26 @@ function init() {
   initSearch();
 }
 
-/** Close status dropdowns when clicking outside any .lp-status-dropdown-wrap (one listener). */
+let _amoebaOutsideCloseBound = false;
+
+/** Close amoeba dropdowns when clicking outside their [data-amoeba-wrap] (animated close). Safe to call from prototype + platform. */
 function initLpStatusOutsideClose() {
+  if (_amoebaOutsideCloseBound) return;
+  _amoebaOutsideCloseBound = true;
+
   document.addEventListener('click', (ev) => {
-    document.querySelectorAll('.lp-status-dropdown-wrap').forEach(wrap => {
+    document.querySelectorAll('[data-amoeba-wrap]').forEach(wrap => {
       if (wrap.contains(ev.target)) return;
-      const m = wrap.querySelector('[data-lp-status-menu]');
-      const t = wrap.querySelector('[data-lp-status-trigger]');
-      if (m) m.style.display = 'none';
-      if (t) t.setAttribute('aria-expanded', 'false');
+      const api = amoebaWrapToApi.get(wrap);
+      if (api && api.isOpen()) api.closeMenu();
+    });
+  });
+
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Escape') return;
+    document.querySelectorAll('[data-amoeba-wrap]').forEach(wrap => {
+      const api = amoebaWrapToApi.get(wrap);
+      if (api && api.isOpen()) api.closeMenu();
     });
   });
 }

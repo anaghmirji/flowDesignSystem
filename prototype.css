@@ -132,6 +132,29 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   height: 100%;
   border-right: 0.5px solid var(--accent-black-12, #E0E0E0);
   border-radius: 20px 0px 0px 20px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.proto-card .loans-panel::-webkit-scrollbar { display: none; }
+
+/* Frosted header — matches the Overview edit bar treatment */
+.proto-card .loans-panel__header {
+  background: rgba(252, 252, 253, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Top-fade mask on the body — fades content as it scrolls under the header */
+.proto-card .loans-panel__body {
+  -webkit-mask-image: none;
+  mask-image: none;
+  transition: -webkit-mask-image 0.2s ease, mask-image 0.2s ease;
+}
+
+.proto-card .loans-panel__body--scrolled {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 24px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 24px, black 100%);
 }
 
 /* ── .proto-main ────────────────────────────────────────────────────────────── */
@@ -139,7 +162,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .proto-main {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
+  /* visible so overview mode dropdown (absolute under edit bar) is not clipped */
+  overflow: visible;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -156,6 +180,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
+  /* match .proto-main bottom-right radius; main is overflow:visible for dropdowns */
+  border-radius: 0 0 20px 0;
 }
 .proto-main__scroll::-webkit-scrollbar { display: none; }
 
@@ -462,6 +488,11 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .proto-sub--hidden { display: none; }
 
+/* Entity Details — WAAPI entrance in prototype.js (translateY + max-height) */
+[data-entity-sub] {
+  transform-origin: top center;
+}
+
 .proto-sub__label {
   width: 120px;
   flex-shrink: 0;
@@ -487,22 +518,46 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 /* ── Properties section — sidebar layout ─────────────────────────────────────── */
 
 .proto-section--sidebar .proto-section__body-inner {
-  padding: 8px;
+  padding: 0 8px 8px;
   gap: 0;
   overflow: hidden;
+}
+
+/* Figma 711:4185 — Properties header: title + · + count, 4px gaps */
+.proto-section--sidebar .proto-section__head-left {
+  gap: 4px;
+}
+
+.proto-section--sidebar .proto-section__title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent-black-60, #666);
+}
+
+.proto-prop-head__sep {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-60, #666);
+  line-height: 1;
+}
+
+.proto-prop-head__num {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent-black-60, #666);
+  line-height: 1;
 }
 
 .proto-prop-layout {
   display: flex;
   gap: 8px;
+  align-items: flex-start;
   min-height: 320px;
 }
 
 .proto-prop-sidebar {
-  width: 220px;
+  width: 254px;
   flex-shrink: 0;
-  border-radius: 12px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -510,7 +565,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 .proto-prop-sidebar::-webkit-scrollbar { display: none; }
 
-/* ── Sidebar items ──────────────────────────────────────────────────────────── */
+/* ── Sidebar items — Figma 711:4243–4246 ───────────────────────────────────── */
 
 .proto-prop-item {
   display: flex;
@@ -518,28 +573,38 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  height: 52px;
-  padding: 10px 12px;
+  min-height: 61px;
+  padding: 12px;
+  box-sizing: border-box;
   cursor: pointer;
   text-align: left;
   width: 100%;
-  border-bottom: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border: none;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  color: inherit;
   transition: background 0.12s var(--ease-smooth, ease);
 }
 
-.proto-prop-item:last-of-type {
+.proto-prop-item:not(.proto-prop-item--active) {
+  border-bottom: 0.5px solid var(--accent-black-12, #e0e0e0);
+}
+
+.proto-prop-item:not(.proto-prop-item--active):last-of-type {
   border-bottom: none;
 }
 
 .proto-prop-item:hover:not(.proto-prop-item--active) {
-  background: var(--accent-black-4, #f5f5f5);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .proto-prop-item--active {
   background: var(--accent-white-100, #fff);
-  border: 0.5px solid var(--accent-black-8, #ebebeb);
-  border-radius: 12px;
-  box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.04), 0px 2px 8px 0px rgba(0,0,0,0.03);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 16px;
+  border-bottom: 0.5px solid var(--accent-black-12, #e0e0e0);
 }
 
 .proto-prop-item__info {
@@ -548,11 +613,13 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   gap: 4px;
   min-width: 0;
   flex: 1;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .proto-prop-item__addr {
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--accent-black-80, #333);
   white-space: nowrap;
   overflow: hidden;
@@ -560,21 +627,22 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-prop-item__price {
-  font-size: 11px;
-  color: var(--accent-black-40, #999);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-60, #666);
   white-space: nowrap;
 }
 
 .proto-prop-item__type {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 400;
-  color: var(--accent-black-50, #808080);
-  background: var(--accent-black-4, #f5f5f5);
-  border: 0.5px solid var(--accent-black-8, #ebebeb);
-  padding: 3px 7px;
+  color: var(--accent-blue-80, #33a0ff);
+  background: var(--accent-blue-20, #cce7ff);
+  padding: 4px 8px;
   border-radius: 100px;
   white-space: nowrap;
   flex-shrink: 0;
+  align-self: flex-start;
 }
 
 .proto-prop-add-item {
@@ -609,11 +677,39 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 8px;
   overflow-y: auto;
-  padding: 4px 4px 4px 0;
+  padding: 0 4px 4px 0;
   scrollbar-width: thin;
   scrollbar-color: var(--accent-black-12, #e0e0e0) transparent;
+}
+
+/* Figma 711:4190+ — 3-column field grids, 8px column / 20px row gap */
+.proto-prop-detail .proto-section__grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 8px;
+  row-gap: 20px;
+}
+
+.proto-prop-detail .proto-field__value,
+.proto-prop-detail .proto-field__input,
+.proto-prop-detail .proto-field__select,
+.proto-prop-detail .proto-field__currency-wrap {
+  border-radius: 12px;
+}
+
+.proto-prop-detail .proto-field--location-spacer {
+  min-height: 62px;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.proto-prop-detail .proto-sub {
+  gap: 12px;
+}
+
+.proto-prop-detail .proto-field {
+  gap: 4px;
 }
 
 .proto-prop-controls {
@@ -803,26 +899,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   margin-left: 8px;
 }
 
-/* ── Property count badge (inside section head) ──────────────────────────────── */
-
-.proto-prop-count {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  margin-left: 2px;
-}
-
-.proto-prop-count__dot {
-  font-size: 11px;
-  color: var(--accent-black-40, #999);
-  line-height: 1;
-}
-
-.proto-prop-count__num {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--accent-black-40, #999);
-}
+/* Property count in header — see .proto-prop-head__sep / __num (Figma 711:4392) */
 
 
 /* ── Click-to-edit fields ────────────────────────────────────────────────────── */
@@ -832,12 +909,22 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   cursor: default;
 }
 
-/* View mode — unstyled plain text */
+/* View mode — same shape as edit mode, black-4 bg, non-editable */
 [data-view-mode] .proto-field--editable .proto-field__value {
-  border-color: transparent;
-  border-radius: 0;
-  background: transparent;
-  padding-left: 0;
+  background: var(--accent-black-4, #f5f5f5);
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* View mode — segment picker locked (visual only; JS blocks the interaction) */
+[data-view-mode] .proto-toggle {
+  background: var(--accent-black-4, #f5f5f5);
+}
+[data-view-mode] .proto-toggle__btn,
+[data-view-mode] .proto-toggle__btn:not(.proto-toggle__btn--active):hover {
+  cursor: default;
+  background: none;
 }
 
 /* Edit/Done bar */
@@ -879,7 +966,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-edit-bar__title {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--accent-black-80, #333);
 }
@@ -889,58 +976,114 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   align-items: center;
 }
 
-.proto-mode-toggle {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  background: var(--accent-black-10, #e6e6e6);
-  border-radius: 100px;
-  padding: 4px;
-  position: relative;
-  overflow: hidden;
-}
+/* ── Overview mode dropdown — Figma 717:4184 (Button/Primary pill) + status-style menu
+   Wrap uses .lp-status-dropdown-wrap.proto-mode-dropdown-wrap + global positioning. ── */
 
-.proto-mode-toggle__thumb {
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 0;
-  width: 0;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(6px) saturate(1.6);
-  -webkit-backdrop-filter: blur(6px) saturate(1.6);
-  border-radius: 100px;
-  box-shadow:
-    inset 0 0.5px 0.5px rgba(255, 255, 255, 0.85),
-    0 1px 4px rgba(0, 0, 0, 0.13),
-    0 2px 8px rgba(0, 0, 0, 0.06);
-  pointer-events: none;
-  transform-origin: center center;
-  will-change: transform;
-}
-
-.proto-mode-toggle__option {
+/* White bordered pill trigger — matches Lender Exploration node 717:4184 */
+.proto-overview-mode-trigger {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  flex: 1;
-  padding: 5px 10px;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 32px;
+  padding: 8px;
+  box-sizing: border-box;
+  background: var(--accent-white-100, #fff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
   border-radius: 100px;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--accent-black-60, #666);
-  background: transparent;
-  border: none;
   cursor: pointer;
-  white-space: nowrap;
-  line-height: normal;
-  position: relative;
-  z-index: 1;
-  transition: color 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-sans);
+  transition: background 0.2s var(--ease-smooth, cubic-bezier(0.4, 0, 0.2, 1)),
+    border-color 0.2s var(--ease-smooth, cubic-bezier(0.4, 0, 0.2, 1));
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.proto-mode-toggle__option--active {
+.proto-overview-mode-trigger:hover {
+  background: var(--accent-black-4, #f5f5f5);
+}
+
+.proto-overview-mode-trigger__main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.proto-overview-mode-trigger__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* 16×16 slot; artwork inset — Figma 717:4184 (~12.5px effective in 16px frame) */
+.proto-overview-mode-trigger__icon svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.proto-overview-mode-trigger__label {
+  font-size: 12px;
+  font-weight: 400;
   color: var(--accent-black-80, #333);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.proto-overview-mode-trigger__chev {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--accent-black-50);
+  --stroke-0: var(--accent-black-50);
+  transition: transform 0.2s var(--ease-smooth, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Chevron: viewBox 11×6 — width < 16px, height follows aspect */
+.proto-overview-mode-trigger__chev svg {
+  width: 12px;
+  height: auto;
+  flex-shrink: 0;
+  display: block;
+}
+
+.proto-overview-mode-trigger[aria-expanded="true"] .proto-overview-mode-trigger__chev {
+  transform: rotate(180deg);
+}
+
+/* Menu = global .loans-dropdown; left edge aligned with trigger (same as lp-status menu) */
+.loans-dropdown--proto-mode {
+  min-width: 168px;
+  left: 0;
+  right: auto;
+}
+
+.loans-dropdown--proto-mode .loans-dropdown__item {
+  gap: 8px;
+}
+
+.proto-mode-menu__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.proto-mode-menu__icon svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  display: block;
 }
 
 .proto-field__input {
@@ -1098,6 +1241,56 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .proto-field__value--saved {
   animation: proto-saved 0.7s var(--ease-smooth, ease) forwards;
+}
+
+/* Contenteditable value spans — focus ring matches existing input style */
+.proto-field__value[contenteditable="true"]:focus {
+  outline: none;
+  border-color: var(--accent-blue-60, #66aaff);
+  box-shadow: 0 0 0 3px var(--accent-blue-8, #ebf5ff);
+}
+
+/* ── View-mode tooltip ───────────────────────────────────────────────────────── */
+.proto-view-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background: var(--accent-white-100, #fff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+.proto-view-tooltip.proto-view-tooltip--visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.proto-view-tooltip__text {
+  font-size: 12px;
+  color: var(--accent-black-60, #666);
+}
+.proto-view-tooltip__btn {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-white-100, #fff);
+  background: var(--accent-black-80, #333);
+  border: none;
+  border-radius: 100px;
+  padding: 5px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s ease;
+}
+.proto-view-tooltip__btn:hover {
+  background: var(--accent-black-100, #1a1a1a);
 }
 
 /* ── Parties ──────────────────────────────────────────────────────────────────── */
@@ -1298,4 +1491,40 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   left: 0;
   color: var(--accent-black-20, #ccc);
   font-size: 10px;
+}
+
+/* ── Loan Card Drag & Drop ─────────────────────────────────────────────────── */
+
+/* Original item while being dragged — fades to show the empty slot */
+.loan-list-item--dragging {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Floating ghost that follows the cursor */
+.loan-drag-ghost {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  border-radius: 16px;
+  background: var(--accent-black-2, #fafafa);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08);
+  opacity: 0.95;
+  transform: scale(1.03) rotate(1deg);
+  cursor: grabbing;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  gap: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Drop zone highlight */
+.loan-stage-group__body--drop-target {
+  background: var(--accent-blue-8, #ebf5ff);
+  border-radius: 12px;
+  outline: 2px dashed var(--accent-blue-40, #99ccff);
+  outline-offset: -2px;
+  transition: background 160ms ease;
 }
