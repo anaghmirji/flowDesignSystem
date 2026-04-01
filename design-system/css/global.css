@@ -1787,3 +1787,72 @@
 .loans-panel .loan-stage-group:last-child {
   margin-bottom: 0;
 }
+
+/* ── Segment Picker ────────────────────────────────────────────────────────── */
+
+.proto-toggle {
+  display: inline-flex;
+  align-self: flex-start;
+  background: var(--accent-black-8, #ebebeb);
+  border-radius: 100px;
+  padding: 4px;
+  gap: 2px;
+  position: relative;
+}
+
+.proto-toggle__pill {
+  position: absolute;
+  background: var(--accent-white-100, #fff);
+  border-radius: 100px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.06);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.proto-toggle__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 100px;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+  border: none;
+  background: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: background 0.16s cubic-bezier(0.4, 0, 1, 0.8);
+}
+
+.proto-toggle__btn--active { padding-right: 12px; }
+
+.proto-toggle__btn:not(.proto-toggle__btn--active):hover,
+.proto-toggle__btn--preview-hover {
+  background: var(--accent-black-12, #e0e0e0);
+}
+
+.proto-toggle__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.proto-toggle__label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  margin-left: 0;
+}
+
+.proto-toggle__btn--active .proto-toggle__label {
+  max-width: 80px;
+  opacity: 1;
+  margin-left: 8px;
+}

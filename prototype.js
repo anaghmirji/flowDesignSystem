@@ -423,11 +423,20 @@ function buildFormHtml() {
       </div>`;
   };
 
+  const TOGGLE_ICONS = {
+    individual: iconSvg('user'),
+    entity:     iconSvg('building-office-2'),
+  };
+
   const toggle = (options, activeIdx = 0) => `
     <div class="proto-toggle" data-toggle>
+      <div class="proto-toggle__pill" aria-hidden="true"></div>
       ${options.map((o, i) => `<button
           class="proto-toggle__btn${i === activeIdx ? ' proto-toggle__btn--active' : ''}"
-          data-toggle-val="${o.toLowerCase()}">${o}</button>`).join('')}
+          data-toggle-val="${o.toLowerCase()}">
+        <span class="proto-toggle__icon">${TOGGLE_ICONS[o.toLowerCase()] || ''}</span>
+        <span class="proto-toggle__label">${o}</span>
+      </button>`).join('')}
     </div>`;
 
   // ── Borrower section ─────────────────────────────────────────────────────────
@@ -805,18 +814,86 @@ function recalcLTV() {
 }
 
 function bindFormInteractions() {
-  // Individual / Entity toggle
+  // Individual / Entity toggle — WAAPI FLIP sliding pill
   document.addEventListener('click', e => {
     const btn = e.target.closest('[data-toggle-val]');
     if (!btn) return;
-    const toggle = btn.closest('[data-toggle]');
-    if (!toggle) return;
-    toggle.querySelectorAll('[data-toggle-val]').forEach(b => b.classList.remove('proto-toggle__btn--active'));
-    btn.classList.add('proto-toggle__btn--active');
+    const toggleEl = btn.closest('[data-toggle]');
+    if (!toggleEl) return;
+
+    const oldBtn = toggleEl.querySelector('.proto-toggle__btn--active');
+    if (!oldBtn || oldBtn === btn) return;
+
+    const pill      = toggleEl.querySelector('.proto-toggle__pill');
+    const oldLabel  = oldBtn.querySelector('.proto-toggle__label');
+    const newLabel  = btn.querySelector('.proto-toggle__label');
+
+    if (pill) {
+      // 1. Capture old label rect + FROM button rect BEFORE any DOM change
+      const oldLabelRect = oldLabel ? oldLabel.getBoundingClientRect() : null;
+      const fromRect     = oldBtn.getBoundingClientRect();
+      const fromW        = fromRect.width;
+      const fromH        = fromRect.height;
+
+      // 2. Switch class with NO label freeze — layout is clean for TO snapshot
+      oldBtn.classList.remove('proto-toggle__btn--active');
+      btn.classList.add('proto-toggle__btn--active');
+
+      // 3. Measure AFTER reflow (re-take cRect in case toggle shifted)
+      const cRect  = toggleEl.getBoundingClientRect();
+      const toRect = btn.getBoundingClientRect();
+      const toLeft = toRect.left - cRect.left;
+      const toTop  = toRect.top  - cRect.top;
+      const toW    = toRect.width;
+      const toH    = toRect.height;
+
+      // 4. Direction + FLIP delta in viewport space
+      const fromCenterVP = fromRect.left + fromW / 2;
+      const toCenterVP   = toRect.left   + toW  / 2;
+      const goingRight   = toCenterVP > fromCenterVP;
+      const dx           = fromCenterVP - toCenterVP;
+      const scaleX       = fromW / toW;
+
+      // 5. Commit pill to final position/size
+      pill.style.left   = `${toLeft}px`;
+      pill.style.top    = `${toTop}px`;
+      pill.style.width  = `${toW}px`;
+      pill.style.height = `${toH}px`;
+
+      // 6. Pill — gentle fluid-enter glide
+      pill.getAnimations().forEach(a => a.cancel());
+      const pillAnim = pill.animate([
+        { transform: `translateX(${dx}px) scaleX(${scaleX})` },
+        { transform: 'translateX(0) scaleX(1)' },
+      ], { duration: 380, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'none' });
+      pillAnim.onfinish = () => { pill.style.transform = ''; };
+
+      // 7. Old label exit — quick fade out (no layout impact)
+      if (oldLabel) {
+        oldLabel.getAnimations().forEach(a => a.cancel());
+        oldLabel.animate(
+          [{ opacity: 1 }, { opacity: 0 }],
+          { duration: 120, easing: 'cubic-bezier(0.4, 0, 1, 0.8)', fill: 'none' }
+        );
+      }
+
+      // 8. New label enter — slides in from destination side, fades in
+      if (newLabel) {
+        const enterX = goingRight ? 7 : -7;
+        newLabel.getAnimations().forEach(a => a.cancel());
+        newLabel.animate([
+          { transform: `translateX(${enterX}px)`, opacity: 0 },
+          { transform: 'translateX(0)',            opacity: 1 },
+        ], { duration: 320, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'none', delay: 30 });
+      }
+    } else {
+      oldBtn.classList.remove('proto-toggle__btn--active');
+      btn.classList.add('proto-toggle__btn--active');
+    }
+
     const isEntity = btn.dataset.toggleVal === 'entity';
     const entitySub = document.querySelector('[data-entity-sub]');
     if (entitySub) entitySub.classList.toggle('proto-sub--hidden', !isEntity);
-    // Hide DOB + SSN when Entity is selected (individual-only fields)
     document.querySelectorAll('[data-individual-only]').forEach(el => {
       el.classList.toggle('proto-field--hidden', isEntity);
     });
@@ -1215,6 +1292,20 @@ function bindEditMode() {
   });
 }
 
+function initTogglePills() {
+  document.querySelectorAll('[data-toggle]').forEach(toggleEl => {
+    const pill      = toggleEl.querySelector('.proto-toggle__pill');
+    const activeBtn = toggleEl.querySelector('.proto-toggle__btn--active');
+    if (!pill || !activeBtn) return;
+    const cRect = toggleEl.getBoundingClientRect();
+    const bRect = activeBtn.getBoundingClientRect();
+    pill.style.left   = `${bRect.left - cRect.left}px`;
+    pill.style.top    = `${bRect.top  - cRect.top}px`;
+    pill.style.width  = `${bRect.width}px`;
+    pill.style.height = `${bRect.height}px`;
+  });
+}
+
 function bindInfoTooltips() {
   const wrap = document.createElement('div');
   wrap.className = 'proto-info-tooltip-wrap';
@@ -1261,6 +1352,7 @@ function bindInfoTooltips() {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('app').innerHTML = buildApp();
+  initTogglePills();
   bindInteractions();
   bindResizeHandle();
   bindBorrowerHeader();

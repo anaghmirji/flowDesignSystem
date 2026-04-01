@@ -58,6 +58,11 @@ window.SYSTEM = {
           label: 'Dropdown Item',
           icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.25"/><path d="M5 8h6M5 11h4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
         },
+        {
+          id: 'segment-picker',
+          label: 'Segment Picker',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="5" width="13" height="6" rx="3" stroke="currentColor" stroke-width="1.25"/><rect x="2" y="5.5" width="6.5" height="5" rx="2.5" fill="currentColor" opacity=".2"/></svg>',
+        },
       ],
     },
     {
@@ -340,6 +345,21 @@ window.SYSTEM = {
         { id: 'dropdown-item-default',  label: 'Default',  state: 'default'  },
         { id: 'dropdown-item-hover',    label: 'Hover',    state: 'hover'    },
         { id: 'dropdown-item-selected', label: 'Selected', state: 'selected' },
+      ],
+    },
+
+    // ── Segment Picker ─────────────────────────────────────────────────────────
+    // Sliding-pill toggle for switching between Individual and Entity borrower views.
+    // Uses WAAPI for pill glide + label enter/exit animations.
+    segmentPicker: {
+      title: 'Segment Picker',
+      subtitle: 'Global · switches between Individual and Entity borrower views · click a variant for code',
+      cssFile: 'global.css',
+      figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=711-4120',
+      variants: [
+        { id: 'segment-picker-individual', label: 'Individual Active', activeVal: 'individual' },
+        { id: 'segment-picker-entity',     label: 'Entity Active',     activeVal: 'entity'     },
+        { id: 'segment-picker-hover',      label: 'Hover',             activeVal: 'individual', hoverVal: 'entity' },
       ],
     },
   },

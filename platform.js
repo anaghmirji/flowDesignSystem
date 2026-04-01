@@ -1151,6 +1151,300 @@ defineEmits(['click']);
   };
 }
 
+// ─── Segment Picker ───────────────────────────────────────────────────────────
+
+function buildSegmentPickerHtml(v) {
+  const userIcon     = iconSvg('user');
+  const buildingIcon = iconSvg('building-office-2');
+  const indActive    = v.activeVal === 'individual';
+  const indClass     = `proto-toggle__btn${indActive ? ' proto-toggle__btn--active' : (!indActive && v.hoverVal === 'individual' ? ' proto-toggle__btn--preview-hover' : '')}`;
+  const entClass     = `proto-toggle__btn${!indActive ? ' proto-toggle__btn--active' : (v.hoverVal === 'entity' ? ' proto-toggle__btn--preview-hover' : '')}`;
+  return `<div class="proto-toggle" data-toggle>
+  <div class="proto-toggle__pill"></div>
+  <button class="${indClass}" data-toggle-val="individual">
+    <span class="proto-toggle__icon">${userIcon}</span>
+    <span class="proto-toggle__label">Individual</span>
+  </button>
+  <button class="${entClass}" data-toggle-val="entity">
+    <span class="proto-toggle__icon">${buildingIcon}</span>
+    <span class="proto-toggle__label">Entity</span>
+  </button>
+</div>`;
+}
+
+/** Position the pill over the active button inside a given container element. */
+function initSegmentPill(el) {
+  el.querySelectorAll('[data-toggle]').forEach(toggleEl => {
+    const pill      = toggleEl.querySelector('.proto-toggle__pill');
+    const activeBtn = toggleEl.querySelector('.proto-toggle__btn--active');
+    if (!pill || !activeBtn) return;
+    const cRect = toggleEl.getBoundingClientRect();
+    const bRect = activeBtn.getBoundingClientRect();
+    pill.style.left   = `${bRect.left - cRect.left}px`;
+    pill.style.top    = `${bRect.top  - cRect.top}px`;
+    pill.style.width  = `${bRect.width}px`;
+    pill.style.height = `${bRect.height}px`;
+  });
+}
+
+function renderSegmentPickerPage() {
+  const comp = SYSTEM.components.segmentPicker;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${comp.title}</div>
+      <div class="section-subtitle">${comp.subtitle}</div>
+    </div>
+    <div class="ds-table" style="max-width:640px">`;
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-segment-picker-variant="${v.id}">
+        <span class="ds-row-name" style="min-width:180px">${v.label}</span>
+        ${buildSegmentPickerHtml(v)}
+      </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function segmentPickerTabs(variantId) {
+  const comp     = SYSTEM.components.segmentPicker;
+  const v        = comp.variants.find(vv => vv.id === variantId) || comp.variants[0];
+  const indActive = v.activeVal === 'individual';
+
+  return {
+    'HTML': `<!-- Include global.css -->
+${indActive ? '<!-- Individual active -->' : '<!-- Entity active -->'}
+<div class="proto-toggle" data-toggle>
+  <div class="proto-toggle__pill"></div>
+
+  <button class="proto-toggle__btn${indActive ? ' proto-toggle__btn--active' : ''}"
+          data-toggle-val="individual">
+    <span class="proto-toggle__icon"><!-- user icon --></span>
+    <span class="proto-toggle__label">Individual</span>
+  </button>
+
+  <button class="proto-toggle__btn${!indActive ? ' proto-toggle__btn--active' : ''}"
+          data-toggle-val="entity">
+    <span class="proto-toggle__icon"><!-- building-office-2 icon --></span>
+    <span class="proto-toggle__label">Entity</span>
+  </button>
+</div>
+
+<script>
+  document.querySelectorAll('[data-toggle]').forEach(initSegmentPicker);
+</script>`,
+
+    'CSS': `/* global.css */
+/* Tokens: accent-black-8 (#ebebeb), accent-black-12 (#e0e0e0), accent-white-100 (#fff) */
+
+.proto-toggle {
+  display: inline-flex;
+  align-self: flex-start;
+  background: var(--accent-black-8, #ebebeb);
+  border-radius: 100px;
+  padding: 4px;
+  gap: 2px;
+  position: relative;
+}
+
+/* Sliding pill — left/top/width/height set by JS on load and on each switch */
+.proto-toggle__pill {
+  position: absolute;
+  background: var(--accent-white-100, #fff);
+  border-radius: 100px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.06);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.proto-toggle__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 100px;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+  transition: background 0.16s cubic-bezier(0.4, 0, 1, 0.8);
+}
+
+/* Active button expands right to reveal label */
+.proto-toggle__btn--active { padding-right: 12px; }
+
+/* Inactive hover */
+.proto-toggle__btn:not(.proto-toggle__btn--active):hover {
+  background: var(--accent-black-12, #e0e0e0);
+}
+
+.proto-toggle__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Label: collapsed by default, revealed on active via max-width */
+.proto-toggle__label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  margin-left: 0;
+  /* No CSS transitions — WAAPI animates opacity; max-width/margin snap instantly */
+}
+
+.proto-toggle__btn--active .proto-toggle__label {
+  max-width: 80px;
+  opacity: 1;
+  margin-left: 8px;
+}`,
+
+    'JS': `// Call once after DOM is ready.
+// Uses getBoundingClientRect() to measure positions — avoids offsetParent issues.
+function initSegmentPicker(toggleEl) {
+  const pill      = toggleEl.querySelector('.proto-toggle__pill');
+  const activeBtn = toggleEl.querySelector('.proto-toggle__btn--active');
+  if (!pill || !activeBtn) return;
+
+  // Position pill over the active button
+  const cRect = toggleEl.getBoundingClientRect();
+  const bRect = activeBtn.getBoundingClientRect();
+  pill.style.left   = \`\${bRect.left - cRect.left}px\`;
+  pill.style.top    = \`\${bRect.top  - cRect.top}px\`;
+  pill.style.width  = \`\${bRect.width}px\`;
+  pill.style.height = \`\${bRect.height}px\`;
+
+  toggleEl.querySelectorAll('.proto-toggle__btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const oldBtn = toggleEl.querySelector('.proto-toggle__btn--active');
+      if (!oldBtn || oldBtn === btn) return;
+
+      // Snapshot FROM geometry before any DOM change
+      const fromRect = oldBtn.getBoundingClientRect();
+
+      // Switch class — layout reflows here
+      oldBtn.classList.remove('proto-toggle__btn--active');
+      btn.classList.add('proto-toggle__btn--active');
+
+      // Snapshot TO geometry AFTER reflow (re-read cRect too — toggle may shift)
+      const cRect2  = toggleEl.getBoundingClientRect();
+      const toRect  = btn.getBoundingClientRect();
+      const goRight = toRect.left > fromRect.left;
+      const dx      = (fromRect.left + fromRect.width / 2) - (toRect.left + toRect.width / 2);
+      const scaleX  = fromRect.width / toRect.width;
+
+      // Commit pill to final position
+      pill.style.left   = \`\${toRect.left - cRect2.left}px\`;
+      pill.style.top    = \`\${toRect.top  - cRect2.top}px\`;
+      pill.style.width  = \`\${toRect.width}px\`;
+      pill.style.height = \`\${toRect.height}px\`;
+
+      // Pill glide — fluid-enter (fast start, long deceleration)
+      pill.getAnimations().forEach(a => a.cancel());
+      const pillAnim = pill.animate([
+        { transform: \`translateX(\${dx}px) scaleX(\${scaleX})\` },
+        { transform: 'translateX(0) scaleX(1)' },
+      ], { duration: 380, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'none' });
+      pillAnim.onfinish = () => { pill.style.transform = ''; };
+
+      // Old label exit — quick fluid-exit fade
+      const oldLabel = oldBtn.querySelector('.proto-toggle__label');
+      if (oldLabel) {
+        oldLabel.getAnimations().forEach(a => a.cancel());
+        oldLabel.animate(
+          [{ opacity: 1 }, { opacity: 0 }],
+          { duration: 120, easing: 'cubic-bezier(0.4, 0, 1, 0.8)', fill: 'none' }
+        );
+      }
+
+      // New label enter — slides in from the direction of travel
+      const newLabel = btn.querySelector('.proto-toggle__label');
+      if (newLabel) {
+        const enterX = goRight ? 7 : -7;
+        newLabel.getAnimations().forEach(a => a.cancel());
+        newLabel.animate([
+          { transform: \`translateX(\${enterX}px)\`, opacity: 0 },
+          { transform: 'translateX(0)',              opacity: 1 },
+        ], { duration: 320, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'none', delay: 30 });
+      }
+    });
+  });
+}
+
+// Usage
+document.querySelectorAll('[data-toggle]').forEach(initSegmentPicker);`,
+
+    'React': `import { useRef, useLayoutEffect, useState } from 'react';
+import 'flow-design-system/styles.css';
+
+type SegmentValue = 'individual' | 'entity';
+
+interface SegmentPickerProps {
+  value?: SegmentValue;
+  onChange?: (value: SegmentValue) => void;
+}
+
+export function SegmentPicker({ value = 'individual', onChange }: SegmentPickerProps) {
+  const [active, setActive] = useState<SegmentValue>(value);
+  const toggleRef = useRef<HTMLDivElement>(null);
+  const pillRef   = useRef<HTMLDivElement>(null);
+
+  // Position pill after every render (active changes trigger re-position)
+  useLayoutEffect(() => {
+    const el   = toggleRef.current;
+    const pill = pillRef.current;
+    if (!el || !pill) return;
+    const btn = el.querySelector<HTMLElement>('.proto-toggle__btn--active');
+    if (!btn) return;
+    const cRect = el.getBoundingClientRect();
+    const bRect = btn.getBoundingClientRect();
+    pill.style.left   = \`\${bRect.left - cRect.left}px\`;
+    pill.style.top    = \`\${bRect.top  - cRect.top}px\`;
+    pill.style.width  = \`\${bRect.width}px\`;
+    pill.style.height = \`\${bRect.height}px\`;
+  }, [active]);
+
+  const handleClick = (val: SegmentValue) => {
+    if (val === active) return;
+    setActive(val);
+    onChange?.(val);
+  };
+
+  const options: { val: SegmentValue; label: string }[] = [
+    { val: 'individual', label: 'Individual' },
+    { val: 'entity',     label: 'Entity'     },
+  ];
+
+  return (
+    <div className="proto-toggle" ref={toggleRef}>
+      <div className="proto-toggle__pill" ref={pillRef} />
+      {options.map(({ val, label }) => (
+        <button
+          key={val}
+          className={\`proto-toggle__btn\${active === val ? ' proto-toggle__btn--active' : ''}\`}
+          data-toggle-val={val}
+          onClick={() => handleClick(val)}
+        >
+          <span className="proto-toggle__icon">
+            {val === 'individual' ? <UserIcon /> : <BuildingIcon />}
+          </span>
+          <span className="proto-toggle__label">{label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// Usage
+<SegmentPicker value="individual" onChange={(v) => console.log('switched to', v)} />`,
+  };
+}
+
 // ─── Lender Portal — Status / Stage / Status Stage ────────────────────────────
 
 function buildLpStatusHtml(v) {
@@ -3604,6 +3898,7 @@ const PAGE_RENDERERS = {
   icons:                      renderIconsPage,
   buttons:                    renderButtonsPage,
   'dropdown-item':            renderDropdownItemPage,
+  'segment-picker':           renderSegmentPickerPage,
   'lender-loans':             renderLenderLoansPage,
   'lender-status':            renderLenderStatusPage,
   'lender-stage':             renderLenderStagePage,
@@ -3646,6 +3941,7 @@ function init() {
   bindButtonRows();
   bindButtonSecondaryRows();
   bindDropdownItemRows();
+  bindSegmentPickerRows();
   bindLenderRows();
   bindLpStatusRows();
   bindLpStageRows();
@@ -3869,8 +4165,15 @@ function bindNav() {
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       item.classList.add('active');
-      document.getElementById('page-' + item.dataset.page).classList.add('active');
+      const page = document.getElementById('page-' + item.dataset.page);
+      page.classList.add('active');
       closePanel();
+      // Re-initialize pills now that the page is visible and rects are valid
+      if (item.dataset.page === 'segment-picker') {
+        requestAnimationFrame(() => {
+          page.querySelectorAll('[data-segment-picker-variant]').forEach(row => initSegmentPill(row));
+        });
+      }
     });
   });
 }
@@ -4297,6 +4600,25 @@ function bindDropdownItemRows() {
         tabs: dropdownItemTabs(variantId),
         defaultLang: 'HTML',
         relations: SYSTEM.components.dropdownItem.relations || null,
+      });
+    });
+  });
+}
+
+function bindSegmentPickerRows() {
+  document.querySelectorAll('[data-segment-picker-variant]').forEach(row => {
+    row.addEventListener('click', () => {
+      const variantId = row.dataset.segmentPickerVariant;
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
+      setActive(row);
+      const v = SYSTEM.components.segmentPicker.variants.find(vv => vv.id === variantId);
+      openPanel({
+        type: 'Component · Global',
+        name: v?.label || variantId,
+        preview: buildSegmentPickerHtml(v || SYSTEM.components.segmentPicker.variants[0]),
+        onPreviewMount: (el) => { requestAnimationFrame(() => initSegmentPill(el)); },
+        tabs: segmentPickerTabs(variantId),
+        defaultLang: 'HTML',
       });
     });
   });
