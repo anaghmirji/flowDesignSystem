@@ -847,9 +847,10 @@ function recalcLTV() {
 
 /** Entity Details sub-card — max-height + opacity + slide (matches toggle pill easing). */
 const ENTITY_SUB_MS_SHOW = 420;
-const ENTITY_SUB_MS_HIDE = 300;
+const ENTITY_SUB_MS_HIDE = 440;
 const ENTITY_SUB_EASE_SHOW = 'cubic-bezier(0.16, 1, 0.3, 1)';
-const ENTITY_SUB_EASE_HIDE = 'cubic-bezier(0.4, 0, 0.25, 1)';
+/** Exit: ease-out height — no translateY (it fought max-height in a flex column). */
+const ENTITY_SUB_EASE_HIDE = 'cubic-bezier(0.33, 1, 0.68, 1)';
 
 function cancelEntitySubAnims(entitySub) {
   if (!entitySub) return;
@@ -867,6 +868,8 @@ function setEntitySubVisible(entitySub, visible) {
   entitySub.style.opacity = '';
   entitySub.style.overflow = '';
   entitySub.style.transform = '';
+  entitySub.style.paddingTop = '';
+  entitySub.style.paddingBottom = '';
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) {
@@ -879,23 +882,39 @@ function setEntitySubVisible(entitySub, visible) {
   if (visible) {
     if (!isHidden) return;
     entitySub.classList.remove('proto-sub--hidden');
-    entitySub.style.overflow = 'hidden';
-    entitySub.style.maxHeight = '0px';
-    entitySub.style.opacity = '0';
-    entitySub.style.transform = 'translateY(-8px)';
-    void entitySub.offsetHeight;
     const h = entitySub.scrollHeight;
     if (h <= 0) {
       entitySub.style.maxHeight = '';
       entitySub.style.opacity = '';
       entitySub.style.overflow = '';
       entitySub.style.transform = '';
+      entitySub.style.paddingTop = '';
+      entitySub.style.paddingBottom = '';
       return;
     }
+    entitySub.style.overflow = 'hidden';
+    entitySub.style.maxHeight = '0px';
+    entitySub.style.opacity = '0';
+    entitySub.style.transform = 'translateY(-8px)';
+    entitySub.style.paddingTop = '0px';
+    entitySub.style.paddingBottom = '0px';
+    void entitySub.offsetHeight;
     const anim = entitySub.animate(
       [
-        { maxHeight: '0px', opacity: 0, transform: 'translateY(-8px)' },
-        { maxHeight: `${h}px`, opacity: 1, transform: 'translateY(0)' },
+        {
+          maxHeight: '0px',
+          opacity: 0,
+          transform: 'translateY(-8px)',
+          paddingTop: '0px',
+          paddingBottom: '0px',
+        },
+        {
+          maxHeight: `${h}px`,
+          opacity: 1,
+          transform: 'translateY(0)',
+          paddingTop: '16px',
+          paddingBottom: '16px',
+        },
       ],
       { duration: ENTITY_SUB_MS_SHOW, easing: ENTITY_SUB_EASE_SHOW, fill: 'none' }
     );
@@ -904,6 +923,8 @@ function setEntitySubVisible(entitySub, visible) {
       entitySub.style.opacity = '';
       entitySub.style.overflow = '';
       entitySub.style.transform = '';
+      entitySub.style.paddingTop = '';
+      entitySub.style.paddingBottom = '';
     };
     return;
   }
@@ -919,8 +940,18 @@ function setEntitySubVisible(entitySub, visible) {
   void entitySub.offsetHeight;
   const anim = entitySub.animate(
     [
-      { maxHeight: `${h}px`, opacity: 1, transform: 'translateY(0)' },
-      { maxHeight: '0px', opacity: 0, transform: 'translateY(-6px)' },
+      {
+        maxHeight: `${h}px`,
+        opacity: 1,
+        paddingTop: '16px',
+        paddingBottom: '16px',
+      },
+      {
+        maxHeight: '0px',
+        opacity: 0,
+        paddingTop: '0px',
+        paddingBottom: '0px',
+      },
     ],
     { duration: ENTITY_SUB_MS_HIDE, easing: ENTITY_SUB_EASE_HIDE, fill: 'none' }
   );
@@ -930,6 +961,8 @@ function setEntitySubVisible(entitySub, visible) {
     entitySub.style.opacity = '';
     entitySub.style.overflow = '';
     entitySub.style.transform = '';
+    entitySub.style.paddingTop = '';
+    entitySub.style.paddingBottom = '';
   };
 }
 

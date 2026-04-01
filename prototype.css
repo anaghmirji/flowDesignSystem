@@ -488,9 +488,11 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .proto-sub--hidden { display: none; }
 
-/* Entity Details — WAAPI entrance in prototype.js (translateY + max-height) */
+/* Entity Details — WAAPI in prototype.js; min-height lets flex column collapse cleanly */
 [data-entity-sub] {
   transform-origin: top center;
+  min-height: 0;
+  align-self: stretch;
 }
 
 .proto-sub__label {
