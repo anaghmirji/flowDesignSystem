@@ -84,7 +84,138 @@ Every time a component is added or changed, go through every item below without 
 - [ ] Any design system CSS class (`.btn`, `.assignees`, `.profile`, `.sidebar-nav`, etc.) is used as-is — never re-styled or overridden in prototype.css unless it's a layout-only context override
 - [ ] Before writing any new HTML in prototype.js, ask: does `platform.js` already have a `buildXHtml()` for this? If yes, call it.
 
-## 16. Git
+---
+
+## 16. Prototype — Animations (ANIMATION_STYLE.md)
+
+All JS-driven animations in the prototype MUST follow the animation vocabulary defined in `ANIMATION_STYLE.md`. Run through these checks for every animation added or changed:
+
+### Easing curves — only use these four
+- [ ] **Fluid exit** uses `cubic-bezier(0.4, 0, 1, 0.8)` — for elements leaving / collapsing / fading out
+- [ ] **Fluid enter** uses `cubic-bezier(0.16, 1, 0.3, 1)` — for elements appearing / expanding / sliding in
+- [ ] **Spring** uses `cubic-bezier(0.34, 1.48, 0.64, 1)` — for elastic moments (toggle thumb, trigger reactions)
+- [ ] **Slow hold** uses `cubic-bezier(0.12, 0, 0.36, 0)` — first keyframe of amoeba split only
+- [ ] No stray curves (e.g. `0.55, 0, 1, 0.45` or `0.34, 1.56, 0.64, 1`) — they must match exactly
+
+### Timing
+- [ ] Micro animations (icon, dot): 160–240ms
+- [ ] Component animations (dropdown open): 320–520ms
+- [ ] Mode switches: 380–480ms
+- [ ] Exit / collapse / close: 160–240ms (always faster than entrance)
+
+### WAAPI best practices
+- [ ] Multi-keyframe animations use `element.animate()` with per-keyframe easing
+- [ ] Top-level easing is `'linear'` when per-keyframe easing is used
+- [ ] `fill: 'none'` — never `fill: 'forwards'`
+- [ ] `onfinish` sets final inline style, then clears it (no stale transforms)
+- [ ] Interruptible animations read current position from `getComputedStyle()` before cancelling
+
+### Pattern-specific checks
+
+**Mode toggle (Edit/View pill):**
+- [ ] Thumb position measured from `getBoundingClientRect()` on the active button
+- [ ] Initial `positionThumb(false)` on mount — no transition
+- [ ] Thumb stretch uses `scaleX(1.18)` at 36% midpoint with spring easing
+- [ ] Both buttons have `data-mode-edit` / `data-mode-view` attributes
+- [ ] Thumb element `.proto-mode-toggle__thumb` exists inside `.proto-mode-toggle`
+- [ ] Active class `proto-mode-toggle__option--active` swaps correctly
+
+**View mode field animation:**
+- [ ] `.proto-field__value` has CSS transitions on: `padding-left`, `border-color`, `border-radius`, `background`
+- [ ] `padding-left` and `border-radius` use spring curve `(0.34, 1.4, 0.64, 1)` at 0.42s
+- [ ] `border-color` and `background` use `(0.4, 0, 0.2, 1)` at 0.35s
+- [ ] `[data-view-mode]` rule uses `border-color: transparent` — not `border: none` (so border fades, doesn't snap)
+- [ ] `[data-view-mode]` sets `padding-left: 0`, `border-radius: 0`, `background: transparent`
+
+**Status dropdown (amoeba split):**
+- [ ] `mountLpStatusDropdown()` in platform.js handles open/close
+- [ ] `transform-origin` set dynamically to `${trigger.offsetWidth / 2}px top`
+- [ ] Open: starts at `scaleX(0.44) scaleY(0.02) translateY(-4px)` with `borderRadius: 100px`
+- [ ] Open: ends at `scaleX(1) scaleY(1) translateY(0)` with `borderRadius: 16px`
+- [ ] Close: reverse of open — collapses back to sliver and translates up
+- [ ] Trigger split animation: `scaleX(0.86) scaleY(1.14)` at 18% with fluid-exit easing
+- [ ] Trigger merge animation: `scaleX(1.08) scaleY(0.88)` at 35% with spring easing
+- [ ] Menu gap is `top: calc(100% + 4px)` — open anim compensates with `translateY(-4px)`
+
+**Stage forward button (slide-through icon swap):**
+- [ ] Icon exit: `translateX(0) scale(1) → translateX(60%) scale(0.7) → translateX(130%) scale(0.55)` — 220ms fluid-exit
+- [ ] Icon enter: `translateX(-130%) scale(0.55) → translateX(-40%) scale(0.75) → translateX(0) scale(1)` — 380ms fluid-enter
+- [ ] Inline style frozen between exit/enter (`transform` + `opacity` set before `requestAnimationFrame`)
+- [ ] `stageAnimating` guard prevents double-click interruption
+- [ ] Label exit: `translateY(-8px)` fade out — 180ms fluid-exit
+- [ ] Label enter: `translateY(8px) → translateY(-2px) → translateY(0)` — 340ms fluid-enter
+- [ ] Stage width change uses `translateX(-delta)` — no `width` animation, no `scaleX`
+- [ ] Right edge (button) stays perfectly stationary during width transition
+- [ ] Width expand: 320ms fluid-enter; width contract: 220ms fluid-exit
+- [ ] `STAGES` array: `['Underwriting', 'Closing', 'Funded', 'Servicing']`
+- [ ] `.lp-stage__label` has `display: inline-block` in global.css (required for transforms)
+
+---
+
+## 17. Prototype — Structure (prototype.js)
+
+### HTML builders
+- [ ] `buildApp()` → `buildSidebarHtml()` + `buildTopBar()` + `buildBody()`
+- [ ] `buildBody()` → `buildLoansPanelHtml()` + `buildBorrowerHeader()` + `buildLoanStatsHtml()` + Edit bar + `buildFormHtml()`
+- [ ] `buildBorrowerHeader()` uses `buildProfileHtml()`, `buildBtnPreviewHtml()`, `buildAssigneesHtml()`, `buildLpStatusStageInteractiveHtml()` from platform.js
+- [ ] `buildTopBar()` uses `buildBtnPreviewHtml()` for action buttons
+- [ ] `buildFormHtml()` sections use `buildBtnPreviewHtml({ id: 's1', icons: ['chevron-down'] })` for chevrons
+
+### Edit bar / Mode toggle
+- [ ] Edit bar contains: `.proto-edit-bar__title` ("Overview") + `.proto-edit-bar__right` with `.proto-mode-toggle`
+- [ ] Toggle has `.proto-mode-toggle__thumb` div + two buttons (`data-mode-edit`, `data-mode-view`)
+- [ ] Edit button is first (default active); View button is second
+- [ ] `data-edit-toggle` attribute on both buttons (legacy compat)
+- [ ] Edit bar has `padding: 0 16px 0` (no bottom padding)
+
+### Form sections
+- [ ] Borrower Information: Identity (with Individual/Entity toggle), Entity Details (hidden by default), Contact, Financial Profile
+- [ ] Properties: sidebar with items + detail pane (Location, Property Details, Valuation, Investment Details)
+- [ ] Loan Terms: Core Terms, Calculated Metrics, Rate & Structure, Timeline
+- [ ] Internal Notes: view span + textarea + footer
+
+### Interaction bindings (DOMContentLoaded)
+- [ ] `bindInteractions()` — sidebar items, tabs, tab close
+- [ ] `bindResizeHandle()` — AI panel drag resize
+- [ ] `bindBorrowerHeader()` — profile star, assignees dropdown, stage forward button, status dropdown
+- [ ] `bindEditMode()` — Edit/View toggle, thumb animation, field commit/sync
+- [ ] `bindFormInteractions()` — Individual/Entity toggle, click-to-edit fields, keyboard shortcuts
+- [ ] `bindPropertyTabs()` — property sidebar selection, set primary, remove, add
+- [ ] `bindSectionCollapse()` — accordion expand/collapse
+- [ ] `bindInfoTooltips()` — info button popovers (feeders & eaters)
+- [ ] Scroll listener for edit bar fade effect
+- [ ] `mountLoansPanelInteractive()` on the loans panel
+
+---
+
+## 18. Prototype — Styles (prototype.css)
+
+### Layout hierarchy
+- [ ] `#app` → `.proto-content` → `.proto-topbar` + `.proto-body`
+- [ ] `.proto-body` → `.proto-card` → `.loans-panel` + `.proto-main` + `.proto-resize-handle` + `.proto-ai-panel`
+- [ ] `.proto-main` → `.proto-borrower-header` + `.proto-loan-stats` + `.proto-edit-bar` + `.proto-main__scroll` → `.proto-form`
+
+### Scrolling
+- [ ] `.proto-main__scroll` has `scrollbar-width: none` + `::-webkit-scrollbar { display: none }`
+- [ ] `.proto-main__scroll::before` gradient fade — opacity controlled by `.proto-edit-bar--scrolled`
+- [ ] `.proto-prop-sidebar` has hidden scrollbar
+- [ ] `.proto-topbar__tabs` has hidden scrollbar
+
+### Field values
+- [ ] `.proto-field__value` base: white bg, 0.5px border, 10px radius, `padding: 8px 12px`
+- [ ] `.proto-field__value` transitions: `padding-left`, `border-color`, `border-radius`, `background`
+- [ ] `[data-view-mode]` override: transparent border/bg, 0 radius, 0 left padding
+- [ ] `.proto-field--readonly` values: fafafa bg, 808080 colour, ebebeb border
+
+### Mode toggle
+- [ ] `.proto-mode-toggle`: flex, 2px gap, e6e6e6 bg, pill radius, 4px padding, relative + overflow hidden
+- [ ] `.proto-mode-toggle__thumb`: absolute, glassy bg (rgba 0.92 + backdrop blur), pill radius, inner highlight shadow
+- [ ] `.proto-mode-toggle__option`: flex:1, 12px font, transparent bg, relative z-index:1, colour transition
+- [ ] `.proto-mode-toggle__option--active`: darker text colour only (no bg — thumb provides the white pill)
+
+---
+
+## 19. Git
 - [ ] Working on a feature branch (not directly on main)
 - [ ] Commit message is descriptive (`feat:`, `fix:`, `refactor:`)
 - [ ] Merged to main and pushed only after browser verification passes
@@ -95,5 +226,6 @@ Every time a component is added or changed, go through every item below without 
 - `--stroke-0` controls stroke colour on outline SVG icons
 - `--fill-0` controls fill colour on filled SVG icons
 - `relations` must be passed to `openPanel()` AND defined in `system.js` — both are required
-- All transitions: `var(--ease-smooth)` for standard, `var(--ease-spring)` for interactive/toggle
+- All CSS transitions: `var(--ease-smooth)` for standard, `var(--ease-spring)` for interactive/toggle
+- All JS animations: follow `ANIMATION_STYLE.md` — four easing curves only, exits faster than entrances
 - Branch first → make changes → verify in browser → commit → merge to main → push

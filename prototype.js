@@ -414,7 +414,7 @@ function buildFormHtml() {
             ${opts.count != null ? `<span class="proto-prop-count"><span class="proto-prop-count__dot">·</span><span class="proto-prop-count__num">${opts.count}</span></span>` : ''}
           </div>
           <div class="proto-section__head-right">
-            <button class="proto-section__chevron">${iconSvg('chevron-down')}</button>
+            <span class="proto-section__chevron">${buildBtnPreviewHtml({ id: 's1', icons: ['chevron-down'] })}</span>
           </div>
         </div>
         <div class="proto-section__body">
@@ -433,20 +433,20 @@ function buildFormHtml() {
   // ── Borrower section ─────────────────────────────────────────────────────────
   const borrowerHtml = `
     ${sub('Identity', `
-      <div class="proto-field proto-field--span-3">
+      <div class="proto-field proto-field--span-2">
         <span class="proto-field__label">Entity type</span>
         ${toggle(['Individual', 'Entity'])}
       </div>
-      ${f('Full legal name', 'Laura Lee', { placeholder: "Enter borrower's full legal name" })}
+      ${f('Full legal name', 'Laura Lee', { span: 2, placeholder: "Enter borrower's full legal name" })}
       ${f('Date of birth', '04/12/1985', { type: 'date', individualOnly: true })}
       ${f('SSN', '••• – •• – 4832', { masked: true, individualOnly: true })}
-    `, { full: true })}
+    `)}
     ${sub('Entity Details', `
       ${f('Entity legal name',  'Lee Holdings LLC', { span: 2, placeholder: 'Enter entity legal name' })}
       ${f('EIN',                '•• – •••••••',     { masked: true })}
       ${f('Formation state',    'CA',               { type: 'select', options: US_STATES })}
       ${f('Authorized signers', 'Laura Lee',        { span: 2, placeholder: 'Add authorized signer name' })}
-    `, { hidden: true, full: true, dataAttr: 'data-entity-sub' })}
+    `, { hidden: true, dataAttr: 'data-entity-sub' })}
     ${sub('Contact', `
       ${f('Email address', 'laura.lee@email.com', { placeholder: 'email@example.com' })}
       ${f('Phone number',  '(415) 555-0142',      { placeholder: '(555) 123-4567'   })}
@@ -454,7 +454,7 @@ function buildFormHtml() {
     ${sub('Financial Profile', `
       ${f('FICO / Credit score', '760',   { type: 'number', meta: 'reported',  infoKey: 'fico', placeholder: '300–850' })}
       ${f('DTI',                 '38.4',  { type: 'number', meta: 'reported',  infoKey: 'dti',  placeholder: '0–100'   })}
-      ${f('Experience summary',  '3 flips completed', { type: 'textarea', span: 3, placeholder: "Describe borrower's relevant experience" })}
+      ${f('Experience summary',  '3 flips completed', { type: 'textarea', span: 2, placeholder: "Describe borrower's relevant experience" })}
     `)}`;
 
   // ── Properties section ───────────────────────────────────────────────────────
@@ -514,7 +514,7 @@ function buildFormHtml() {
 
   const notesHtml = `
     <div class="proto-section__grid">
-      <div class="proto-notes proto-field--span-3">
+      <div class="proto-notes proto-field--span-2">
         <div class="proto-notes__view" data-notes-view>No internal notes yet</div>
         <textarea class="proto-notes__textarea proto-field__textarea" placeholder="Add internal notes for your team..." rows="4"></textarea>
         <div class="proto-notes__footer">
@@ -526,7 +526,7 @@ function buildFormHtml() {
 
   return `
     <div class="proto-form">
-      ${section('Borrower Information', borrowerHtml, { bodyGrid: true })}
+      ${section('Borrower Information', borrowerHtml)}
       ${section('Properties', propertiesHtml, { count: PROPERTIES.length, sidebar: true })}
       ${section('Loan Terms', loanTermsHtml)}
       ${section('Internal Notes', notesHtml)}
@@ -544,8 +544,14 @@ function buildBody() {
           ${buildBorrowerHeader()}
           ${buildLoanStatsHtml()}
           <div class="proto-edit-bar">
-            <span class="proto-edit-bar__hint" data-view-hint>Viewing</span>
-            <button class="proto-edit-btn" data-edit-toggle>Edit</button>
+            <span class="proto-edit-bar__title">Overview</span>
+            <div class="proto-edit-bar__right">
+              <div class="proto-mode-toggle">
+                <div class="proto-mode-toggle__thumb"></div>
+                <button class="proto-mode-toggle__option proto-mode-toggle__option--active" data-mode-edit data-edit-toggle>Edit</button>
+                <button class="proto-mode-toggle__option" data-mode-view data-edit-toggle>View</button>
+              </div>
+            </div>
           </div>
           <div class="proto-main__scroll">
             ${buildFormHtml()}
@@ -655,6 +661,89 @@ function bindBorrowerHeader() {
         header.querySelectorAll('.assignees-dropdown__role-wrap.open').forEach(w => w.classList.remove('open'));
         if (!isOpen) roleWrap.classList.add('open');
       });
+    });
+  }
+
+  // Stage forward button — icon slides out right, enters from left; label advances
+  const stageBtn   = header.querySelector('.lp-stage__btn');
+  const stageLabel = header.querySelector('.lp-stage__label');
+  const STAGES = ['Underwriting', 'Closing', 'Funded', 'Servicing'];
+
+  if (stageBtn && stageLabel) {
+    let stageIndex = 0;
+    let stageAnimating = false;
+
+    stageBtn.addEventListener('click', () => {
+      if (stageAnimating) return;
+      stageAnimating = true;
+
+      const iconEl = stageBtn.querySelector('.icon');
+
+      // Icon: slides out right shrinking down; enters from left scaling back up
+      const exitAnim = iconEl.animate([
+        { transform: 'translateX(0)    scale(1)',    opacity: 1, offset: 0,    easing: 'cubic-bezier(0.4, 0, 1, 0.8)' },
+        { transform: 'translateX(60%)  scale(0.7)',  opacity: 1, offset: 0.55, easing: 'cubic-bezier(0.4, 0, 1, 0.8)' },
+        { transform: 'translateX(130%) scale(0.55)', opacity: 0, offset: 1    },
+      ], { duration: 220, easing: 'linear', fill: 'none' });
+
+      exitAnim.onfinish = () => {
+        iconEl.style.transform = 'translateX(-130%) scale(0.55)';
+        iconEl.style.opacity   = '0';
+        requestAnimationFrame(() => {
+          const enterAnim = iconEl.animate([
+            { transform: 'translateX(-130%) scale(0.55)', opacity: 0, offset: 0,    easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+            { transform: 'translateX(-40%)  scale(0.75)', opacity: 1, offset: 0.35, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+            { transform: 'translateX(0)     scale(1)',    opacity: 1, offset: 1    },
+          ], { duration: 380, easing: 'linear', fill: 'none' });
+
+          enterAnim.onfinish = () => {
+            iconEl.style.transform  = '';
+            iconEl.style.opacity    = '';
+            stageAnimating = false;
+          };
+        });
+      };
+
+      // Label: slip up and out, new text slips in from below
+      const labelExit = stageLabel.animate([
+        { transform: 'translateY(0)',    opacity: 1, offset: 0,   easing: 'cubic-bezier(0.4, 0, 1, 0.8)' },
+        { transform: 'translateY(-8px)', opacity: 0, offset: 1   },
+      ], { duration: 180, easing: 'linear', fill: 'none' });
+
+      labelExit.onfinish = () => {
+        const stage  = stageLabel.closest('.lp-stage');
+        const btnEl  = stage?.querySelector('.lp-stage__btn');
+        const oldW   = stage ? stage.offsetWidth : null;
+
+        stageIndex = (stageIndex + 1) % STAGES.length;
+        stageLabel.textContent = STAGES[stageIndex];
+
+        if (stage && oldW !== null) {
+          const newW  = stage.offsetWidth;
+          const delta = newW - oldW;   // positive = grew, negative = shrank
+          if (delta !== 0) {
+            const expanding = delta > 0;
+            const duration  = expanding ? 320 : 220;
+            const easing    = expanding ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.4, 0, 1, 0.8)';
+
+            // Stage is already at its new layout width (newW).
+            // Slide it in from -delta so the RIGHT edge never moves —
+            // the button stays put and only the left side grows/contracts.
+            // translateX only: no width reflow per frame, no border-radius distortion, no height change.
+            // fill:'none' returns to base (no transform) cleanly — that IS the end state.
+            stage.animate([
+              { transform: `translateX(${-delta}px)` },
+              { transform: 'translateX(0px)'          },
+            ], { duration, easing, fill: 'none' });
+          }
+        }
+
+        stageLabel.animate([
+          { transform: 'translateY(8px)',  opacity: 0, offset: 0,   easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+          { transform: 'translateY(-2px)', opacity: 1, offset: 0.7, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+          { transform: 'translateY(0)',    opacity: 1, offset: 1    },
+        ], { duration: 340, easing: 'linear', fill: 'none' });
+      };
     });
   }
 
@@ -885,10 +974,61 @@ function bindPropertyTabs() {
 }
 
 function bindEditMode() {
-  const main = document.querySelector('.proto-main');
-  const btn  = document.querySelector('[data-edit-toggle]');
-  const hint = document.querySelector('[data-view-hint]');
-  if (!btn || !main) return;
+  const main     = document.querySelector('.proto-main');
+  const toggle   = document.querySelector('.proto-mode-toggle');
+  const thumb    = document.querySelector('.proto-mode-toggle__thumb');
+  const editBtn  = document.querySelector('[data-mode-edit]');
+  const viewBtn  = document.querySelector('[data-mode-view]');
+  if (!editBtn || !viewBtn || !main) return;
+
+  let thumbAnim = null;
+
+  function positionThumb(animate) {
+    const activeBtn = toggle?.querySelector('.proto-mode-toggle__option--active');
+    if (!thumb || !activeBtn || !toggle) return;
+
+    const tRect = toggle.getBoundingClientRect();
+    const bRect = activeBtn.getBoundingClientRect();
+    const toX   = bRect.left - tRect.left;
+    const toW   = bRect.width;
+
+    if (!animate) {
+      if (thumbAnim) { thumbAnim.onfinish = null; thumbAnim.cancel(); thumbAnim = null; }
+      thumb.style.width     = toW + 'px';
+      thumb.style.transform = `translateX(${toX}px) scaleX(1)`;
+      return;
+    }
+
+    // Capture current visual position before cancelling any running animation
+    const mat   = new DOMMatrix(getComputedStyle(thumb).transform);
+    const fromX = mat.m41;
+
+    // Freeze at current position so cancel() doesn't snap back
+    thumb.style.transform = `translateX(${fromX}px) scaleX(1)`;
+    if (thumbAnim) { thumbAnim.onfinish = null; thumbAnim.cancel(); thumbAnim = null; }
+
+    thumb.style.width = toW + 'px';
+
+    const midX    = fromX + (toX - fromX) * 0.38;
+    const stretch = 1.18;
+
+    thumbAnim = thumb.animate([
+      { transform: `translateX(${fromX}px) scaleX(1)`,         offset: 0    },
+      { transform: `translateX(${midX}px)  scaleX(${stretch})`, offset: 0.36 },
+      { transform: `translateX(${toX}px)   scaleX(1)`,          offset: 1    },
+    ], {
+      duration: 440,
+      easing:   'cubic-bezier(0.34, 1.48, 0.64, 1)',
+      fill:     'none',
+    });
+
+    thumbAnim.onfinish = () => {
+      thumb.style.transform = `translateX(${toX}px) scaleX(1)`;
+      thumbAnim = null;
+    };
+  }
+
+  positionThumb(false);
 
   function getFieldInputs(field) {
     return {
@@ -925,22 +1065,27 @@ function bindEditMode() {
     field.classList.remove('proto-field--editing');
   }
 
-  function enterEditMode() {
-    document.querySelectorAll('.proto-field--editable').forEach(syncToInput);
-    main.setAttribute('data-edit-mode', '');
-    btn.textContent = 'Done';
-    if (hint) hint.textContent = 'Editing';
-  }
-
-  function exitEditMode() {
+  function enterViewMode() {
     document.querySelectorAll('.proto-field--editable').forEach(commitToSpan);
     main.removeAttribute('data-edit-mode');
-    btn.textContent = 'Edit';
-    if (hint) hint.textContent = 'Viewing';
+    main.setAttribute('data-view-mode', '');
+    viewBtn.classList.add('proto-mode-toggle__option--active');
+    editBtn.classList.remove('proto-mode-toggle__option--active');
+    positionThumb(true);
   }
 
-  btn.addEventListener('click', () => {
-    main.hasAttribute('data-edit-mode') ? exitEditMode() : enterEditMode();
+  function exitViewMode() {
+    main.removeAttribute('data-view-mode');
+    editBtn.classList.add('proto-mode-toggle__option--active');
+    viewBtn.classList.remove('proto-mode-toggle__option--active');
+    positionThumb(true);
+  }
+
+  viewBtn.addEventListener('click', () => {
+    if (!main.hasAttribute('data-view-mode')) enterViewMode();
+  });
+  editBtn.addEventListener('click', () => {
+    if (main.hasAttribute('data-view-mode')) exitViewMode();
   });
 
   // Live sync — text / number / currency inputs
@@ -1029,6 +1174,15 @@ document.addEventListener('DOMContentLoaded', () => {
   bindPropertyTabs();
   bindSectionCollapse();
   bindInfoTooltips();
+
+  // Show edit bar fade only when content is scrolled
+  const scrollEl = document.querySelector('.proto-main__scroll');
+  const editBar   = document.querySelector('.proto-edit-bar');
+  if (scrollEl && editBar) {
+    scrollEl.addEventListener('scroll', () => {
+      editBar.classList.toggle('proto-edit-bar--scrolled', scrollEl.scrollTop > 4);
+    }, { passive: true });
+  }
 
   // Mount loans panel interactivity (expand/collapse, pill dropdown, selection)
   const loansPanelEl = document.querySelector('.proto-card .loans-panel');

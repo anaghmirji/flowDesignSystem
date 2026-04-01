@@ -1190,52 +1190,101 @@ function buildLpStatusInteractiveHtml(v) {
 
 function mountLpStatusDropdown(root) {
   const trigger = root.querySelector('[data-lp-status-trigger]');
-  const menu = root.querySelector('[data-lp-status-menu]');
+  const menu    = root.querySelector('[data-lp-status-menu]');
   if (!trigger || !menu) return;
 
-  function closeAllMenus() {
+  let menuAnim = null;
+
+  function isOpen() {
+    return trigger.getAttribute('aria-expanded') === 'true';
+  }
+
+  function closeOthers() {
     document.querySelectorAll('[data-lp-status-menu]').forEach(m => {
-      m.style.display = 'none';
+      if (m !== menu) m.style.display = 'none';
     });
     document.querySelectorAll('[data-lp-status-trigger]').forEach(t => {
-      t.setAttribute('aria-expanded', 'false');
+      if (t !== trigger) t.setAttribute('aria-expanded', 'false');
     });
+  }
+
+  function animateTriggerSplit() {
+    trigger.animate([
+      { transform: 'scaleX(1)    scaleY(1)',    offset: 0,    easing: 'cubic-bezier(0.4, 0, 1, 0.8)'   },
+      { transform: 'scaleX(0.86) scaleY(1.14)', offset: 0.18, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+      { transform: 'scaleX(1)    scaleY(1)',    offset: 1                                               },
+    ], { duration: 480, easing: 'linear', fill: 'none' });
+  }
+
+  function animateTriggerMerge() {
+    trigger.animate([
+      { transform: 'scaleX(1)    scaleY(1)',    offset: 0,    easing: 'cubic-bezier(0.34, 1.48, 0.64, 1)' },
+      { transform: 'scaleX(1.08) scaleY(0.88)', offset: 0.35, easing: 'cubic-bezier(0.34, 1.48, 0.64, 1)' },
+      { transform: 'scaleX(1)    scaleY(1)',    offset: 1                                                   },
+    ], { duration: 280, easing: 'linear', fill: 'none' });
+  }
+
+  function setOriginToTriggerCenter() {
+    const originX = trigger.offsetWidth / 2;
+    menu.style.transformOrigin = `${originX}px top`;
   }
 
   function closeMenu() {
-    menu.style.display = 'none';
+    if (!isOpen()) return;
     trigger.setAttribute('aria-expanded', 'false');
+    animateTriggerMerge();
+    setOriginToTriggerCenter();
+    if (menuAnim) { menuAnim.onfinish = null; menuAnim.cancel(); menuAnim = null; }
+
+    menuAnim = menu.animate([
+      { transform: 'scaleX(1)    scaleY(1)      translateY(0px)',  borderRadius: '16px',  offset: 0,    easing: 'cubic-bezier(0.4, 0, 1, 0.8)'  },
+      { transform: 'scaleX(0.60) scaleY(0.08)  translateY(-3px)', borderRadius: '100px', offset: 0.75, easing: 'cubic-bezier(0.4, 0, 1, 0.8)'  },
+      { transform: 'scaleX(0.44) scaleY(0.02)  translateY(-4px)', borderRadius: '100px', offset: 1                                                },
+    ], { duration: 240, easing: 'linear', fill: 'none' });
+
+    menuAnim.onfinish = () => {
+      menu.style.display = 'none';
+      menuAnim = null;
+    };
   }
 
   function openMenu() {
-    closeAllMenus();
-    menu.style.display = 'flex';
+    closeOthers();
     trigger.setAttribute('aria-expanded', 'true');
+    menu.style.display = 'flex';
+    setOriginToTriggerCenter();
+    animateTriggerSplit();
+    if (menuAnim) { menuAnim.onfinish = null; menuAnim.cancel(); menuAnim = null; }
+
+    menuAnim = menu.animate([
+      { transform: 'scaleX(0.44) scaleY(0.02)  translateY(-4px)', borderRadius: '100px', offset: 0,    easing: 'cubic-bezier(0.12, 0, 0.36, 0)'  },
+      { transform: 'scaleX(0.72) scaleY(0.28)  translateY(-2px)', borderRadius: '80px',  offset: 0.22, easing: 'cubic-bezier(0.16, 1, 0.3, 1)'  },
+      { transform: 'scaleX(1.01) scaleY(1.03)  translateY(0px)',  borderRadius: '16px',  offset: 0.72, easing: 'cubic-bezier(0.16, 1, 0.3, 1)'  },
+      { transform: 'scaleX(1)    scaleY(1)      translateY(0px)',  borderRadius: '16px',  offset: 1                                               },
+    ], { duration: 520, easing: 'linear', fill: 'none' });
+
+    menuAnim.onfinish = () => { menuAnim = null; };
   }
 
   trigger.addEventListener('click', (e) => {
     e.stopPropagation();
-    const isOpen = menu.style.display === 'flex';
-    if (isOpen) closeMenu();
-    else openMenu();
+    isOpen() ? closeMenu() : openMenu();
   });
 
   trigger.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     e.preventDefault();
     e.stopPropagation();
-    const isOpen = menu.style.display === 'flex';
-    if (isOpen) closeMenu();
-    else openMenu();
+    isOpen() ? closeMenu() : openMenu();
   });
 
   menu.querySelectorAll('.loans-dropdown__item').forEach(opt => {
     opt.addEventListener('click', (e) => {
       e.stopPropagation();
       const labelSpan = opt.querySelector('.loans-dropdown__item-label');
-      const dot = opt.dataset.statusDot;
-      const text = labelSpan ? labelSpan.textContent : '';
-      const dotEl = trigger.querySelector('.lp-status__dot');
+      const dot        = opt.dataset.statusDot;
+      const text       = labelSpan ? labelSpan.textContent : '';
+      const dotEl      = trigger.querySelector('.lp-status__dot');
       const statusLabel = trigger.querySelector('.lp-status__label');
       if (dotEl && dot) dotEl.className = `lp-status__dot lp-status__dot--${dot}`;
       if (statusLabel) statusLabel.textContent = text;
