@@ -147,7 +147,7 @@ All JS-driven animations in the prototype MUST follow the animation vocabulary d
 - [ ] Stage width change uses `translateX(-delta)` — no `width` animation, no `scaleX`
 - [ ] Right edge (button) stays perfectly stationary during width transition
 - [ ] Width expand: 320ms fluid-enter; width contract: 220ms fluid-exit
-- [ ] `STAGES` array: `['Underwriting', 'Closing', 'Funded', 'Servicing']`
+- [ ] `STAGES` array: `['Application', 'Underwriting', 'Closing', 'Funded', 'Post-close']`
 - [ ] `.lp-stage__label` has `display: inline-block` in global.css (required for transforms)
 
 ---

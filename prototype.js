@@ -237,7 +237,7 @@ function buildBorrowerHeader() {
   const assigneesHtml   = buildAssigneesHtml({ count: 2 });
   const statusStageHtml = buildLpStatusStageInteractiveHtml({
     status: { dot: 'green', label: 'Active' },
-    stage:  { label: 'Underwriting' },
+    stage:  { label: 'Application' },
   });
 
   return `
@@ -667,7 +667,7 @@ function bindBorrowerHeader() {
   // Stage forward button — icon slides out right, enters from left; label advances
   const stageBtn   = header.querySelector('.lp-stage__btn');
   const stageLabel = header.querySelector('.lp-stage__label');
-  const STAGES = ['Underwriting', 'Closing', 'Funded', 'Servicing'];
+  const STAGES = ['Application', 'Underwriting', 'Closing', 'Funded', 'Post-close'];
 
   if (stageBtn && stageLabel) {
     let stageIndex = 0;
