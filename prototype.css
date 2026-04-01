@@ -338,6 +338,11 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border: none;
   border-radius: 20px;
   overflow: hidden;
+  transition: background 0.12s var(--ease-smooth, ease);
+}
+
+.proto-section:hover {
+  background: #f4f4f4;
 }
 
 .proto-section--muted { opacity: 0.4; pointer-events: none; }
@@ -347,15 +352,13 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 12px;
   cursor: pointer;
   user-select: none;
   background: transparent;
   border-bottom: none;
   transition: background 0.12s var(--ease-smooth, ease);
 }
-
-.proto-section__head:hover { background: rgba(0,0,0,0.02); }
 
 .proto-section__head-left {
   display: flex;
@@ -391,25 +394,33 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   cursor: pointer;
 }
 
+/*
+ * Accordion: height-only WAAPI on .proto-section__body (prototype.js).
+ * Chevron: chevron-down icon — closed = right (-90deg), open = up (-180deg).
+ * Opening goes -90deg → -180deg (90° counter-clockwise). Durations match prototype.js.
+ */
+.proto-section[aria-expanded="true"] .proto-section__chevron .btn__icon-vector {
+  transform: rotate(-180deg);
+  transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.proto-section[aria-expanded="false"] .proto-section__chevron .btn__icon-vector {
+  transform: rotate(-90deg);
+  transition: transform 420ms cubic-bezier(0.4, 0, 0.25, 1);
+}
+
 .proto-section__chevron .btn__icon-vector {
-  transform: rotate(-180deg); /* expanded = chevron faces up */
-  transition: transform 0.25s var(--ease-smooth, ease);
+  transform: rotate(-180deg);
+  transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.proto-section--collapsed .proto-section__chevron .btn__icon-vector {
-  transform: rotate(0deg); /* collapsed = chevron faces down */
-}
-
-/* collapse body — CSS grid trick for smooth height animation */
+/* Body height at rest when collapsed; open/close height driven by WAAPI maxHeight in prototype.js */
 .proto-section__body {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows 0.28s var(--ease-smooth, ease);
   overflow: hidden;
 }
 
 .proto-section--collapsed .proto-section__body {
-  grid-template-rows: 0fr;
+  max-height: 0;
 }
 
 .proto-section--collapsed .proto-section__body-inner {
@@ -419,11 +430,10 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .proto-section__body-inner {
   min-height: 0;
   overflow: hidden;
-  padding: 0 8px 8px;
+  padding: 0 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: padding-bottom 0.28s var(--ease-smooth, ease);
 }
 
 /* field grid — sits inside the right side of each proto-sub */

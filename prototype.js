@@ -406,7 +406,7 @@ function buildFormHtml() {
     if (opts.sidebar)   cls.push('proto-section--sidebar');
     if (opts.bodyGrid)  cls.push('proto-section--body-grid');
     return `
-      <div class="${cls.join(' ')}">
+      <div class="${cls.join(' ')}" aria-expanded="true">
         <div class="proto-section__head" data-collapse-head>
           <div class="proto-section__head-left">
             <span class="proto-section__title">${title}</span>
@@ -871,17 +871,112 @@ function bindFormInteractions() {
   });
 }
 
+/** Proto accordion — height only (no scale); smooth, slow, non-bouncy. */
+const PROTO_SECTION_MS_OPEN = 600;
+const PROTO_SECTION_MS_CLOSE = 420;
+const PROTO_SECTION_EASE_OPEN = 'cubic-bezier(0.4, 0, 0.2, 1)';
+const PROTO_SECTION_EASE_CLOSE = 'cubic-bezier(0.4, 0, 0.25, 1)';
+
+const protoSectionRunningAnims = new WeakMap();
+
+function protoSectionCancelAnims(section) {
+  const list = protoSectionRunningAnims.get(section);
+  if (!list) return;
+  list.forEach(a => {
+    try {
+      a.cancel();
+    } catch (_) { /* ignore */ }
+  });
+  protoSectionRunningAnims.delete(section);
+}
+
+function protoSectionAnimateBodyMaxHeightOpen(body, h) {
+  return body.animate(
+    [{ maxHeight: '0px' }, { maxHeight: `${h}px` }],
+    { duration: PROTO_SECTION_MS_OPEN, easing: PROTO_SECTION_EASE_OPEN, fill: 'none' }
+  );
+}
+
+function protoSectionAnimateBodyMaxHeightClose(body, h) {
+  return body.animate(
+    [{ maxHeight: `${h}px` }, { maxHeight: '0px' }],
+    { duration: PROTO_SECTION_MS_CLOSE, easing: PROTO_SECTION_EASE_CLOSE, fill: 'none' }
+  );
+}
+
 function bindSectionCollapse() {
   document.addEventListener('click', e => {
     const chevron = e.target.closest('.proto-section__chevron');
-    if (chevron) {
-      chevron.closest('.proto-section')?.classList.toggle('proto-section--collapsed');
+    const head = chevron ? chevron.closest('[data-collapse-head]') : e.target.closest('[data-collapse-head]');
+    if (!head) return;
+    if (!chevron && e.target.closest('button, a, [data-toggle]')) return;
+
+    const section = head.closest('.proto-section');
+    if (!section || section.classList.contains('proto-section--muted')) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const body = section.querySelector('.proto-section__body');
+    if (!body) return;
+
+    const expanded = section.getAttribute('aria-expanded') !== 'false';
+    const willCollapse = expanded;
+
+    if (reduceMotion) {
+      protoSectionCancelAnims(section);
+      if (willCollapse) {
+        section.classList.add('proto-section--collapsed');
+        section.setAttribute('aria-expanded', 'false');
+      } else {
+        section.classList.remove('proto-section--collapsed');
+        section.setAttribute('aria-expanded', 'true');
+      }
+      body.style.maxHeight = '';
       return;
     }
-    const head = e.target.closest('[data-collapse-head]');
-    if (!head) return;
-    if (e.target.closest('button, a, [data-toggle]')) return;
-    head.closest('.proto-section')?.classList.toggle('proto-section--collapsed');
+
+    if (willCollapse) {
+      if (section.getAttribute('aria-expanded') === 'false') return;
+      const h = body.scrollHeight;
+      if (h <= 0) {
+        section.classList.add('proto-section--collapsed');
+        section.setAttribute('aria-expanded', 'false');
+        return;
+      }
+      protoSectionCancelAnims(section);
+      section.setAttribute('aria-expanded', 'false');
+      const aH = protoSectionAnimateBodyMaxHeightClose(body, h);
+      protoSectionRunningAnims.set(section, [aH]);
+
+      aH.finished
+        .catch(() => {})
+        .then(() => {
+          protoSectionRunningAnims.delete(section);
+          section.classList.add('proto-section--collapsed');
+          body.style.maxHeight = '';
+        });
+      return;
+    }
+
+    // expand
+    protoSectionCancelAnims(section);
+    section.setAttribute('aria-expanded', 'true');
+    section.classList.remove('proto-section--collapsed');
+    body.style.maxHeight = '0px';
+    void body.offsetHeight;
+    body.style.maxHeight = 'none';
+    const h = body.scrollHeight;
+    body.style.maxHeight = '0px';
+    void body.offsetHeight;
+
+    const aH = protoSectionAnimateBodyMaxHeightOpen(body, h);
+    protoSectionRunningAnims.set(section, [aH]);
+
+    aH.finished
+      .catch(() => {})
+      .then(() => {
+        protoSectionRunningAnims.delete(section);
+        body.style.maxHeight = '';
+      });
   });
 }
 
