@@ -61,6 +61,25 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   flex-shrink: 0;
 }
 
+/* ── Panel-toggle button ───────────────────────────────────────────────────── */
+
+/* SVG rect geometry is CSS-animatable — transition x/y/width/height directly */
+.proto-panel-toggle__bar {
+  transition:
+    x      0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    y      0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width  0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    height 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Open state — bar slides to centre-right and expands */
+.proto-panel-toggle[data-panel-open="true"] .proto-panel-toggle__bar {
+  x:      8.55;
+  y:      3.75;
+  width:  7.25;
+  height: 7.5;
+}
+
 /* ── .proto-tab ─────────────────────────────────────────────────────────────── */
 
 .proto-tab {

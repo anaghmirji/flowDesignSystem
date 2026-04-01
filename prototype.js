@@ -222,7 +222,20 @@ function buildTopBar() {
   // Use the exact same buildBtnPreviewHtml() from platform.js — zero duplication
   const searchBtn = buildBtnPreviewHtml({ id: 's1', icons: ['magnifying-glass'] });
   const bellBtn   = buildBtnPreviewHtml({ id: 's1', icons: ['bell'] });
-  const panelBtn  = buildBtnPreviewHtml({ id: 's1', icons: ['document'] });
+
+  // Panel-toggle button — matches Figma node 8:312
+  // The inner bar slides from right-narrow (closed) to center-wide (open) on click
+  const panelBtn = `<button class="btn btn--s1 proto-panel-toggle" data-panel-open="false" tabindex="-1" aria-label="Toggle panel">
+    <div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">
+      <svg width="100%" height="100%" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2.6" y="1.35" width="14.8" height="12.3" rx="3.75"
+              stroke="var(--stroke-0,#333)" stroke-width="1.2"/>
+        <rect class="proto-panel-toggle__bar"
+              x="14.35" y="4.375" width="1.45" height="6.25" rx="1.2"
+              fill="var(--stroke-0,#333)"/>
+      </svg>
+    </div></div></div>
+  </button>`;
 
   return `
     <div class="proto-topbar">
@@ -815,6 +828,15 @@ function bindInteractions() {
       tab.classList.add('proto-tab--active');
     });
   });
+
+  // Panel-toggle button
+  const panelToggleBtn = document.querySelector('.proto-panel-toggle');
+  if (panelToggleBtn) {
+    panelToggleBtn.addEventListener('click', () => {
+      const isOpen = panelToggleBtn.dataset.panelOpen === 'true';
+      panelToggleBtn.dataset.panelOpen = isOpen ? 'false' : 'true';
+    });
+  }
 
   // Tab close
   document.querySelectorAll('.proto-tab__close').forEach(btn => {
