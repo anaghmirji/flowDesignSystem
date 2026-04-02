@@ -182,6 +182,7 @@ window.SYSTEM = {
         { id: 'accent-black-8',   figma: 'Accent/Black/8',   hex: '#ebebeb' },
         { id: 'accent-black-10',  figma: 'Accent/Black/10',  hex: '#e6e6e6' },
         { id: 'accent-black-12',  figma: 'Accent/Black/12',  hex: '#e0e0e0' },
+        { id: 'accent-black-16',  figma: 'Accent/Black/16',  hex: '#d6d6d6' },
         { id: 'accent-black-20',  figma: 'Accent/Black/20',  hex: '#cccccc' },
         { id: 'accent-black-30',  figma: 'Accent/Black/30',  hex: '#b2b2b2' },
         { id: 'accent-black-40',  figma: 'Accent/Black/40',  hex: '#999999' },

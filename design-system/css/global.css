@@ -78,6 +78,7 @@
   --accent-black-8:   #ebebeb;
   --accent-black-10:  #e6e6e6;
   --accent-black-12:  #e0e0e0;
+  --accent-black-16:  #d6d6d6;
   --accent-black-20:  #cccccc;
   --accent-black-30:  #b2b2b2;
   --accent-black-40:  #999999;
@@ -1518,7 +1519,7 @@
   overflow: hidden;
   border-radius: 0;
   border: none;
-  border-bottom: 0.5px solid var(--accent-black-12, #E0E0E0);
+  border-bottom: 0.5px solid var(--accent-black-16, #d6d6d6);
   transition: background 0.2s var(--ease-smooth), border-radius 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth);
 }
 
@@ -1539,7 +1540,7 @@
 .loan-list-item--selected {
   background: var(--accent-black-2, #FAFAFA);
   border-radius: 16px;
-  border: 0.5px solid var(--accent-black-12, #E0E0E0);
+  border: 0.5px solid var(--accent-black-16, #d6d6d6);
   box-shadow:
     0px 35px 10px 0px rgba(0,0,0,0),
     0px 23px  9px 0px rgba(0,0,0,0.01),

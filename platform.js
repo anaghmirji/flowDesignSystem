@@ -3423,7 +3423,7 @@ ${html}`,
   overflow: hidden;
   border-radius: 0;
   border: none;
-  border-bottom: 0.5px solid var(--accent-black-12, #E0E0E0);
+  border-bottom: 0.5px solid var(--accent-black-16, #d6d6d6);
   transition: background 0.2s var(--ease-smooth), border-radius 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth);
 }
 
@@ -3443,7 +3443,7 @@ ${html}`,
 .loan-list-item--selected {
   background: var(--accent-black-2, #FAFAFA);
   border-radius: 16px;
-  border: 0.5px solid var(--accent-black-12, #E0E0E0);
+  border: 0.5px solid var(--accent-black-16, #d6d6d6);
   box-shadow:
     0px 35px 10px 0px rgba(0,0,0,0),
     0px 23px  9px 0px rgba(0,0,0,0.01),
