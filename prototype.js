@@ -593,10 +593,457 @@ function buildProtoModeDropdownHtml(activeVal = 'view') {
     </div>`;
 }
 
+// ─── Board View ───────────────────────────────────────────────────────────────
+
+// Exactly mirrors system.js loansPanel.stageGroups — same names, amounts, types, icons.
+const BOARD_STAGES = [
+  {
+    label: 'Application', count: 4, expanded: true,
+    loans: [
+      { name: 'Laura Lee',     amount: '$370,000', loanType: 'Fix & Flip', time: '5 mins ago',  status: 'Active',  statusKey: 'active',  iconName: 'user'              },
+      { name: 'James Wilson',  amount: '$450,000', loanType: 'Fix & Flip', time: '10 mins ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Emily Davis',   amount: '$500,000', loanType: 'Fix & Flip', time: '15 mins ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Anna Martinez', amount: '$280,000', loanType: 'Fix & Flip', time: '2 hours ago', status: 'On Hold', statusKey: 'on-hold', iconName: 'user'              },
+    ],
+  },
+  {
+    label: 'Underwriting', count: 4, expanded: true,
+    loans: [
+      { name: 'Michael Chen',  amount: '$520,000', loanType: 'Bridge',     time: '20 mins ago', status: 'Active',  statusKey: 'active',  iconName: 'user',             selected: true },
+      { name: 'Sarah Parker',  amount: '$310,000', loanType: 'Fix & Flip', time: '1 hour ago',  status: 'Active',  statusKey: 'active',  iconName: 'building-office-2'               },
+      { name: 'Robert Torres', amount: '$675,000', loanType: 'Bridge',     time: '3 hours ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2'               },
+      { name: 'Jessica Kim',   amount: '$240,000', loanType: 'Fix & Flip', time: '5 hours ago', status: 'On Hold', statusKey: 'on-hold', iconName: 'user'                            },
+    ],
+  },
+  {
+    label: 'Closing', count: 4, expanded: true,
+    loans: [
+      { name: 'David Brown',  amount: '$430,000', loanType: 'Bridge',     time: '1 day ago',  status: 'Active',  statusKey: 'active',  iconName: 'user'              },
+      { name: 'Rachel Green', amount: '$580,000', loanType: 'Fix & Flip', time: '1 day ago',  status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Mark Johnson', amount: '$395,000', loanType: 'Bridge',     time: '2 days ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Lisa Wong',    amount: '$290,000', loanType: 'Fix & Flip', time: '2 days ago', status: 'On Hold', statusKey: 'on-hold', iconName: 'user'              },
+    ],
+  },
+  {
+    label: 'Funded', count: 4, expanded: true,
+    loans: [
+      { name: 'Tom Harris', amount: '$610,000', loanType: 'Bridge',     time: '3 days ago', status: 'Active',  statusKey: 'active',  iconName: 'user'              },
+      { name: 'Amy Scott',  amount: '$360,000', loanType: 'Fix & Flip', time: '4 days ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Chris Lee',  amount: '$480,000', loanType: 'Bridge',     time: '5 days ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Mia Turner', amount: '$325,000', loanType: 'Fix & Flip', time: '1 week ago', status: 'On Hold', statusKey: 'on-hold', iconName: 'user'              },
+    ],
+  },
+];
+
+function buildBoardCardHtml(loan) {
+  const stateClass  = loan.selected ? ' loan-list-item--selected' : '';
+  const userIconSvg = iconSvg(loan.iconName || 'user');
+  return `<div class="loan-list-item board-card${stateClass}">
+  <div class="loan-list-item__left">
+    <div class="loan-list-item__top">
+      <span class="loan-list-item__name">${loan.name}</span>
+      <div class="loan-list-item__meta">
+        <span class="loan-list-item__meta-amount">${loan.amount}</span>
+        <span class="loan-list-item__meta-sep">·</span>
+        <span class="loan-list-item__meta-type">${loan.loanType}</span>
+      </div>
+    </div>
+    <span class="loan-list-item__time">${loan.time}</span>
+  </div>
+  <div class="loan-list-item__right">
+    <span class="loan-list-item__badge loan-list-item__badge--${loan.statusKey}">${loan.status}</span>
+    <span class="loan-list-item__icon"><span class="icon">${userIconSvg}</span></span>
+  </div>
+</div>`;
+}
+
+function buildBoardColHtml(stage) {
+  const chevSvg = iconSvg('chevron-down');
+  const itemsHtml = stage.loans.map(buildBoardCardHtml).join('');
+  return `<div class="board-col${stage.expanded ? ' board-col--expanded' : ''}">
+  <div class="board-col__header">
+    <span class="board-col__name">${stage.label}</span>
+    <div class="board-col__meta">
+      <span class="board-col__count">${stage.count}</span>
+      <span class="board-col__chev">${chevSvg}</span>
+    </div>
+  </div>
+  ${stage.expanded && itemsHtml ? `<div class="board-col__items">${itemsHtml}</div>` : ''}
+</div>`;
+}
+
+function buildBoardView() {
+  const updownSvg = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5.5 10L8 12.5L10.5 10M5.5 6L8 3.5L10.5 6" stroke="var(--stroke-0,#666)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const plusBtn = buildBtnPreviewHtml({ id: 's1', icons: ['plus'] });
+  const colsHtml = BOARD_STAGES.map(buildBoardColHtml).join('');
+  return `<div class="board-view">
+  <div class="board-view__header">
+    <div class="board-view__pill">
+      <span class="board-view__pill-label">My Loans</span>
+      <div class="board-view__pill-badge">
+        <span class="board-view__pill-count">52</span>
+        <span class="board-view__pill-icon">${updownSvg}</span>
+      </div>
+    </div>
+    ${plusBtn}
+  </div>
+  <div class="board-view__body">
+    ${colsHtml}
+  </div>
+  <div class="board-view__footer">
+    ${buildSearchSectionHtml()}
+  </div>
+</div>`;
+}
+
+// ── Board ↔ Sidebar morph state (module-level so reverseToBoard can access) ──
+let boardMorphFired = false;
+let savedMorphState = null;
+
+function reverseToBoard() {
+  if (!savedMorphState) return;
+  const {
+    boardView, boardBody, boardPlusBtn, protoMain, loansPanel, sidebarBorder,
+    footerEl, headerEl, cols, colRects, naturalHeights, targetYs, bvRect, PAD, innerW,
+  } = savedMorphState;
+
+  const numCols   = cols.length;
+  const lastLands = 520 + (numCols - 1) * 55; // 685 ms (same as forward)
+
+  // ── R1. Pill capsule collapses (before → after, reversed) ──
+  const pillCapsule = loansPanel?.querySelector('.loans-pill-capsule');
+  if (pillCapsule) pillCapsule.classList.remove('loans-pill-capsule--expanded');
+
+  // ── R2. Detail panel slides back out to the right ──
+  protoMain.classList.remove('proto-main--entering');
+  protoMain.classList.add('proto-main--content-hidden');
+  Object.assign(protoMain.style, {
+    transition : 'opacity 300ms cubic-bezier(0.4,0,0.2,1), transform 300ms cubic-bezier(0.4,0,0.2,1)',
+    opacity    : '0',
+    transform  : 'translateX(32px)',
+  });
+
+  // ── R3. Loans panel fades out ──
+  Object.assign(loansPanel.style, {
+    transition : 'opacity 350ms ease',
+    opacity    : '0',
+  });
+
+  // ── R4. Sidebar border fades out ──
+  if (sidebarBorder) {
+    sidebarBorder.style.transition = 'opacity 200ms ease';
+    sidebarBorder.style.opacity    = '0';
+  }
+
+  // ── R5. Search footer slides back down below clip ──
+  if (footerEl) {
+    Object.assign(footerEl.style, {
+      transition : 'transform 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+      transform  : 'translateY(100%)',
+    });
+  }
+
+  // ── R6. After pill has had time to visibly collapse (~200ms), board reappears ──
+  //    The 200ms phase-1 window lets the user see the pill animate before the
+  //    board (z-index:20) covers the loans panel entirely.
+  const PHASE1_DELAY = 200;
+  setTimeout(() => {
+    boardView.style.display = '';         // unhide at 278px (morphed state)
+    requestAnimationFrame(() => {
+      // Inline transition → width animates back to 100%, border-radius to 20px
+      Object.assign(boardView.style, {
+        transition   : 'width 685ms cubic-bezier(0.4, 0, 0.2, 1), border-radius 685ms ease',
+        width        : '100%',
+        borderRadius : '20px',
+      });
+      boardView.classList.remove('board-view--morphing');
+
+      // Animate columns back — reverse stagger (last col first, same duration)
+      cols.forEach((col, i) => {
+        const colLeft = colRects[i].left - bvRect.left;
+        col.animate(
+          [
+            { transform: `translate(${PAD - colLeft}px, ${targetYs[i]}px)`,
+              width    : innerW + 'px',
+              height   : naturalHeights[i] + 'px' },
+            { transform : 'translate(0, 0)',
+              width     : colRects[i].width  + 'px',
+              height    : colRects[i].height + 'px' },
+          ],
+          { duration : 520,
+            delay    : (numCols - 1 - i) * 55,
+            easing   : 'cubic-bezier(0.4, 0, 0.2, 1)',
+            fill     : 'forwards' }
+        );
+      });
+    });
+  }, PHASE1_DELAY);
+
+  // ── R7. Once all columns land: restore flow layout + reset all state ──
+  //    Timeout accounts for phase-1 delay + column animation duration.
+  setTimeout(() => {
+    // Cancel WAAPI fill and clear all inline styles → back to CSS flow
+    cols.forEach(col => {
+      col.getAnimations().forEach(a => a.cancel());
+      col.style.cssText = '';
+    });
+
+    // Restore header
+    if (headerEl) {
+      headerEl.style.width      = '';
+      headerEl.style.flexShrink = '';
+      headerEl.style.overflow   = '';
+    }
+
+    // Restore board board inline styles
+    boardView.style.transition   = '';
+    boardView.style.width        = '';
+    boardView.style.borderRadius = '';
+
+    // Footer → hidden initial state (ready for next forward animation)
+    if (footerEl) {
+      Object.assign(footerEl.style, {
+        opacity    : '0',
+        transform  : 'translateY(100%)',
+        transition : 'none',
+        width      : '',
+        flexShrink : '',
+      });
+    }
+
+    // Restore proto-main to hidden initial state
+    protoMain.classList.remove('proto-main--content-hidden');
+    Object.assign(protoMain.style, { opacity: '0', transform: 'translateX(32px)', transition: 'none' });
+
+    // Restore loans panel
+    loansPanel.style.opacity    = '0';
+    loansPanel.style.transition = '';
+
+    // Restore + button visibility (was hidden for hero animation)
+    if (boardPlusBtn) boardPlusBtn.style.visibility = '';
+
+    // Reset morph state → forward animation can fire again
+    savedMorphState  = null;
+    boardMorphFired  = false;
+  }, PHASE1_DELAY + lastLands + 100);
+}
+
+function initBoardView() {
+  const boardView     = document.querySelector('.board-view');
+  const boardBody     = boardView?.querySelector('.board-view__body');
+  const protoMain     = document.querySelector('.proto-main');
+  const loansPanel    = document.querySelector('.proto-card .loans-panel');
+  const sidebarBorder = document.querySelector('.proto-sidebar-border');
+  if (!boardView || !boardBody) return;
+
+  // Footer starts fully below the board's overflow:hidden clip — slides up after columns land
+  const footerEl = boardView.querySelector('.board-view__footer');
+  if (footerEl) Object.assign(footerEl.style, { opacity: '0', transform: 'translateY(100%)', transition: 'none' });
+
+  if (protoMain)  Object.assign(protoMain.style,  { opacity: '0', transform: 'translateX(32px)', transition: 'none' });
+  if (loansPanel) loansPanel.style.opacity = '0';
+
+  boardView.addEventListener('click', e => {
+    const card = e.target.closest('.board-card');
+    if (!card || boardMorphFired) return;
+    boardMorphFired = true;
+
+    const headerEl     = boardView.querySelector('.board-view__header');
+    const boardPlusBtn = headerEl?.querySelector('.btn');
+    const loansPlusBtn = loansPanel?.querySelector('.loans-panel__header .btn');
+    const cols         = [...boardBody.querySelectorAll('.board-col')];
+
+    // ── 0. Measure everything before any DOM mutation ──
+    const bvRect         = boardView.getBoundingClientRect();
+    const headerRect     = headerEl?.getBoundingClientRect();
+    const colRects       = cols.map(c => c.getBoundingClientRect());
+    const plusStartRect  = boardPlusBtn?.getBoundingClientRect();
+    const plusTargetRect = loansPlusBtn?.getBoundingClientRect();
+
+    const GAP    = 12;
+    const PAD    = 12;
+    const innerW = 278 - PAD * 2; // 254 px
+
+    // ── 0b. Freeze footer at sidebar width immediately ──
+    //    Prevents it from participating in the board's flex width transition,
+    //    so it's already 278px wide when it slides up at lastLands.
+    if (footerEl) {
+      footerEl.style.width      = '278px';
+      footerEl.style.flexShrink = '0';
+    }
+
+    // ── 1. Freeze header width — pill won't reflow as the board narrows ──
+    //    Stays in flex flow (no absolute), board-view overflow:hidden
+    //    clips the right side naturally as the board width transitions.
+    if (headerEl && headerRect) {
+      Object.assign(headerEl.style, {
+        width      : headerRect.width + 'px',
+        flexShrink : '0',
+        overflow   : 'hidden',
+      });
+    }
+
+    // ── 2. + button hero: physically travels from board header → sidebar header ──
+    let heroPlusBtn = null;
+    if (boardPlusBtn && plusStartRect && plusTargetRect) {
+      boardPlusBtn.style.visibility = 'hidden'; // hero takes its place
+      heroPlusBtn = boardPlusBtn.cloneNode(true);
+      Object.assign(heroPlusBtn.style, {
+        position     : 'fixed',
+        left         : plusStartRect.left + 'px',
+        top          : plusStartRect.top  + 'px',
+        width        : plusStartRect.width  + 'px',
+        height       : plusStartRect.height + 'px',
+        margin       : '0',
+        zIndex       : '200',
+        pointerEvents: 'none',
+        visibility   : 'visible',
+      });
+      document.body.appendChild(heroPlusBtn);
+
+      const dx = plusTargetRect.left - plusStartRect.left;
+      const dy = plusTargetRect.top  - plusStartRect.top;
+      heroPlusBtn.animate(
+        [
+          { transform: 'translate(0,0)' },
+          { transform: `translate(${dx}px,${dy}px)` },
+        ],
+        { duration: 520, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' }
+      );
+    }
+
+    // ── 3. Pin each column at its exact current size (zero visual change) ──
+    cols.forEach((col, i) => {
+      const r = colRects[i];
+      Object.assign(col.style, {
+        position : 'absolute',
+        left     : (r.left - bvRect.left) + 'px',
+        top      : (r.top  - bvRect.top)  + 'px',
+        width    : r.width  + 'px',
+        height   : r.height + 'px',
+        overflow : 'hidden',
+        margin   : '0',
+        flex     : 'none',
+        zIndex   : '1',
+      });
+    });
+
+    // ── 4. Measure natural height at sidebar width (sync, no visible flash) ──
+    const naturalHeights = cols.map((col, i) => {
+      col.style.width  = innerW + 'px';
+      col.style.height = 'auto';
+      const h = Math.round(col.getBoundingClientRect().height);
+      col.style.width  = colRects[i].width  + 'px';
+      col.style.height = colRects[i].height + 'px';
+      return h;
+    });
+
+    // ── 5. Cumulative target Y deltas ──
+    const targetYs = [];
+    let cumY = 0;
+    naturalHeights.forEach(h => { targetYs.push(cumY); cumY += h + GAP; });
+
+    // ── 5b. Save morph state — used by reverseToBoard() ──
+    savedMorphState = {
+      boardView, boardBody, boardPlusBtn, protoMain, loansPanel, sidebarBorder,
+      footerEl, headerEl, cols, colRects, naturalHeights, targetYs, bvRect, PAD, innerW,
+    };
+
+    // ── 6. Animate each column into its sidebar slot ──
+    cols.forEach((col, i) => {
+      const colLeft = colRects[i].left - bvRect.left;
+      col.animate(
+        [
+          { transform: 'translate(0, 0)',
+            width:  colRects[i].width  + 'px',
+            height: colRects[i].height + 'px' },
+          { transform: `translate(${PAD - colLeft}px, ${targetYs[i]}px)`,
+            width:  innerW            + 'px',
+            height: naturalHeights[i] + 'px' },
+        ],
+        { duration: 520, delay: i * 55, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' }
+      );
+    });
+
+    // ── 7. Board shrinks to sidebar width; border line appears ──
+    boardView.classList.add('board-view--morphing');
+    if (sidebarBorder) {
+      sidebarBorder.style.transition = 'opacity 250ms ease 80ms';
+      sidebarBorder.style.opacity    = '1';
+    }
+
+    // ── 8. Detail panel slides in from right ──
+    //    Content sections are hidden immediately so they don't flash visible
+    //    while the board is still animating — they stagger in at lastLands.
+    if (protoMain) protoMain.classList.add('proto-main--content-hidden');
+    requestAnimationFrame(() => {
+      Object.assign(protoMain.style, {
+        transition : 'opacity 400ms cubic-bezier(0.4,0,0.2,1) 100ms, transform 400ms cubic-bezier(0.4,0,0.2,1) 100ms',
+        opacity    : '1',
+        transform  : 'translateX(0)',
+      });
+    });
+
+    // ── 9. Loans panel fades in under the board ──
+    requestAnimationFrame(() => {
+      if (loansPanel) {
+        Object.assign(loansPanel.style, {
+          transition : 'opacity 500ms ease',
+          opacity    : '1',
+        });
+      }
+    });
+
+    const lastLands = 520 + (cols.length - 1) * 55; // 685 ms with 4 cols
+
+    // ── 10. Once last column lands: search slides up + detail content staggers in ──
+    setTimeout(() => {
+      // Footer slides up from below
+      if (footerEl) {
+        requestAnimationFrame(() => {
+          Object.assign(footerEl.style, {
+            opacity    : '1',
+            transition : 'transform 340ms cubic-bezier(0.4, 0, 0.2, 1)',
+            transform  : 'translateY(0)',
+          });
+        });
+      }
+
+      // Detail content stagger: swap hidden→entering so sections fade up in sync
+      if (protoMain) {
+        protoMain.classList.remove('proto-main--content-hidden');
+        void protoMain.offsetWidth; // flush layout so animation restarts cleanly
+        protoMain.classList.add('proto-main--entering');
+        clearTimeout(protoMain._enterTimer);
+        protoMain._enterTimer = setTimeout(() => {
+          protoMain.classList.remove('proto-main--entering');
+        }, 650);
+      }
+    }, lastLands);
+
+    // ── 11. After search lands: swap board for loans panel; remove hero ──
+    setTimeout(() => {
+      boardView.style.display = 'none';
+      if (heroPlusBtn)  heroPlusBtn.remove();
+      if (protoMain)    protoMain.style.transition  = '';
+      if (loansPanel)   loansPanel.style.transition = '';
+
+      // Pill: "before" → "after" — icon slides in from left on the same frame
+      // the board disappears, so the reveal and slide feel simultaneous.
+      requestAnimationFrame(() => {
+        const pillCapsule = loansPanel?.querySelector('.loans-pill-capsule');
+        if (pillCapsule) pillCapsule.classList.add('loans-pill-capsule--expanded');
+      });
+    }, lastLands + 390);
+  });
+}
+
 function buildBody() {
   return `
     <div class="proto-body">
       <div class="proto-card">
+        <div class="proto-sidebar-border"></div>
+        ${buildBoardView()}
         ${buildLoansPanelHtml()}
         <div class="proto-main" data-view-mode>
           ${buildBorrowerHeader()}
@@ -1762,6 +2209,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
   }
 
+  initBoardView();
+
   // Mount loans panel interactivity (expand/collapse, pill dropdown, selection)
   const loansPanelEl = document.querySelector('.proto-card .loans-panel');
   if (loansPanelEl) mountLoansPanelInteractive(loansPanelEl);
@@ -1773,5 +2222,37 @@ document.addEventListener('DOMContentLoaded', () => {
     loansPanelBody.addEventListener('scroll', () => {
       loansPanelBody.classList.toggle('loans-panel__body--scrolled', loansPanelBody.scrollTop > 4);
     }, { passive: true });
+  }
+
+  // ── Home icon button → reverse board morph ──
+  const pillIconBtn = document.querySelector('.proto-card .loans-pill-icon-btn');
+  if (pillIconBtn) {
+    pillIconBtn.addEventListener('click', e => {
+      e.stopPropagation(); // don't bubble to pill dropdown toggle
+      reverseToBoard();
+    });
+  }
+
+  // ── Detail panel staggered fade-up on loan selection ──
+  const detailMain = document.querySelector('.proto-main');
+  if (loansPanelBody && detailMain) {
+    loansPanelBody.addEventListener('click', e => {
+      if (!e.target.closest('.loan-list-item')) return;
+
+      // Scroll detail back to top so the enter feels like a fresh load
+      const detailScroll = detailMain.querySelector('.proto-main__scroll');
+      if (detailScroll) detailScroll.scrollTop = 0;
+
+      // Reset animation: remove → reflow → re-add so it replays every time
+      detailMain.classList.remove('proto-main--entering');
+      void detailMain.offsetWidth; // force layout flush
+      detailMain.classList.add('proto-main--entering');
+
+      // Clean up class after all staggered animations finish (~190 + 380 = ~580ms)
+      clearTimeout(detailMain._enterTimer);
+      detailMain._enterTimer = setTimeout(() => {
+        detailMain.classList.remove('proto-main--entering');
+      }, 620);
+    });
   }
 });

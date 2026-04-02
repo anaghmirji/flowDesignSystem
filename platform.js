@@ -4337,11 +4337,18 @@ function buildLoansPanelHtml() {
   return `<div class="loans-panel">
   <div class="loans-panel__header">
     <div style="position:relative">
-      <div class="loans-pill" style="cursor:pointer">
-        <span class="loans-pill__label">${loansPill.defaultText}</span>
-        <div class="loans-pill__badge">
-          <span class="loans-pill__count">${loansPill.defaultCount}</span>
-          <div class="loans-pill__icon"><span class="icon">${loansPill.iconSvg || ''}</span></div>
+      <div class="loans-pill-capsule">
+        <div class="loans-pill-icon-btn">
+          <div class="loans-pill-icon-btn__circle">
+            <span class="icon" style="width:16px;height:16px;display:block;">${iconSvg('home')}</span>
+          </div>
+        </div>
+        <div class="loans-pill" style="cursor:pointer">
+          <span class="loans-pill__label">${loansPill.defaultText}</span>
+          <div class="loans-pill__badge">
+            <span class="loans-pill__count">${loansPill.defaultCount}</span>
+            <div class="loans-pill__icon"><span class="icon">${loansPill.iconSvg || ''}</span></div>
+          </div>
         </div>
       </div>
       <div class="loans-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:10">${dropdownItems}</div>
@@ -4416,7 +4423,7 @@ function loansPanelTabs() {
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
-  padding: 0 6px 0 12px;
+  padding: 0 6px 12px 12px;
   z-index: 1;
 }
 
