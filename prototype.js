@@ -749,14 +749,16 @@ function reverseToBoard() {
   const PHASE1_DELAY = 200;
   setTimeout(() => {
     boardView.style.display = '';         // unhide at 278px (morphed state)
+    syncProtoCardBoardSeamClass();
     requestAnimationFrame(() => {
-      // Inline transition → width animates back to 100%, border-radius to 20px
+      // Inline transition → width animates back to full; radius matches .proto-main / .board-view CSS
       Object.assign(boardView.style, {
         transition   : 'width 685ms cubic-bezier(0.4, 0, 0.2, 1), border-radius 685ms ease',
-        width        : '100%',
-        borderRadius : '20px',
+        width        : 'calc(100% - var(--proto-board-right-inset, 376px))',
+        borderRadius : '0 20px 20px 0',
       });
       boardView.classList.remove('board-view--morphing');
+      syncProtoCardBoardSeamClass();
 
       // Animate columns back — reverse stagger (last col first, same duration)
       cols.forEach((col, i) => {
@@ -825,6 +827,7 @@ function reverseToBoard() {
     // Reset morph state → forward animation can fire again
     savedMorphState  = null;
     boardMorphFired  = false;
+    syncProtoCardBoardSeamClass();
   }, PHASE1_DELAY + lastLands + 100);
 }
 
@@ -842,6 +845,8 @@ function initBoardView() {
 
   if (protoMain)  Object.assign(protoMain.style,  { opacity: '0', transform: 'translateX(32px)', transition: 'none' });
   if (loansPanel) loansPanel.style.opacity = '0';
+
+  syncProtoCardBoardSeamClass();
 
   boardView.addEventListener('click', e => {
     const card = e.target.closest('.board-card');
@@ -967,6 +972,7 @@ function initBoardView() {
 
     // ── 7. Board shrinks to sidebar width; border line appears ──
     boardView.classList.add('board-view--morphing');
+    syncProtoCardBoardSeamClass();
     if (sidebarBorder) {
       sidebarBorder.style.transition = 'opacity 250ms ease 80ms';
       sidebarBorder.style.opacity    = '1';
@@ -1024,6 +1030,7 @@ function initBoardView() {
     // ── 11. After search lands: swap board for loans panel; remove hero ──
     setTimeout(() => {
       boardView.style.display = 'none';
+      syncProtoCardBoardSeamClass();
       if (heroPlusBtn)  heroPlusBtn.remove();
       if (protoMain)    protoMain.style.transition  = '';
       if (loansPanel)   loansPanel.style.transition = '';
@@ -1079,6 +1086,35 @@ function buildApp() {
 
 // ─── Interactions ─────────────────────────────────────────────────────────────
 
+/**
+ * Keep board overlay flush with .proto-main’s right edge (same seam as main view).
+ * The resize handle uses negative horizontal margins so handle.offsetWidth + panel.offsetWidth
+ * is wider than the real flex gap — measure from layout instead.
+ */
+function syncProtoBoardRightInset() {
+  const card = document.querySelector('.proto-card');
+  const main = document.querySelector('.proto-main');
+  if (!card || !main) return;
+  const inset = card.clientWidth - main.offsetLeft - main.offsetWidth;
+  if (!Number.isFinite(inset)) return;
+  card.style.setProperty('--proto-board-right-inset', `${Math.max(0, inset)}px`);
+}
+
+/**
+ * One hairline toward AI: full kanban board owns border-right; .proto-main owns it otherwise.
+ * Avoids double stroke (board + main, or main + AI panel).
+ */
+function syncProtoCardBoardSeamClass() {
+  const card  = document.querySelector('.proto-card');
+  const board = document.querySelector('.board-view');
+  if (!card || !board) return;
+  const hidden =
+    board.style.display === 'none' || getComputedStyle(board).display === 'none';
+  const morphing = board.classList.contains('board-view--morphing');
+  const fullKanban = !hidden && !morphing;
+  card.classList.toggle('proto-card--board-kanban-full', fullKanban);
+}
+
 function bindResizeHandle() {
   const handle = document.getElementById('ai-resize-handle');
   const panel  = document.getElementById('ai-panel');
@@ -1104,6 +1140,7 @@ function bindResizeHandle() {
     const delta = startX - e.clientX;          // dragging left = wider panel
     const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth + delta));
     panel.style.width = newWidth + 'px';
+    syncProtoBoardRightInset();
   });
 
   document.addEventListener('mouseup', () => {
@@ -1112,6 +1149,7 @@ function bindResizeHandle() {
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
     handle.classList.remove('proto-resize-handle--active');
+    syncProtoBoardRightInset();
   });
 }
 
@@ -2193,6 +2231,12 @@ document.addEventListener('DOMContentLoaded', () => {
   initTogglePills();
   bindInteractions();
   bindResizeHandle();
+  syncProtoBoardRightInset();
+  syncProtoCardBoardSeamClass();
+  const protoCardEl = document.querySelector('.proto-card');
+  if (protoCardEl && typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(() => syncProtoBoardRightInset()).observe(protoCardEl);
+  }
   bindBorrowerHeader();
   bindEditMode();
   bindFormInteractions();
