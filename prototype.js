@@ -638,7 +638,11 @@ const BOARD_STAGES = [
 function buildBoardCardHtml(loan) {
   const stateClass  = loan.selected ? ' loan-list-item--selected' : '';
   const userIconSvg = iconSvg(loan.iconName || 'user');
-  return `<div class="loan-list-item board-card${stateClass}">
+  const keyAttr =
+    loan.name && typeof encodeLoanKey === 'function'
+      ? ` data-loan-key="${encodeLoanKey(loan.name)}"`
+      : '';
+  return `<div class="loan-list-item board-card${stateClass}"${keyAttr}>
   <div class="loan-list-item__left">
     <div class="loan-list-item__top">
       <span class="loan-list-item__name">${loan.name}</span>
@@ -700,6 +704,144 @@ function buildBoardView() {
 let boardMorphFired = false;
 let savedMorphState = null;
 
+/**
+ * Drop finished WAAPI fills and pin the morphed column layout as inline CSS so
+ * reverse animations (and display:none) do not stack two compositors on the same element.
+ */
+function expandLoanStageGroup(groupEl) {
+  if (!groupEl || groupEl.classList.contains('loan-stage-group--expanded')) return;
+  const body = groupEl.querySelector('.loan-stage-group__body');
+  if (!body) return;
+  groupEl.classList.add('loan-stage-group--expanded');
+  groupEl.classList.remove('loan-stage-group--collapsed');
+  body.style.transition = '';
+  body.style.maxHeight = 'none';
+  body.style.paddingTop = '12px';
+  body.style.overflow = 'visible';
+}
+
+function expandAllLoanStageGroups(panelBody) {
+  if (!panelBody) return;
+  panelBody.querySelectorAll('.loan-stage-group').forEach((g) => expandLoanStageGroup(g));
+}
+
+/** Match loans sidebar selection + board highlight; keep all stage groups expanded. */
+function syncLoansPanelFromBoardCard(boardCard, loansPanel, boardView) {
+  if (typeof encodeLoanKey !== 'function' || !boardCard || !loansPanel) return;
+  const key =
+    boardCard.dataset.loanKey ||
+    encodeLoanKey(boardCard.querySelector('.loan-list-item__name')?.textContent || '');
+  if (!key) return;
+  const panelBody = loansPanel.querySelector('.loans-panel__body');
+  if (!panelBody) return;
+
+  boardView?.querySelectorAll('.board-card').forEach((el) => {
+    el.classList.remove('loan-list-item--selected');
+  });
+  boardCard.classList.add('loan-list-item--selected');
+
+  panelBody.querySelectorAll('.loan-list-item').forEach((el) => {
+    el.classList.remove('loan-list-item--selected');
+  });
+  let target = panelBody.querySelector(`.loan-list-item[data-loan-key="${key}"]`);
+  if (!target) {
+    target = [...panelBody.querySelectorAll('.loan-list-item')].find(
+      (el) => encodeLoanKey(el.querySelector('.loan-list-item__name')?.textContent || '') === key
+    );
+  }
+  if (target) target.classList.add('loan-list-item--selected');
+
+  expandAllLoanStageGroups(panelBody);
+}
+
+/** Ease-out cubic — aligns with prototype morph / panel motion */
+function easeOutCubic(t) {
+  return 1 - (1 - t) ** 3;
+}
+
+/**
+ * Smooth scroll within `el` to `targetTop` over `durationMs` (not instant jump).
+ * Cancels any in-flight scroll on the same element.
+ */
+function smoothScrollElementTo(el, targetTop, durationMs = 480) {
+  if (!el) return;
+  const start = el.scrollTop;
+  const maxTop = Math.max(0, el.scrollHeight - el.clientHeight);
+  const clampedTarget = Math.min(Math.max(0, targetTop), maxTop);
+  const delta = clampedTarget - start;
+  if (Math.abs(delta) < 0.5) return;
+
+  if (el._protoSmoothScrollRaf) {
+    cancelAnimationFrame(el._protoSmoothScrollRaf);
+    el._protoSmoothScrollRaf = null;
+  }
+
+  const t0 = performance.now();
+  function step(now) {
+    const t = Math.min(1, (now - t0) / durationMs);
+    el.scrollTop = start + delta * easeOutCubic(t);
+    if (t < 1) {
+      el._protoSmoothScrollRaf = requestAnimationFrame(step);
+    } else {
+      el._protoSmoothScrollRaf = null;
+    }
+  }
+  el._protoSmoothScrollRaf = requestAnimationFrame(step);
+}
+
+/** True when the row is fully inside the panel viewport (with inset from top/bottom). */
+function isLoanRowFullyVisibleInPanel(panelBody, item, inset = 12) {
+  const cr = panelBody.getBoundingClientRect();
+  const ir = item.getBoundingClientRect();
+  return ir.top >= cr.top + inset - 1 && ir.bottom <= cr.bottom - inset + 1;
+}
+
+function scrollLoansPanelToSelected(loansPanel) {
+  const panelBody = loansPanel?.querySelector('.loans-panel__body');
+  const item = panelBody?.querySelector('.loan-list-item--selected');
+  if (!panelBody || !item) return;
+  if (isLoanRowFullyVisibleInPanel(panelBody, item, 12)) return;
+
+  const br = panelBody.getBoundingClientRect();
+  const ir = item.getBoundingClientRect();
+  const targetTop = ir.top - br.top + panelBody.scrollTop - 12;
+  smoothScrollElementTo(panelBody, targetTop, 520);
+}
+
+function syncBoardFromLoansPanel(boardView, loansPanel) {
+  if (typeof encodeLoanKey !== 'function' || !boardView || !loansPanel) return;
+  const selected = loansPanel.querySelector('.loans-panel__body .loan-list-item--selected');
+  const key =
+    selected?.dataset?.loanKey ||
+    encodeLoanKey(selected?.querySelector('.loan-list-item__name')?.textContent || '');
+  if (!key) return;
+  boardView.querySelectorAll('.board-card').forEach((c) => {
+    const cKey =
+      c.dataset.loanKey ||
+      encodeLoanKey(c.querySelector('.loan-list-item__name')?.textContent || '');
+    c.classList.toggle('loan-list-item--selected', cKey === key);
+  });
+}
+
+function commitMorphedBoardColumns(cols, colRects, bvRect, PAD, innerW, naturalHeights, targetYs) {
+  cols.forEach((col, i) => {
+    col.getAnimations().forEach((a) => a.cancel());
+    const colLeft = colRects[i].left - bvRect.left;
+    Object.assign(col.style, {
+      position : 'absolute',
+      left     : `${colLeft}px`,
+      top      : `${colRects[i].top - bvRect.top}px`,
+      width    : `${innerW}px`,
+      height   : `${naturalHeights[i]}px`,
+      transform: `translate(${PAD - colLeft}px, ${targetYs[i]}px)`,
+      margin   : '0',
+      flex     : 'none',
+      zIndex   : '1',
+      overflow : 'hidden',
+    });
+  });
+}
+
 function reverseToBoard() {
   if (!savedMorphState) return;
   const {
@@ -751,6 +893,8 @@ function reverseToBoard() {
     boardView.style.display = '';         // unhide at 278px (morphed state)
     syncProtoCardBoardSeamClass();
     requestAnimationFrame(() => {
+      commitMorphedBoardColumns(cols, colRects, bvRect, PAD, innerW, naturalHeights, targetYs);
+
       // Inline transition → width animates back to full; radius matches .proto-main / .board-view CSS
       Object.assign(boardView.style, {
         transition   : 'width 685ms cubic-bezier(0.4, 0, 0.2, 1), border-radius 685ms ease',
@@ -817,6 +961,8 @@ function reverseToBoard() {
     protoMain.classList.remove('proto-main--content-hidden');
     Object.assign(protoMain.style, { opacity: '0', transform: 'translateX(32px)', transition: 'none' });
 
+    syncBoardFromLoansPanel(boardView, loansPanel);
+
     // Restore loans panel
     loansPanel.style.opacity    = '0';
     loansPanel.style.transition = '';
@@ -852,6 +998,8 @@ function initBoardView() {
     const card = e.target.closest('.board-card');
     if (!card || boardMorphFired) return;
     boardMorphFired = true;
+
+    syncLoansPanelFromBoardCard(card, loansPanel, boardView);
 
     const headerEl     = boardView.querySelector('.board-view__header');
     const boardPlusBtn = headerEl?.querySelector('.btn');
@@ -1025,10 +1173,18 @@ function initBoardView() {
           protoMain.classList.remove('proto-main--entering');
         }, 650);
       }
+
+      // Double rAF: wait for expanded groups + opacity so target position is stable, then ease scroll
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => scrollLoansPanelToSelected(loansPanel));
+      });
     }, lastLands);
 
     // ── 11. After search lands: swap board for loans panel; remove hero ──
     setTimeout(() => {
+      // Persist morphed layout as inline styles; cancel forward fills so home/reverse
+      // does not stack two animations (broken flex spacing after return to board).
+      commitMorphedBoardColumns(cols, colRects, bvRect, PAD, innerW, naturalHeights, targetYs);
       boardView.style.display = 'none';
       syncProtoCardBoardSeamClass();
       if (heroPlusBtn)  heroPlusBtn.remove();

@@ -502,6 +502,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border-radius: 20px 0px 0px 20px;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Footer ::before fade height — body padding-bottom matches so last groups scroll clear */
+  --loans-panel-footer-fade-height: 32px;
 }
 
 .proto-card .loans-panel::-webkit-scrollbar { display: none; }
@@ -515,9 +517,29 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 /* Top-fade mask on the body — fades content as it scrolls under the header */
 .proto-card .loans-panel__body {
+  /* 12px L/R so content lines up with header; bottom = base 12px + footer fade band */
+  padding: 0 12px calc(12px + var(--loans-panel-footer-fade-height)) 12px;
+  /* Scrollbar lane reserved (stable gutter) but thumb/track invisible — same as “no visible scrollbar” */
+  scrollbar-gutter: stable;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   -webkit-mask-image: none;
   mask-image: none;
   transition: -webkit-mask-image 0.2s ease, mask-image 0.2s ease;
+}
+
+.proto-card .loans-panel__body::-webkit-scrollbar {
+  /* 6px lane matches global + scrollbar-gutter; chrome stays invisible (no hover reveal) */
+  width: 6px;
+  background: transparent;
+}
+.proto-card .loans-panel__body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.proto-card .loans-panel__body::-webkit-scrollbar-thumb,
+.proto-card .loans-panel__body:hover::-webkit-scrollbar-thumb,
+.proto-card .loans-panel__body::-webkit-scrollbar-thumb:hover {
+  background: transparent;
 }
 
 .proto-card .loans-panel__body--scrolled {
@@ -532,14 +554,20 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   background: var(--accent-bg-1, #fcfcfd);
 }
 
-/* Same fade gradient for the persistent loans panel footer */
+/* Feather into footer search — shorter + softer stops so list items don’t look “washed” at the end */
 .proto-card .loans-panel__footer::before {
   content: '';
   position: absolute;
   left: 0; right: 0;
   bottom: 100%;
-  height: 40px;
-  background: linear-gradient(to bottom, transparent 0%, var(--accent-bg-1, #fcfcfd) 100%);
+  height: var(--loans-panel-footer-fade-height);
+  /* Mid stop matches --accent-bg-1 tint so the ramp is gentler than a 2-stop line */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(252, 252, 253, 0.22) 48%,
+    var(--accent-bg-1, #fcfcfd) 100%
+  );
   pointer-events: none;
 }
 

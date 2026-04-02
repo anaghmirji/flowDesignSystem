@@ -727,18 +727,18 @@ window.SYSTEM = {
             { name: 'Anna Martinez', amount: '$280,000', loanType: 'Fix & Flip', time: '2 hours ago',  status: 'On Hold', statusKey: 'on-hold', iconName: 'user' },
           ]},
           { stageName: 'Underwriting', count: 4, expanded: true, loans: [
-            { name: 'Michael Chen',   amount: '$520,000', loanType: 'Bridge',     time: '20 mins ago',  status: 'Active',  statusKey: 'active',  iconName: 'user' },
+            { name: 'Michael Chen',   amount: '$520,000', loanType: 'Bridge',     time: '20 mins ago',  status: 'Active',  statusKey: 'active',  iconName: 'user', selected: true },
             { name: 'Sarah Parker',   amount: '$310,000', loanType: 'Fix & Flip', time: '1 hour ago',   status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
             { name: 'Robert Torres',  amount: '$675,000', loanType: 'Bridge',     time: '3 hours ago',  status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
             { name: 'Jessica Kim',    amount: '$240,000', loanType: 'Fix & Flip', time: '5 hours ago',  status: 'On Hold', statusKey: 'on-hold', iconName: 'user' },
           ]},
-          { stageName: 'Closing',      count: 4, expanded: false, loans: [
+          { stageName: 'Closing',      count: 4, expanded: true, loans: [
             { name: 'David Brown',    amount: '$430,000', loanType: 'Bridge',     time: '1 day ago',    status: 'Active',  statusKey: 'active',  iconName: 'user' },
             { name: 'Rachel Green',   amount: '$580,000', loanType: 'Fix & Flip', time: '1 day ago',    status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
             { name: 'Mark Johnson',   amount: '$395,000', loanType: 'Bridge',     time: '2 days ago',   status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
             { name: 'Lisa Wong',      amount: '$290,000', loanType: 'Fix & Flip', time: '2 days ago',   status: 'On Hold', statusKey: 'on-hold', iconName: 'user' },
           ]},
-          { stageName: 'Funded',       count: 4, expanded: false, loans: [
+          { stageName: 'Funded',       count: 4, expanded: true, loans: [
             { name: 'Tom Harris',     amount: '$610,000', loanType: 'Bridge',     time: '3 days ago',   status: 'Active',  statusKey: 'active',  iconName: 'user' },
             { name: 'Amy Scott',      amount: '$360,000', loanType: 'Fix & Flip', time: '4 days ago',   status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
             { name: 'Chris Lee',      amount: '$480,000', loanType: 'Bridge',     time: '5 days ago',   status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },

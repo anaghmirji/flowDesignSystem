@@ -3357,13 +3357,20 @@ function bindSidebarRows() {
 
 // ── Loan List Item ────────────────────────────────────────────────────────────
 
+/** Stable key for board ↔ loans panel selection sync (prototype). */
+function encodeLoanKey(name) {
+  if (!name || typeof name !== 'string') return '';
+  return name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
 function buildLoanListItemHtml(v, overrides = {}) {
   const comp   = SYSTEM.products.lenderPortal.loanListItem;
   const s      = { ...comp.sample, ...overrides };
   const stateClass = v.state === 'default' ? '' : ` loan-list-item--${v.state}`;
   const iconName = overrides.iconName || comp.trailingIconName || 'user';
   const userIconSvg = iconSvg(iconName);
-  return `<div class="loan-list-item${stateClass}">
+  const keyAttr = s.name ? ` data-loan-key="${encodeLoanKey(s.name)}"` : '';
+  return `<div class="loan-list-item${stateClass}"${keyAttr}>
   <div class="loan-list-item__left">
     <div class="loan-list-item__top">
       <span class="loan-list-item__name">${s.name}</span>
@@ -3621,7 +3628,8 @@ function buildLoanStageGroupHtml(v, sampleOverrides = {}, selectFirst = false) {
 
   let bodyHtml = `\n  <div class="loan-stage-group__body">`;
   s.loans.forEach((loan, i) => {
-    const loanState = selectFirst && i === 0 ? 'selected' : 'default';
+    const loanState =
+      loan.selected ? 'selected' : selectFirst && i === 0 ? 'selected' : 'default';
     bodyHtml += '\n' + buildLoanListItemHtml({ state: loanState }, loan);
   });
   bodyHtml += `\n  </div>`;
@@ -4324,7 +4332,7 @@ function buildLoansPanelHtml() {
     stageGroupsHtml += buildLoanStageGroupHtml(
       { expanded: sg.expanded },
       { stageName: sg.stageName, count: sg.count, loans: sg.loans || undefined },
-      i === 0
+      false
     );
   });
 
