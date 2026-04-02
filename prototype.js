@@ -8,33 +8,6 @@ const PROTO_PAGE_MODES = [
   { val: 'edit', label: 'Edit', menuLabel: 'Editing', triggerLabel: 'Editing', icon: 'pencil' },
 ];
 
-const PROPERTIES = [
-  {
-    id: 0, primary: true, tab: '123 Main St',
-    street: '123 Main St', street2: 'Apt 402', city: 'San Francisco', state: 'CA', zip: '94105',
-    type: 'SFR', typeLabel: 'SFR (Single Family)', occupancy: 'Investment', use: 'Fix & Flip',
-    units: '1', sqft: '1000', yearBuilt: '2015',
-    purchase: '$380,000', appraised: '$400,000', arv: '$410000',
-    rent: '$4,200', dscr: '1.24',
-  },
-  {
-    id: 1, primary: false, tab: '456 Oak Ave',
-    street: '456 Oak Ave', street2: '—', city: 'Oakland', state: 'CA', zip: '94601',
-    type: 'Condo', typeLabel: 'Condo', occupancy: 'Investment', use: 'Rental',
-    units: '1', sqft: '900', yearBuilt: '2005',
-    purchase: '$380,000', appraised: '$395,000', arv: '$430,000',
-    rent: '$3,600', dscr: '1.18',
-  },
-  {
-    id: 2, primary: false, tab: '789 West Parmer',
-    street: '789 West Parmer', street2: '—', city: 'Austin', state: 'TX', zip: '78753',
-    type: 'Multi-Family', typeLabel: 'Multi-Family (4)', occupancy: 'Investment', use: 'Rental',
-    units: '4', sqft: '3200', yearBuilt: '1978',
-    purchase: '$380,000', appraised: '$410,000', arv: '$480,000',
-    rent: '$7,800', dscr: '1.31',
-  },
-];
-
 // ─── Field Relationships (feeders & eaters) ───────────────────────────────────
 
 const FIELD_RELATIONS = {
@@ -248,24 +221,344 @@ function buildTopBar() {
     </div>`;
 }
 
+// ─── Pipeline loan details (main panel) — keyed by encodeLoanKey(name) ────────
+// Default matches sidebar/board selection (Michael Chen / Underwriting).
+const DEFAULT_LOAN_DETAIL_KEY = 'michael-chen';
+
+/** Same rules as platform `encodeLoanKey` — list row keys must match. */
+function loanKeyFromName(name) {
+  if (!name || typeof name !== 'string') return '';
+  return name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
+/** Synced with board + system.js list rows; each line is a distinct “real” scenario. */
+const LOAN_DETAIL_ENTRIES = [
+  /* Application */
+  { name: 'Laura Lee',     addressLine: '1847 Union St #4, San Francisco, CA',     statusDot: 'green', statusLabel: 'Active',  stage: 'Application',  amount: '$372,500', purpose: 'Purchase',  loanProduct: 'Fix & Flip',     term: '12 months', purchase: '$498,000', arv: '$655,000', rate: '11.75%', ltv: '74.8%', fico: '752' },
+  { name: 'James Wilson',  addressLine: '2200 Lakeshore Dr, Oakland, CA',         statusDot: 'green', statusLabel: 'Active',  stage: 'Application',  amount: '$418,000', purpose: 'Refinance', loanProduct: 'DSCR Rental',    term: '30 yr fixed', purchase: '—',        arv: '—',        rate: '8.40%',  ltv: '68.2%', fico: '701' },
+  { name: 'Emily Davis',   addressLine: '910 Congress Ave, Austin, TX',             statusDot: 'green', statusLabel: 'Active',  stage: 'Application',  amount: '$565,000', purpose: 'Construction', loanProduct: 'Ground-up',   term: '18 months', purchase: '$210,000', arv: '$890,000', rate: '12.10%', ltv: '63.5%', fico: '736' },
+  { name: 'Anna Martinez', addressLine: '44 Pearl St, Denver, CO',                 statusDot: 'amber', statusLabel: 'On Hold', stage: 'Application',  amount: '$292,500', purpose: 'Bridge',    loanProduct: 'Bridge',         term: '9 months',  purchase: '$340,000', arv: '$410,000', rate: '10.50%', ltv: '86.0%', fico: '684' },
+  /* Underwriting */
+  { name: 'Michael Chen',  addressLine: '77 Geary St, San Francisco, CA',           statusDot: 'green', statusLabel: 'Active',  stage: 'Underwriting', amount: '$518,750', purpose: 'Refinance', loanProduct: 'Bridge',         term: '18 months', purchase: '$640,000', arv: '—',        rate: '11.25%', ltv: '81.1%', fico: '722' },
+  { name: 'Sarah Parker',  addressLine: '15 Magnolia Ln, Sacramento, CA',          statusDot: 'green', statusLabel: 'Active',  stage: 'Underwriting', amount: '$305,000', purpose: 'Purchase',  loanProduct: 'Fix & Flip',     term: '12 months', purchase: '$385,000', arv: '$495,000', rate: '12.00%', ltv: '79.2%', fico: '768' },
+  { name: 'Robert Torres', addressLine: '400 Brickell Ave, Miami, FL',               statusDot: 'green', statusLabel: 'Active',  stage: 'Underwriting', amount: '$712,000', purpose: 'Cash-out',  loanProduct: 'Rental 5+',      term: '24 months', purchase: '—',        arv: '—',        rate: '9.65%',  ltv: '72.4%', fico: '695' },
+  { name: 'Jessica Kim',   addressLine: '3300 NE Sandy Blvd, Portland, OR',          statusDot: 'amber', statusLabel: 'On Hold', stage: 'Underwriting', amount: '$238,900', purpose: 'Purchase',  loanProduct: 'Fix & Flip',     term: '12 months', purchase: '$312,000', arv: '$398,000', rate: '11.90%', ltv: '76.6%', fico: '658' },
+  /* Closing */
+  { name: 'David Brown',   addressLine: '88 King St, Charleston, SC',               statusDot: 'green', statusLabel: 'Active',  stage: 'Closing',      amount: '$445,200', purpose: 'Cash-out',  loanProduct: 'Bridge',         term: '14 months', purchase: '$520,000', arv: '$575,000', rate: '10.80%', ltv: '85.6%', fico: '734' },
+  { name: 'Rachel Green',  addressLine: '2601 N Sheffield Ave, Chicago, IL',         statusDot: 'green', statusLabel: 'Active',  stage: 'Closing',      amount: '$593,000', purpose: 'Purchase',  loanProduct: 'Fix & Flip',     term: '12 months', purchase: '$720,000', arv: '$925,000', rate: '12.35%', ltv: '82.4%', fico: '781' },
+  { name: 'Mark Johnson',  addressLine: '1020 Boren Ave, Seattle, WA',               statusDot: 'green', statusLabel: 'Active',  stage: 'Closing',      amount: '$401,500', purpose: 'Refinance', loanProduct: 'Bridge',         term: '12 months', purchase: '—',        arv: '—',        rate: '11.05%', ltv: '77.9%', fico: '709' },
+  { name: 'Lisa Wong',     addressLine: '9 Mercer St, New York, NY',                 statusDot: 'amber', statusLabel: 'On Hold', stage: 'Closing',      amount: '$287,000', purpose: 'Purchase',  loanProduct: 'Rental',         term: '30 yr fixed', purchase: '$410,000', arv: '—',        rate: '8.95%',  ltv: '70.0%', fico: '742' },
+  /* Funded */
+  { name: 'Tom Harris',    addressLine: '5550 Spring Mountain Rd, Las Vegas, NV', statusDot: 'green', statusLabel: 'Active',  stage: 'Funded',       amount: '$625,000', purpose: 'Refinance', loanProduct: 'Bridge',         term: '15 months', purchase: '—',        arv: '—',        rate: '10.25%', ltv: '74.0%', fico: '718' },
+  { name: 'Amy Scott',     addressLine: '77 Hemenway St, Boston, MA',                statusDot: 'green', statusLabel: 'Active',  stage: 'Funded',       amount: '$352,400', purpose: 'Purchase',  loanProduct: 'Fix & Flip',     term: '12 months', purchase: '$428,000', arv: '$515,000', rate: '12.20%', ltv: '82.3%', fico: '764' },
+  { name: 'Chris Lee',     addressLine: '1900 Pearl St, Boulder, CO',                statusDot: 'green', statusLabel: 'Active',  stage: 'Funded',       amount: '$499,950', purpose: 'Refinance', loanProduct: 'DSCR Rental',    term: '30 yr fixed', purchase: '—',        arv: '—',        rate: '8.55%',  ltv: '69.8%', fico: '733' },
+  { name: 'Mia Turner',    addressLine: '402 E Travis St, San Antonio, TX',          statusDot: 'amber', statusLabel: 'On Hold', stage: 'Funded',       amount: '$318,000', purpose: 'Bridge',    loanProduct: 'Bridge',         term: '11 months', purchase: '$365,000', arv: '$420,000', rate: '11.50%', ltv: '87.1%', fico: '671' },
+];
+
+/**
+ * One adult portrait per row in LOAN_DETAIL_ENTRIES (same order). Curated Unsplash
+ * headshots — distinct faces, no duplicates; avoids kid-oriented stock sets.
+ */
+const BORROWER_PORTRAIT_URLS = [
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1463453091185-61582044d556?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=256&h=256&q=80',
+];
+
+function parseMoneyNum(s) {
+  if (s == null || s === '' || s === '—') return NaN;
+  return parseFloat(String(s).replace(/[^0-9.]/g, ''));
+}
+
+function parseAddressLine(line) {
+  const parts = String(line || '').split(',').map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 0) return { street: '—', city: '—', state: 'CA', zip: '00000' };
+  if (parts.length === 1) return { street: parts[0], city: '—', state: 'CA', zip: '94102' };
+  const last = parts[parts.length - 1];
+  const stateZip = last.split(/\s+/).filter(Boolean);
+  const state = stateZip[0] || 'CA';
+  const zip = stateZip[1] || `9${String(1000 + (last.length * 17) % 9000).slice(-4)}`;
+  const city = parts[parts.length - 2] || '—';
+  const street = parts.length > 2 ? parts.slice(0, -2).join(', ') : parts[0];
+  return { street, city, state, zip };
+}
+
+function slugEmail(name) {
+  const parts = String(name || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0]}.${parts[parts.length - 1]}@email.com`;
+  return `${parts[0] || 'borrower'}@email.com`;
+}
+
+/** Borrower / properties / loan terms / notes for the overview form — tied to each pipeline row. */
+function makeLoanFormPayload(e) {
+  const key = loanKeyFromName(e.name);
+  const seed = key.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const addr = parseAddressLine(e.addressLine);
+  const amountNum = parseMoneyNum(e.amount);
+  const purchaseNum = parseMoneyNum(e.purchase);
+  const arvNum = parseMoneyNum(e.arv);
+  let ltc = '—';
+  if (purchaseNum && amountNum) ltc = `${((amountNum / purchaseNum) * 100).toFixed(1)}%`;
+
+  let typeLabel = 'SFR (Single Family)';
+  let typeCode = 'SFR';
+  let use = 'Fix & Flip';
+  let occupancy = 'Investment';
+  let units = '1';
+  if (/Rental|DSCR/i.test(e.loanProduct)) {
+    use = 'Rental';
+    if (/5\+/i.test(e.loanProduct)) {
+      typeLabel = 'Multi-Family (4)';
+      typeCode = 'Multi-Family';
+      units = '4';
+    }
+  }
+  if (/Construction|Ground-up/i.test(e.loanProduct)) {
+    typeLabel = 'Land';
+    typeCode = 'Land';
+    use = 'Fix & Flip';
+  }
+  if (/Condo/i.test(e.addressLine)) {
+    typeLabel = 'Condo';
+    typeCode = 'Condo';
+  }
+
+  const purchaseDisp = e.purchase !== '—' ? e.purchase : formatCurrency(Math.round(amountNum * 1.12));
+  const arvDisp = e.arv !== '—' ? e.arv : purchaseNum ? formatCurrency(Math.round(purchaseNum * 1.1)) : formatCurrency(Math.round(amountNum * 1.22));
+  let apprDisp = '—';
+  if (purchaseNum && arvNum) apprDisp = formatCurrency(Math.round((purchaseNum + arvNum) / 2));
+  else if (purchaseNum) apprDisp = formatCurrency(Math.round(purchaseNum * 1.02));
+  else if (amountNum) apprDisp = formatCurrency(Math.round(amountNum * 1.08));
+
+  const rentN = purchaseNum || amountNum;
+  const rent = formatCurrency(Math.round(rentN * (0.006 + (seed % 5) / 1000)));
+  const dscr = (1.08 + (seed % 22) / 100).toFixed(2);
+
+  const streetShort = addr.street.length > 24 ? `${addr.street.slice(0, 22)}…` : addr.street;
+  const primaryProp = {
+    id: 0,
+    primary: true,
+    tab: streetShort,
+    street: addr.street,
+    street2: '—',
+    city: addr.city,
+    state: addr.state,
+    zip: addr.zip,
+    type: typeCode,
+    typeLabel,
+    occupancy,
+    use,
+    units,
+    sqft: String(850 + (seed % 4200)),
+    yearBuilt: String(1972 + (seed % 48)),
+    purchase: purchaseDisp,
+    appraised: apprDisp,
+    arv: arvDisp,
+    rent,
+    dscr,
+  };
+
+  const properties = [primaryProp];
+  if (seed % 3 !== 0) {
+    const secStreet = `${120 + (seed % 780)} ${['Oak', 'Maple', 'Cedar', 'Pine'][seed % 4]} ${['Ln', 'Ave', 'Dr'][seed % 3]}`;
+    properties.push({
+      id: 1,
+      primary: false,
+      tab: secStreet,
+      street: secStreet,
+      street2: '—',
+      city: addr.city === '—' ? 'Oakland' : addr.city,
+      state: addr.state,
+      zip: addr.zip,
+      type: 'Condo',
+      typeLabel: 'Condo',
+      occupancy: 'Investment',
+      use: 'Rental',
+      units: '1',
+      sqft: String(780 + (seed % 400)),
+      yearBuilt: String(1998 + (seed % 22)),
+      purchase: formatCurrency(Math.round(amountNum * 0.42)),
+      appraised: formatCurrency(Math.round(amountNum * 0.45)),
+      arv: formatCurrency(Math.round(amountNum * 0.5)),
+      rent: formatCurrency(Math.round(amountNum * 0.0032)),
+      dscr: (1.02 + (seed % 18) / 100).toFixed(2),
+    });
+  }
+
+  const purposeMap = { 'Cash-out': 'Cash-Out Refi' };
+  const loanPurpose = purposeMap[e.purpose] || e.purpose;
+
+  const last = e.name.split(' ').pop() || 'Borrower';
+  const entityMode = seed % 4 === 0 ? 'entity' : 'individual';
+  const rateClean = String(e.rate || '').replace(/%/g, '').trim();
+
+  return {
+    borrower: {
+      entityMode,
+      fullName: e.name,
+      dob: `${String(1 + (seed % 12)).padStart(2, '0')}/${String(1 + (seed % 27)).padStart(2, '0')}/${1972 + (seed % 30)}`,
+      ssnMasked: `••• – •• – ${String(1000 + (seed % 9000)).slice(-4)}`,
+      entityLegalName: `${last} Capital LLC`,
+      einMasked: '•• – •••••••',
+      formationState: addr.state || 'DE',
+      signers: e.name,
+      email: slugEmail(e.name),
+      phone: `(415) 555-${String(1000 + (seed * 13) % 9000).padStart(4, '0')}`,
+      fico: e.fico,
+      dti: `${32 + (seed % 16)}.${seed % 10}`,
+      experience: seed % 2 === 0 ? `${2 + (seed % 8)} completed projects` : `${(seed % 6) + 1} years in rental portfolio`,
+    },
+    properties,
+    loanTerms: {
+      loanAmount: e.amount,
+      loanPurpose,
+      productDisplay: `${e.loanProduct} — ${e.term}`,
+      ltv: e.ltv,
+      ltc,
+      rate: rateClean,
+      term: e.term,
+      amortization: e.term.includes('30') ? '30-Year Fixed' : e.term.includes('15') ? '15-Year Fixed' : 'Interest Only',
+      closingDate: '',
+    },
+    notes: {
+      viewText: `${e.stage} — ${e.name}: ${e.loanProduct} at ${e.rate}. ${e.statusLabel === 'On Hold' ? 'On hold pending outstanding items.' : 'Standard underwriting path; no blockers noted.'}`,
+      editedLine: `Last edited by ${['Sarah Chen', 'Jordan M.', 'Alex R.'][seed % 3]} · ${['2 hours ago', 'Yesterday', '3 days ago'][seed % 3]}`,
+    },
+  };
+}
+
+const LOAN_DETAIL_BY_KEY = Object.fromEntries(
+  LOAN_DETAIL_ENTRIES.map((e, i) => {
+    const key = loanKeyFromName(e.name);
+    const form = makeLoanFormPayload(e);
+    const portraitUrl = BORROWER_PORTRAIT_URLS[i] || BORROWER_PORTRAIT_URLS[0];
+    return [
+      key,
+      {
+        name: e.name,
+        addressLine: e.addressLine,
+        avatarUrl: portraitUrl,
+        status: { dot: e.statusDot, label: e.statusLabel },
+        stage: { label: e.stage },
+        stats: [
+          { label: 'Amount', value: e.amount },
+          { label: 'Purpose', value: e.purpose },
+          { label: 'Type', value: e.loanProduct },
+          { label: 'Term', value: e.term },
+          { label: 'Purchase Price', value: e.purchase },
+          { label: 'ARV', value: e.arv },
+          { label: 'Rate', value: e.rate },
+        ],
+        flex: [
+          { label: 'LTV', value: e.ltv },
+          { label: 'FICO', value: e.fico },
+        ],
+        borrower: form.borrower,
+        properties: form.properties,
+        loanTerms: form.loanTerms,
+        notes: form.notes,
+      },
+    ];
+  })
+);
+
+function getLoanDetailForKey(key) {
+  if (!key) return LOAN_DETAIL_BY_KEY[DEFAULT_LOAN_DETAIL_KEY];
+  return LOAN_DETAIL_BY_KEY[key] || LOAN_DETAIL_BY_KEY[DEFAULT_LOAN_DETAIL_KEY];
+}
+
+/** Sidebar / property tab mutations target this loan’s `properties` array. */
+let activeLoanDetailKey = DEFAULT_LOAN_DETAIL_KEY;
+
+function getActiveLoanProperties() {
+  return getLoanDetailForKey(activeLoanDetailKey).properties;
+}
+
+/** Keeps LP stage pill in sync when switching loans (bindBorrowerHeader reads this). */
+let protoBorrowerStageIndex = 0;
+const PROTO_PIPELINE_STAGES = ['Application', 'Underwriting', 'Closing', 'Funded', 'Post-close'];
+
+function applyMainLoanDetail(key) {
+  const resolved = key && LOAN_DETAIL_BY_KEY[key] ? key : DEFAULT_LOAN_DETAIL_KEY;
+  activeLoanDetailKey = resolved;
+  const d = getLoanDetailForKey(resolved);
+  const main = document.querySelector('.proto-main');
+  if (!main) return;
+
+  const nameEl = main.querySelector('.proto-borrower-header__name');
+  const addrEl = main.querySelector('.proto-borrower-header__address');
+  if (nameEl) nameEl.textContent = d.name;
+  if (addrEl) addrEl.textContent = d.addressLine;
+
+  const avatarImg = main.querySelector('.proto-borrower-header .profile__avatar img');
+  if (avatarImg && d.avatarUrl) avatarImg.src = d.avatarUrl;
+
+  const stageRoot = main.querySelector('.lp-status-stage');
+  if (stageRoot) {
+    const dotEl = stageRoot.querySelector('.lp-status__dot');
+    const statusLab = stageRoot.querySelector('.lp-status__label');
+    const stageLab = stageRoot.querySelector('.lp-stage__label');
+    if (dotEl) dotEl.className = `lp-status__dot lp-status__dot--${d.status.dot}`;
+    if (statusLab) statusLab.textContent = d.status.label;
+    if (stageLab) stageLab.textContent = d.stage.label;
+  }
+
+  const idx = PROTO_PIPELINE_STAGES.indexOf(d.stage.label);
+  protoBorrowerStageIndex = idx >= 0 ? idx : 0;
+
+  const statsRoot = main.querySelector('.proto-loan-stats');
+  if (statsRoot) {
+    const next = document.createElement('template');
+    next.innerHTML = buildLoanStatsHtml(d).trim();
+    const el = next.content.firstElementChild;
+    if (el) statsRoot.replaceWith(el);
+  }
+
+  const scroll = main.querySelector('.proto-main__scroll');
+  if (scroll) {
+    scroll.innerHTML = buildFormHtml(d);
+    initTogglePills();
+    if (main.hasAttribute('data-view-mode')) {
+      scroll.querySelectorAll('.proto-field--editable [contenteditable]').forEach((s) => { s.contentEditable = 'false'; });
+    } else if (main.hasAttribute('data-edit-mode')) {
+      scroll.querySelectorAll('.proto-field--editable .proto-field__value').forEach((s) => { s.contentEditable = 'true'; });
+    }
+  }
+}
+
 // ─── Borrower Header ──────────────────────────────────────────────────────────
 
-function buildBorrowerHeader() {
-  const profileHtml     = buildProfileHtml({ favorited: true });
+function buildBorrowerHeader(detail = getLoanDetailForKey(DEFAULT_LOAN_DETAIL_KEY)) {
+  const profileHtml     = buildProfileHtml({ favorited: true, avatarUrl: detail.avatarUrl });
   const docBtn          = buildBtnPreviewHtml({ id: 's1', icons: ['document'] });
   const assigneesHtml   = buildAssigneesHtml({ count: 2 });
   const statusStageHtml = buildLpStatusStageInteractiveHtml({
-    status: { dot: 'green', label: 'Active' },
-    stage:  { label: 'Application' },
+    status: { dot: detail.status.dot, label: detail.status.label },
+    stage  : { label: detail.stage.label },
   });
+
+  protoBorrowerStageIndex = Math.max(0, PROTO_PIPELINE_STAGES.indexOf(detail.stage.label));
 
   return `
     <div class="proto-borrower-header">
       <div class="proto-borrower-header__left">
         ${profileHtml}
         <div class="proto-borrower-header__info">
-          <span class="proto-borrower-header__name">Laura Lee</span>
-          <span class="proto-borrower-header__address">123 Main St, San Francisco CA</span>
+          <span class="proto-borrower-header__name">${detail.name}</span>
+          <span class="proto-borrower-header__address">${detail.addressLine}</span>
         </div>
       </div>
       <div class="proto-borrower-header__right">
@@ -278,22 +571,7 @@ function buildBorrowerHeader() {
 
 // ─── Loan Stats Bar ───────────────────────────────────────────────────────────
 
-function buildLoanStatsHtml() {
-  const stats = [
-    { label: 'Amount',         value: '$450,000'  },
-    { label: 'Purpose',        value: 'Purchase'  },
-    { label: 'Type',           value: 'Fix & Flip'},
-    { label: 'Term',           value: '12 months' },
-    { label: 'Purchase Price', value: '$380,000'  },
-    { label: 'ARV',            value: '$520,000'  },
-    { label: 'Rate',           value: '12.5%'     },
-  ];
-
-  const flexStats = [
-    { label: 'LTV',  value: '86.5%' },
-    { label: 'FICO', value: '760'   },
-  ];
-
+function buildLoanStatsHtml(detail = getLoanDetailForKey(DEFAULT_LOAN_DETAIL_KEY)) {
   const renderItem = (s) => `
     <div class="proto-loan-stats__item">
       <span class="proto-loan-stats__label">${s.label}</span>
@@ -304,12 +582,12 @@ function buildLoanStatsHtml() {
     <div class="proto-loan-stats">
       <div class="proto-loan-stats__pill">
         <div class="proto-loan-stats__items">
-          ${stats.map(renderItem).join('')}
+          ${detail.stats.map(renderItem).join('')}
         </div>
       </div>
       <div class="proto-loan-stats__pill proto-loan-stats__pill--flex">
         <div class="proto-loan-stats__items">
-          ${flexStats.map(renderItem).join('')}
+          ${detail.flex.map(renderItem).join('')}
         </div>
       </div>
     </div>`;
@@ -317,8 +595,8 @@ function buildLoanStatsHtml() {
 
 // ─── Property helpers (module-level so interactions can call them) ────────────
 
-function buildPropSidebarHtml(activeIdx = 0) {
-  const items = PROPERTIES.map((p, i) => `
+function buildPropSidebarHtml(activeIdx = 0, props = getActiveLoanProperties()) {
+  const items = props.map((p, i) => `
     <button type="button" class="proto-prop-item${i === activeIdx ? ' proto-prop-item--active' : ''}" data-prop-item="${i}">
       <div class="proto-prop-item__info">
         <span class="proto-prop-item__addr">${p.street}</span>
@@ -329,8 +607,8 @@ function buildPropSidebarHtml(activeIdx = 0) {
   return items + `<button type="button" class="proto-prop-add-item">${iconSvg('plus')} Add property</button>`;
 }
 
-function buildPropControlsHtml(activeIdx) {
-  const prop = PROPERTIES[activeIdx];
+function buildPropControlsHtml(activeIdx, props = getActiveLoanProperties()) {
+  const prop = props[activeIdx];
   if (!prop) return '';
   if (prop.primary) {
     return `<span class="proto-prop-badge--primary">Primary property</span>`;
@@ -343,8 +621,14 @@ function buildPropControlsHtml(activeIdx) {
 
 // ─── Loan Form (Collapsible Sections) ────────────────────────────────────────
 
-function buildFormHtml() {
-  const p0 = PROPERTIES[0];
+function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
+  const propsList = detail.properties || [];
+  const p0 = propsList[0];
+  const b = detail.borrower;
+  const lt = detail.loanTerms;
+  const n = detail.notes;
+  const isEntityBorrower = b.entityMode === 'entity';
+  const toggleEntityIdx = isEntityBorrower ? 1 : 0;
 
   const f = (label, value, opts = {}) => {
     const itype    = opts.type || 'text';
@@ -353,6 +637,7 @@ function buildFormHtml() {
     if (opts.readonly)  cls.push('proto-field--readonly');
     if (opts.span)      cls.push(`proto-field--span-${opts.span}`);
     if (editable)       cls.push('proto-field--editable');
+    if (opts.entityHide) cls.push('proto-field--hidden');
 
     const badge = opts.readonly
       ? `<span class="proto-field__badge">calc</span>`
@@ -465,37 +750,37 @@ function buildFormHtml() {
     ${sub('Identity', `
       <div class="proto-field proto-field--span-2">
         <span class="proto-field__label">Entity type</span>
-        ${toggle(['Individual', 'Entity'])}
+        ${toggle(['Individual', 'Entity'], toggleEntityIdx)}
       </div>
-      ${f('Full legal name', 'Laura Lee', { span: 2, placeholder: "Enter borrower's full legal name" })}
-      ${f('Date of birth', '04/12/1985', { type: 'date', individualOnly: true })}
-      ${f('SSN', '••• – •• – 4832', { masked: true, individualOnly: true })}
+      ${f('Full legal name', b.fullName, { span: 2, placeholder: "Enter borrower's full legal name" })}
+      ${f('Date of birth', b.dob, { type: 'date', individualOnly: true, entityHide: isEntityBorrower })}
+      ${f('SSN', b.ssnMasked, { masked: true, individualOnly: true, entityHide: isEntityBorrower })}
     `)}
     ${sub('Entity Details', `
-      ${f('Entity legal name',  'Lee Holdings LLC', { span: 2, placeholder: 'Enter entity legal name' })}
-      ${f('EIN',                '•• – •••••••',     { masked: true })}
-      ${f('Formation state',    'CA',               { type: 'select', options: US_STATES })}
-      ${f('Authorized signers', 'Laura Lee',        { span: 2, placeholder: 'Add authorized signer name' })}
-    `, { hidden: true, dataAttr: 'data-entity-sub' })}
+      ${f('Entity legal name',  b.entityLegalName, { span: 2, placeholder: 'Enter entity legal name' })}
+      ${f('EIN',                b.einMasked,     { masked: true })}
+      ${f('Formation state',    b.formationState,               { type: 'select', options: US_STATES })}
+      ${f('Authorized signers', b.signers,        { span: 2, placeholder: 'Add authorized signer name' })}
+    `, { hidden: !isEntityBorrower, dataAttr: 'data-entity-sub' })}
     ${sub('Contact', `
-      ${f('Email address', 'laura.lee@email.com', { placeholder: 'email@example.com' })}
-      ${f('Phone number',  '(415) 555-0142',      { placeholder: '(555) 123-4567'   })}
+      ${f('Email address', b.email, { placeholder: 'email@example.com' })}
+      ${f('Phone number',  b.phone,      { placeholder: '(555) 123-4567'   })}
     `)}
     ${sub('Financial Profile', `
-      ${f('FICO / Credit score', '760',   { type: 'number', meta: 'reported',  infoKey: 'fico', placeholder: '300–850' })}
-      ${f('DTI',                 '38.4',  { type: 'number', meta: 'reported',  infoKey: 'dti',  placeholder: '0–100'   })}
-      ${f('Experience summary',  '3 flips completed', { type: 'textarea', span: 2, placeholder: "Describe borrower's relevant experience" })}
+      ${f('FICO / Credit score', b.fico,   { type: 'number', meta: 'reported',  infoKey: 'fico', placeholder: '300–850' })}
+      ${f('DTI',                 b.dti,  { type: 'number', meta: 'reported',  infoKey: 'dti',  placeholder: '0–100'   })}
+      ${f('Experience summary',  b.experience, { type: 'textarea', span: 2, placeholder: "Describe borrower's relevant experience" })}
     `)}`;
 
   // ── Properties section ───────────────────────────────────────────────────────
-  const isInvestment0 = p0.occupancy === 'Investment';
+  const isInvestment0 = p0 && p0.occupancy === 'Investment';
   const propertiesHtml = `
     <div class="proto-prop-layout">
       <div class="proto-prop-sidebar" data-prop-sidebar>
-        ${buildPropSidebarHtml(0)}
+        ${buildPropSidebarHtml(0, propsList)}
       </div>
       <div class="proto-prop-detail">
-        <div class="proto-prop-controls" data-prop-controls>${buildPropControlsHtml(0)}</div>
+        <div class="proto-prop-controls" data-prop-controls>${buildPropControlsHtml(0, propsList)}</div>
         ${sub('Location', `
           ${f('Street Address Line 1', p0.street,  { propKey: 'street',  placeholder: 'Street address' })}
           ${f('Street Address Line 2', p0.street2, { propKey: 'street2', placeholder: 'Apt, suite, unit' })}
@@ -525,33 +810,34 @@ function buildFormHtml() {
     </div>`;
 
   // ── Loan Terms section ───────────────────────────────────────────────────────
+  const purposeOptions = ['Purchase', 'Refinance', 'Cash-Out Refi', 'Construction', 'Bridge'];
   const loanTermsHtml = `
     ${sub('Core Terms', `
-      ${f('Loan amount',  '$450,000',          { type: 'currency', calcKey: 'loanAmount', infoKey: 'loanAmount' })}
-      ${f('Loan purpose', 'Purchase',           { type: 'select',  options: ['Purchase', 'Refinance', 'Cash-Out Refi', 'Construction'] })}
-      ${f('Product',      'Fix & Flip — 12mo', { link: true })}
+      ${f('Loan amount',  lt.loanAmount,          { type: 'currency', calcKey: 'loanAmount', infoKey: 'loanAmount' })}
+      ${f('Loan purpose', lt.loanPurpose,           { type: 'select',  options: purposeOptions })}
+      ${f('Product',      lt.productDisplay, { link: true })}
     `)}
     ${sub('Calculated Metrics', `
-      ${f('LTV', '86.5%', { readonly: true, calcKey: 'ltv', infoKey: 'ltv' })}
-      ${f('LTC', '82.3%', { readonly: true, infoKey: 'ltc' })}
+      ${f('LTV', lt.ltv, { readonly: true, calcKey: 'ltv', infoKey: 'ltv' })}
+      ${f('LTC', lt.ltc, { readonly: true, infoKey: 'ltc' })}
     `)}
     ${sub('Rate & Structure', `
-      ${f('Rate',        '12.5%',        { type: 'number', placeholder: '0.000'    })}
-      ${f('Term',        '12 months',    { placeholder: 'e.g. 12'                  })}
-      ${f('Amortization','Interest Only', { type: 'select', options: ['30-Year Fixed', '15-Year Fixed', 'Interest Only', 'ARM', 'Balloon'] })}
+      ${f('Rate',        lt.rate,        { type: 'number', placeholder: '0.000'    })}
+      ${f('Term',        lt.term,    { placeholder: 'e.g. 12'                  })}
+      ${f('Amortization', lt.amortization, { type: 'select', options: ['30-Year Fixed', '15-Year Fixed', 'Interest Only', 'ARM', 'Balloon'] })}
     `)}
     ${sub('Timeline', `
-      ${f('Est. closing date', '', { type: 'date', span: 2 })}
+      ${f('Est. closing date', lt.closingDate || '', { type: 'date', span: 2 })}
     `)}`;
 
   const notesHtml = `
     <div class="proto-section__grid">
       <div class="proto-notes proto-field--span-2">
-        <div class="proto-notes__view" data-notes-view>No internal notes yet</div>
+        <div class="proto-notes__view" data-notes-view>${n.viewText}</div>
         <textarea class="proto-notes__textarea proto-field__textarea" placeholder="Add internal notes for your team..." rows="4"></textarea>
         <div class="proto-notes__footer">
           <span class="proto-notes__staff">Visible to lender staff only — never shared with borrower</span>
-          <span class="proto-notes__edited">Last edited by Sarah Chen · 2 hours ago</span>
+          <span class="proto-notes__edited">${n.editedLine}</span>
         </div>
       </div>
     </div>`;
@@ -559,7 +845,7 @@ function buildFormHtml() {
   return `
     <div class="proto-form">
       ${section('Borrower Information', borrowerHtml)}
-      ${section('Properties', propertiesHtml, { count: PROPERTIES.length, sidebar: true })}
+      ${section('Properties', propertiesHtml, { count: propsList.length, sidebar: true })}
       ${section('Loan Terms', loanTermsHtml)}
       ${section('Internal Notes', notesHtml)}
     </div>`;
@@ -595,42 +881,42 @@ function buildProtoModeDropdownHtml(activeVal = 'view') {
 
 // ─── Board View ───────────────────────────────────────────────────────────────
 
-// Exactly mirrors system.js loansPanel.stageGroups — same names, amounts, types, icons.
+// Mirrors system.js loansPanel.stageGroups — names/keys must stay in sync with LOAN_DETAIL_ENTRIES.
 const BOARD_STAGES = [
   {
     label: 'Application', count: 4, expanded: true,
     loans: [
-      { name: 'Laura Lee',     amount: '$370,000', loanType: 'Fix & Flip', time: '5 mins ago',  status: 'Active',  statusKey: 'active',  iconName: 'user'              },
-      { name: 'James Wilson',  amount: '$450,000', loanType: 'Fix & Flip', time: '10 mins ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
-      { name: 'Emily Davis',   amount: '$500,000', loanType: 'Fix & Flip', time: '15 mins ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
-      { name: 'Anna Martinez', amount: '$280,000', loanType: 'Fix & Flip', time: '2 hours ago', status: 'On Hold', statusKey: 'on-hold', iconName: 'user'              },
+      { name: 'Laura Lee',     amount: '$372,500', loanType: 'Fix & Flip',     time: '3 mins ago',    status: 'Active',  statusKey: 'active',  iconName: 'user'              },
+      { name: 'James Wilson',  amount: '$418,000', loanType: 'DSCR Rental',    time: '18 mins ago',   status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Emily Davis',   amount: '$565,000', loanType: 'Construction',   time: '42 mins ago',   status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Anna Martinez', amount: '$292,500', loanType: 'Bridge',         time: '2 hours ago',   status: 'On Hold', statusKey: 'on-hold', iconName: 'user'              },
     ],
   },
   {
     label: 'Underwriting', count: 4, expanded: true,
     loans: [
-      { name: 'Michael Chen',  amount: '$520,000', loanType: 'Bridge',     time: '20 mins ago', status: 'Active',  statusKey: 'active',  iconName: 'user',             selected: true },
-      { name: 'Sarah Parker',  amount: '$310,000', loanType: 'Fix & Flip', time: '1 hour ago',  status: 'Active',  statusKey: 'active',  iconName: 'building-office-2'               },
-      { name: 'Robert Torres', amount: '$675,000', loanType: 'Bridge',     time: '3 hours ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2'               },
-      { name: 'Jessica Kim',   amount: '$240,000', loanType: 'Fix & Flip', time: '5 hours ago', status: 'On Hold', statusKey: 'on-hold', iconName: 'user'                            },
+      { name: 'Michael Chen',  amount: '$518,750', loanType: 'Bridge',         time: '24 mins ago',   status: 'Active',  statusKey: 'active',  iconName: 'user',              selected: true },
+      { name: 'Sarah Parker',  amount: '$305,000', loanType: 'Fix & Flip',     time: '1 hr ago',      status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Robert Torres', amount: '$712,000', loanType: 'Rental 5+',      time: '3 hours ago',   status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Jessica Kim',   amount: '$238,900', loanType: 'Fix & Flip',     time: '6 hours ago',   status: 'On Hold', statusKey: 'on-hold', iconName: 'user'              },
     ],
   },
   {
     label: 'Closing', count: 4, expanded: true,
     loans: [
-      { name: 'David Brown',  amount: '$430,000', loanType: 'Bridge',     time: '1 day ago',  status: 'Active',  statusKey: 'active',  iconName: 'user'              },
-      { name: 'Rachel Green', amount: '$580,000', loanType: 'Fix & Flip', time: '1 day ago',  status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
-      { name: 'Mark Johnson', amount: '$395,000', loanType: 'Bridge',     time: '2 days ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
-      { name: 'Lisa Wong',    amount: '$290,000', loanType: 'Fix & Flip', time: '2 days ago', status: 'On Hold', statusKey: 'on-hold', iconName: 'user'              },
+      { name: 'David Brown',  amount: '$445,200', loanType: 'Bridge',         time: '20 hours ago',  status: 'Active',  statusKey: 'active',  iconName: 'user'              },
+      { name: 'Rachel Green', amount: '$593,000', loanType: 'Fix & Flip',     time: '1 day ago',     status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Mark Johnson', amount: '$401,500', loanType: 'Bridge',         time: '2 days ago',    status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Lisa Wong',    amount: '$287,000', loanType: 'Rental',         time: '2 days ago',    status: 'On Hold', statusKey: 'on-hold', iconName: 'user'              },
     ],
   },
   {
     label: 'Funded', count: 4, expanded: true,
     loans: [
-      { name: 'Tom Harris', amount: '$610,000', loanType: 'Bridge',     time: '3 days ago', status: 'Active',  statusKey: 'active',  iconName: 'user'              },
-      { name: 'Amy Scott',  amount: '$360,000', loanType: 'Fix & Flip', time: '4 days ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
-      { name: 'Chris Lee',  amount: '$480,000', loanType: 'Bridge',     time: '5 days ago', status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
-      { name: 'Mia Turner', amount: '$325,000', loanType: 'Fix & Flip', time: '1 week ago', status: 'On Hold', statusKey: 'on-hold', iconName: 'user'              },
+      { name: 'Tom Harris', amount: '$625,000', loanType: 'Bridge',           time: '4 days ago',    status: 'Active',  statusKey: 'active',  iconName: 'user'              },
+      { name: 'Amy Scott',  amount: '$352,400', loanType: 'Fix & Flip',       time: '5 days ago',    status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Chris Lee',  amount: '$499,950', loanType: 'DSCR Rental',      time: '6 days ago',    status: 'Active',  statusKey: 'active',  iconName: 'building-office-2' },
+      { name: 'Mia Turner', amount: '$318,000', loanType: 'Bridge',           time: '8 days ago',    status: 'On Hold', statusKey: 'on-hold', iconName: 'user'              },
     ],
   },
 ];
@@ -752,6 +1038,7 @@ function syncLoansPanelFromBoardCard(boardCard, loansPanel, boardView) {
   if (target) target.classList.add('loan-list-item--selected');
 
   expandAllLoanStageGroups(panelBody);
+  applyMainLoanDetail(key);
 }
 
 /** Ease-out cubic — aligns with prototype morph / panel motion */
@@ -1362,10 +1649,8 @@ function bindBorrowerHeader() {
   // Stage forward button — icon slides out right, enters from left; label advances
   const stageBtn   = header.querySelector('.lp-stage__btn');
   const stageLabel = header.querySelector('.lp-stage__label');
-  const STAGES = ['Application', 'Underwriting', 'Closing', 'Funded', 'Post-close'];
 
   if (stageBtn && stageLabel) {
-    let stageIndex = 0;
     let stageAnimating = false;
 
     stageBtn.addEventListener('click', () => {
@@ -1410,8 +1695,8 @@ function bindBorrowerHeader() {
         const btnEl  = stage?.querySelector('.lp-stage__btn');
         const oldW   = stage ? stage.offsetWidth : null;
 
-        stageIndex = (stageIndex + 1) % STAGES.length;
-        stageLabel.textContent = STAGES[stageIndex];
+        protoBorrowerStageIndex = (protoBorrowerStageIndex + 1) % PROTO_PIPELINE_STAGES.length;
+        stageLabel.textContent = PROTO_PIPELINE_STAGES[protoBorrowerStageIndex];
 
         if (stage && oldW !== null) {
           const newW  = stage.offsetWidth;
@@ -1888,7 +2173,8 @@ function bindSectionCollapse() {
 
 function bindPropertyTabs() {
   function selectPropItem(idx) {
-    const prop = PROPERTIES[idx];
+    const props = getActiveLoanProperties();
+    const prop = props[idx];
     if (!prop) return;
 
     // Highlight active sidebar item
@@ -1915,7 +2201,7 @@ function bindPropertyTabs() {
 
     // Update controls
     const controlsEl = document.querySelector('[data-prop-controls]');
-    if (controlsEl) controlsEl.innerHTML = buildPropControlsHtml(idx);
+    if (controlsEl) controlsEl.innerHTML = buildPropControlsHtml(idx, props);
 
     // Show/hide Investment Details
     const investSub = document.querySelector('[data-investment-sub]');
@@ -1936,12 +2222,13 @@ function bindPropertyTabs() {
     const btn = e.target.closest('[data-set-primary]');
     if (!btn) return;
     const idx = parseInt(btn.dataset.setPrimary, 10);
-    PROPERTIES.forEach(p => { p.primary = false; });
-    PROPERTIES[idx].primary = true;
+    const props = getActiveLoanProperties();
+    props.forEach(p => { p.primary = false; });
+    props[idx].primary = true;
     const sidebarEl = document.querySelector('[data-prop-sidebar]');
-    if (sidebarEl) sidebarEl.innerHTML = buildPropSidebarHtml(idx);
+    if (sidebarEl) sidebarEl.innerHTML = buildPropSidebarHtml(idx, props);
     const controlsEl = document.querySelector('[data-prop-controls]');
-    if (controlsEl) controlsEl.innerHTML = buildPropControlsHtml(idx);
+    if (controlsEl) controlsEl.innerHTML = buildPropControlsHtml(idx, props);
   });
 
   // Remove property
@@ -1949,28 +2236,30 @@ function bindPropertyTabs() {
     const btn = e.target.closest('[data-rm-prop]');
     if (!btn) return;
     const idx = parseInt(btn.dataset.rmProp, 10);
-    if (PROPERTIES.length <= 1) return;
-    PROPERTIES.splice(idx, 1);
-    PROPERTIES.forEach((p, i) => { p.id = i; });
-    if (!PROPERTIES.some(p => p.primary)) PROPERTIES[0].primary = true;
+    const props = getActiveLoanProperties();
+    if (props.length <= 1) return;
+    props.splice(idx, 1);
+    props.forEach((p, i) => { p.id = i; });
+    if (!props.some(p => p.primary)) props[0].primary = true;
     const sidebarEl = document.querySelector('[data-prop-sidebar]');
-    if (sidebarEl) sidebarEl.innerHTML = buildPropSidebarHtml(0);
+    if (sidebarEl) sidebarEl.innerHTML = buildPropSidebarHtml(0, props);
     selectPropItem(0);
     const countNum = document.querySelector('.proto-prop-head__num');
-    if (countNum) countNum.textContent = PROPERTIES.length;
+    if (countNum) countNum.textContent = props.length;
   });
 
   // Add property (prototype: clones first property with new address)
   document.addEventListener('click', e => {
     if (!e.target.closest('.proto-prop-add-item')) return;
-    const newProp = { ...PROPERTIES[0], id: PROPERTIES.length, primary: false,
+    const props = getActiveLoanProperties();
+    const newProp = { ...props[0], id: props.length, primary: false,
       tab: 'New Property', street: 'New Property', street2: '—', city: '—', state: '—', zip: '—' };
-    PROPERTIES.push(newProp);
+    props.push(newProp);
     const sidebarEl = document.querySelector('[data-prop-sidebar]');
-    if (sidebarEl) sidebarEl.innerHTML = buildPropSidebarHtml(PROPERTIES.length - 1);
-    selectPropItem(PROPERTIES.length - 1);
+    if (sidebarEl) sidebarEl.innerHTML = buildPropSidebarHtml(props.length - 1, props);
+    selectPropItem(props.length - 1);
     const countNum = document.querySelector('.proto-prop-head__num');
-    if (countNum) countNum.textContent = PROPERTIES.length;
+    if (countNum) countNum.textContent = props.length;
   });
 }
 
@@ -2437,7 +2726,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const detailMain = document.querySelector('.proto-main');
   if (loansPanelBody && detailMain) {
     loansPanelBody.addEventListener('click', e => {
-      if (!e.target.closest('.loan-list-item')) return;
+      const row = e.target.closest('.loan-list-item');
+      if (!row) return;
+      const rowKey =
+        row.dataset.loanKey ||
+        (typeof encodeLoanKey === 'function'
+          ? encodeLoanKey(row.querySelector('.loan-list-item__name')?.textContent || '')
+          : loanKeyFromName(row.querySelector('.loan-list-item__name')?.textContent || ''));
+      if (rowKey) applyMainLoanDetail(rowKey);
 
       // Scroll detail back to top so the enter feels like a fresh load
       const detailScroll = detailMain.querySelector('.proto-main__scroll');

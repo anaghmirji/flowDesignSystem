@@ -2086,14 +2086,15 @@ function bindStatusStageRows() {
 // ── Profile ────────────────────────────────────────────────────────────────────
 
 function buildProfileHtml(v) {
-  const comp     = SYSTEM.products.lenderPortal.profile;
-  const fav      = v?.favorited !== false;
-  const starSvg  = fav ? iconSvg('star-filled') : iconSvg('star');
-  const starStyle = fav ? ' style="--fill-0:#FFCC00"' : '';
+  const comp       = SYSTEM.products.lenderPortal.profile;
+  const fav        = v?.favorited !== false;
+  const starSvg    = fav ? iconSvg('star-filled') : iconSvg('star');
+  const starStyle  = fav ? ' style="--fill-0:#FFCC00"' : '';
+  const avatarSrc  = v?.avatarUrl != null && v.avatarUrl !== '' ? v.avatarUrl : comp.avatarUrl;
   return `<button class="profile" type="button">
   <span class="profile__star icon"${starStyle}>${starSvg}</span>
   <span class="profile__avatar">
-    <img src="${comp.avatarUrl}" alt="">
+    <img src="${avatarSrc}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
   </span>
 </button>`;
 }
