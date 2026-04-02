@@ -142,6 +142,355 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border: 0.5px solid var(--accent-black-12, #E0E0E0);
   background: var(--accent-bg-1, #FCFCFD);
   isolation: isolate;
+  position: relative;   /* board-view positions inside this */
+  overflow: hidden;     /* clips the board slide animation */
+  /* Board seam = .proto-main right edge; synced from layout in prototype.js (fallback before JS) */
+  --proto-board-right-inset: 376px;
+}
+
+/* ── Board View ─────────────────────────────────────────────────────────────── */
+
+/* ── Keyframes ── */
+
+/* Detail elements drift up into place */
+@keyframes detailFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Board overlay ── */
+
+/* Overlays loans + main; leaves AI panel + resize handle visible on the right.
+   Stroke + shadow + radius match .proto-main (main view). While full kanban is on,
+   .proto-main’s border-right and box-shadow are suppressed (proto-card--board-kanban-full). */
+.board-view {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  /* Pin to card edges so the seam matches .proto-main (avoids % calc vs flex rounding). */
+  right: var(--proto-board-right-inset, 376px);
+  width: auto;
+  z-index: 20;
+  background: var(--accent-bg-1, #fcfcfd);
+  border-radius: 0 20px 20px 0;
+  border: none;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Only a right hairline + same soft right-side depth stack as .proto-main */
+.board-view:not(.board-view--morphing) {
+  border-right: 0.5px solid var(--accent-black-12, #E0E0E0);
+  box-shadow: 70px 0 20px 0 rgba(0, 0, 0, 0.00),
+    45px 0 18px 0 rgba(0, 0, 0, 0.00),
+    25px 0 15px 0 rgba(0, 0, 0, 0.01),
+    11px 0 11px 0 rgba(0, 0, 0, 0.01),
+    3px 0 6px 0 rgba(0, 0, 0, 0.01);
+}
+
+/* ── Morph: board compresses to sidebar width — timed to land with the columns ── */
+.board-view--morphing {
+  width: 278px;                    /* exact loans-panel width */
+  right: auto;                     /* else left+right+width over-constrains with pinned right */
+  border-radius: 20px 0 0 20px;    /* straight right edge toward main; .proto-sidebar-border */
+  border-right: none !important;
+  box-shadow: none;
+  transition: width 685ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-radius 685ms ease;
+}
+
+/* Columns sweep via WAAPI — just ensure overflow is hidden so translated cols clip */
+.board-view--morphing .board-col { overflow: hidden; }
+
+/* Board is removed instantly once columns land — no fade needed */
+
+/* Header — padding is inside .board-view; outer border-right is still the seam to AI */
+.board-view__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  flex-shrink: 0;
+  background: var(--accent-bg-1, #fcfcfd);
+  z-index: 2;
+}
+
+/* "My Loans 52 ↕" pill */
+.board-view__pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--accent-white-100, #fff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 100px;
+  padding: 8px 8px 8px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+.board-view__pill-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent-black-80, #333);
+  white-space: nowrap;
+}
+.board-view__pill-badge {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.board-view__pill-count {
+  font-size: 12px;
+  color: var(--accent-black-60, #666);
+}
+.board-view__pill-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Kanban columns container — right padding inset from the divider (border is on .board-view) */
+.board-view__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 12px;
+  padding: 0 12px 12px;
+  overflow: hidden;
+}
+
+/* Individual column */
+.board-col {
+  flex: 1;
+  min-width: 0;
+  background: var(--accent-black-4, #f5f5f5);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.board-col__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px 12px 12px;
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.board-col__name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-black-60, #666);
+  white-space: nowrap;
+}
+
+.board-col__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.board-col__count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-black-60, #666);
+}
+
+/* Chevron: default = right-pointing (collapsed), expanded = up-pointing */
+.board-col__chev {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.board-col__chev svg {
+  width: 10.98px;
+  height: 5.99px;
+  display: block;
+  transform: rotate(-90deg); /* right-pointing → collapsed */
+  transition: transform 280ms var(--ease-smooth, ease);
+}
+
+.board-col--expanded .board-col__chev svg {
+  transform: rotate(180deg); /* up-pointing → expanded */
+}
+
+/* Cards inside column */
+.board-col__items {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 4px 12px;
+  scrollbar-width: none;
+}
+.board-col__items::-webkit-scrollbar { display: none; }
+
+/* Loan cards in the board — full width of column */
+.board-col__items .loan-list-item {
+  width: 100%;
+  border-radius: 16px;
+}
+
+/* Hover effect on board cards */
+.board-col__items .board-card:not(.loan-list-item--selected) {
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.board-col__items .board-card:not(.loan-list-item--selected):hover {
+  background: var(--accent-black-8, #ebebeb);
+}
+
+/* Footer — sticky at bottom, always above scrolling columns */
+.board-view__footer {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  background: var(--accent-bg-1, #fcfcfd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; /* search-section__row already provides 12px top/bottom padding */
+}
+
+/* Fade gradient above the footer — softens the last card into the search bar */
+.board-view__footer::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 100%;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent 0%, var(--accent-bg-1, #fcfcfd) 100%);
+  pointer-events: none;
+}
+
+/* Strip search-section's own border and padding cap inside both footers */
+.board-view__footer .search-section,
+.proto-card .loans-panel__footer .search-section {
+  border-top: none;
+  width: 100%;
+  max-width: none;
+}
+
+.board-view__footer .search-section__row {
+  gap: 8px;
+}
+
+/* ── Detail panel staggered entrance ── */
+
+/* Hides content instantly — used during the board→sidebar transition so that
+   inner content stays invisible while the container slides in from the right.
+   Replaced by proto-main--entering when the last column lands. */
+.proto-main--content-hidden .proto-borrower-header,
+.proto-main--content-hidden .proto-loan-stats,
+.proto-main--content-hidden .proto-edit-bar,
+.proto-main--content-hidden .proto-main__scroll {
+  opacity: 0;
+  transition: none;
+}
+
+/* Staggered fade-up — fires both on initial reveal and on every loan click */
+.proto-main--entering .proto-borrower-header {
+  animation: detailFadeIn 360ms cubic-bezier(0.22, 1, 0.36, 1) 0ms   both;
+}
+.proto-main--entering .proto-loan-stats {
+  animation: detailFadeIn 360ms cubic-bezier(0.22, 1, 0.36, 1) 60ms  both;
+}
+.proto-main--entering .proto-edit-bar {
+  animation: detailFadeIn 360ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+.proto-main--entering .proto-main__scroll {
+  animation: detailFadeIn 380ms cubic-bezier(0.22, 1, 0.36, 1) 190ms both;
+}
+
+/* ── Loans Pill Capsule — Figma "before / after" variant ──────────────────────
+   "before": 130px wide, overflow hidden, justify-end  → icon button clipped off
+             the left; only the white pill is visible (matches board-view state)
+   "after":  160px wide                               → container grows rightward,
+             revealing the icon button sliding in from the left
+   ── */
+
+/* Gray outer capsule */
+.loans-pill-capsule {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;        /* keeps pill flush-right; icon overflows left */
+  background: var(--accent-black-8, #ebebeb);
+  border-radius: 100px;
+  overflow: hidden;
+  width: 130px;                     /* "before" state — icon clipped */
+  transition: width 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* "after" state — triggered by JS when board disappears */
+.loans-pill-capsule--expanded {
+  width: 160px;                     /* 30px icon btn + 130px pill */
+}
+
+/* Icon button: 2px left-pad + 28px circle = 30px wide */
+.loans-pill-icon-btn {
+  display: flex;
+  align-items: center;
+  padding: 2px 0 2px 2px;
+  flex-shrink: 0;
+}
+
+.loans-pill-icon-btn__circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 100px;
+  background: var(--accent-black-8, #ebebeb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Icon button is clickable */
+.loans-pill-icon-btn {
+  cursor: pointer;
+}
+
+/* Hover: circle darkens from #ebebeb (8% black) → #ccc (20% black) — Figma Variant3 */
+.loans-pill-icon-btn__circle {
+  transition: background 180ms ease;
+}
+.loans-pill-icon-btn:hover .loans-pill-icon-btn__circle {
+  background: var(--accent-black-20, #ccc);
+}
+
+/* Muted stroke for the home icon */
+.loans-pill-icon-btn .icon svg {
+  --stroke-0: #888;
+}
+
+/* Pill inside capsule must be exactly 130px so the math lines up */
+.loans-pill-capsule .loans-pill {
+  width: 130px;
+  flex-shrink: 0;
+}
+
+/* ── Sidebar border — hidden while board is full-width, appears when morph begins ── */
+.proto-sidebar-border {
+  position: absolute;
+  left: 278px;
+  top: 0;
+  bottom: 0;
+  width: 0.5px;
+  background: var(--accent-black-12, #e0e0e0);
+  z-index: 25;
+  pointer-events: none;
+  opacity: 0;         /* starts hidden; JS reveals it when the morph fires */
 }
 
 /* ── Loans Panel (left sidebar inside proto-card) ───────────────────────────── */
@@ -153,6 +502,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border-radius: 20px 0px 0px 20px;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Footer ::before fade height — body padding-bottom matches so last groups scroll clear */
+  --loans-panel-footer-fade-height: 32px;
 }
 
 .proto-card .loans-panel::-webkit-scrollbar { display: none; }
@@ -166,14 +517,58 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 /* Top-fade mask on the body — fades content as it scrolls under the header */
 .proto-card .loans-panel__body {
+  /* 12px L/R so content lines up with header; bottom = base 12px + footer fade band */
+  padding: 0 12px calc(12px + var(--loans-panel-footer-fade-height)) 12px;
+  /* Scrollbar lane reserved (stable gutter) but thumb/track invisible — same as “no visible scrollbar” */
+  scrollbar-gutter: stable;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   -webkit-mask-image: none;
   mask-image: none;
   transition: -webkit-mask-image 0.2s ease, mask-image 0.2s ease;
 }
 
+.proto-card .loans-panel__body::-webkit-scrollbar {
+  /* 6px lane matches global + scrollbar-gutter; chrome stays invisible (no hover reveal) */
+  width: 6px;
+  background: transparent;
+}
+.proto-card .loans-panel__body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.proto-card .loans-panel__body::-webkit-scrollbar-thumb,
+.proto-card .loans-panel__body:hover::-webkit-scrollbar-thumb,
+.proto-card .loans-panel__body::-webkit-scrollbar-thumb:hover {
+  background: transparent;
+}
+
 .proto-card .loans-panel__body--scrolled {
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 24px, black 100%);
   mask-image: linear-gradient(to bottom, transparent 0%, black 24px, black 100%);
+}
+
+/* Footer always sticky at bottom, above scrolling body */
+.proto-card .loans-panel__footer {
+  position: relative;
+  z-index: 2;
+  background: var(--accent-bg-1, #fcfcfd);
+}
+
+/* Feather into footer search — shorter + softer stops so list items don’t look “washed” at the end */
+.proto-card .loans-panel__footer::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 100%;
+  height: var(--loans-panel-footer-fade-height);
+  /* Mid stop matches --accent-bg-1 tint so the ramp is gentler than a 2-stop line */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(252, 252, 253, 0.22) 48%,
+    var(--accent-bg-1, #fcfcfd) 100%
+  );
+  pointer-events: none;
 }
 
 /* ── .proto-main ────────────────────────────────────────────────────────────── */
@@ -191,6 +586,12 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border-right: 0.5px solid var(--accent-black-12, #E0E0E0);
   background: var(--accent-bg-1, #FCFCFD);
   box-shadow: 70px 0 20px 0 rgba(0,0,0,0.00), 45px 0 18px 0 rgba(0,0,0,0.00), 25px 0 15px 0 rgba(0,0,0,0.01), 11px 0 11px 0 rgba(0,0,0,0.01), 3px 0 6px 0 rgba(0,0,0,0.01);
+}
+
+/* Full kanban board draws the curved seam; hide duplicate line + outward shadow under the board */
+.proto-card--board-kanban-full .proto-main {
+  border-right-color: transparent;
+  box-shadow: none;
 }
 
 .proto-main__scroll {
@@ -226,6 +627,11 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .proto-resize-handle:hover,
 .proto-resize-handle--active {
   background: var(--accent-black-12, #e0e0e0);
+}
+
+/* Full kanban: .board-view is z-index 20 — keep the resize seam above it so hover/active isn’t painted under the board */
+.proto-card--board-kanban-full .proto-resize-handle {
+  z-index: 21;
 }
 
 /* ── .proto-borrower-header ──────────────────────────────────────────────────── */
@@ -282,9 +688,14 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   flex-direction: column;
   align-items: flex-start;
   padding: 16px;
+  overflow-x: hidden;
   overflow-y: auto;
   position: relative;
   z-index: 1;
+  /* Outer edge matches .proto-card; seam is only .proto-main border-right (sidebar pattern) */
+  border-radius: 0 20px 20px 0;
+  background: var(--accent-bg-1, #fcfcfd);
+  box-sizing: border-box;
 }
 
 .proto-ai-panel__label {

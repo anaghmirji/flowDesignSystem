@@ -1762,7 +1762,7 @@
      width never shifts when the scrollbar appears or disappears */
   scrollbar-gutter: stable;
   /* Right padding minus scrollbar gutter width (6px) keeps both sides visually equal */
-  padding: 0 6px 0 12px;
+  padding: 0 6px 12px 12px;
   z-index: 1;
 }
 
