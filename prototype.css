@@ -1960,3 +1960,252 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   outline-offset: -2px;
   transition: background 160ms ease;
 }
+
+/* ── Condition templates (Figma Lender Exploration · 794:5271) ─────────────── */
+
+.ct-page {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--accent-bg-0, #f3f3f4);
+  font-family: var(--font-sans);
+}
+
+.ct-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  box-sizing: border-box;
+}
+
+.ct-shell__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 20px;
+}
+
+.ct-shell__back {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent-blue-100, #0088ff);
+  text-decoration: none;
+}
+
+.ct-shell__back:hover {
+  text-decoration: underline;
+}
+
+.ct-shell__meta {
+  font-size: 11px;
+  color: var(--accent-black-40, #999);
+}
+
+.ct-template {
+  background: var(--accent-white-100, #fff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 40px;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.ct-template__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--accent-black-100, #000);
+  letter-spacing: -0.02em;
+}
+
+.ct-template__title:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-blue-8, #ebf5ff);
+  border-radius: 4px;
+}
+
+.ct-template__body {
+  margin-top: 28px;
+}
+
+.ct-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ct-stack--dense {
+  gap: 8px;
+}
+
+.ct-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ct-stage-head {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-100, #000);
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.ct-stage-head--pad {
+  padding-right: 12px;
+}
+
+.ct-timeline__cell {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding-right: 12px;
+  box-sizing: border-box;
+}
+
+.ct-row--timeline .ct-timeline__cell:last-child {
+  padding-right: 0;
+}
+
+.ct-timeline__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 100px;
+  background: #33a0ff;
+  flex-shrink: 0;
+}
+
+.ct-timeline__rule {
+  flex: 1 1 auto;
+  height: 0;
+  border: none;
+  border-top: 0.5px solid var(--accent-black-12, #e0e0e0);
+  min-width: 4px;
+  margin: 0;
+}
+
+.ct-timeline__rule--tail {
+  flex: 0 0 68px;
+  border-top-style: dashed;
+}
+
+.ct-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.ct-row--cols .ct-column:first-child {
+  padding-left: 0;
+}
+
+.ct-row--cols .ct-column:last-child {
+  padding-right: 0;
+}
+
+.ct-column__card {
+  background: var(--accent-white-100, #fff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 20px;
+  padding: 16px 12px;
+  box-sizing: border-box;
+}
+
+.ct-column__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ct-column__list--empty {
+  min-height: 48px;
+  justify-content: center;
+}
+
+.ct-column__empty {
+  font-size: 12px;
+  color: var(--accent-black-40, #999);
+  line-height: 1.35;
+}
+
+.ct-condition__text {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.8);
+  line-height: 1.25;
+}
+
+.ct-condition--spaced {
+  padding: 12px 8px 12px 0;
+}
+
+.ct-condition--spaced-first {
+  padding-top: 0;
+}
+
+.ct-condition--spaced-last {
+  padding-bottom: 0;
+}
+
+.ct-condition--padded {
+  padding-left: 0;
+  padding-right: 8px;
+}
+
+.ct-condition--ruled {
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.12);
+}
+
+.ct-add-condition {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 100px;
+  background: rgba(0, 0, 0, 0.04);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-100, #000);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.ct-add-condition:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.ct-add-condition:focus-visible {
+  outline: 2px solid var(--accent-blue-60, #66aaff);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .ct-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ct-row--heads,
+  .ct-row--timeline {
+    display: none;
+  }
+
+  .ct-row--cols .ct-column {
+    padding: 0;
+  }
+
+  .ct-row--cols .ct-column::before {
+    content: attr(data-stage-label);
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: var(--accent-black-80, #333);
+  }
+}
