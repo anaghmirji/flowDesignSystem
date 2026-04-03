@@ -2739,176 +2739,195 @@ body.proto-ct-modal-open {
   overflow: hidden;
 }
 
-/* ── Vertical stage-gate flow (feat/condition-stage-gates v2) ────────────────
-   Reading order: stage divider → "to advance to X" section → next divider → …
-   A left-hand spine runs continuously top-to-bottom tying it all together.
+/* ── Horizontal stage-gate track (v3 — clear & scannable) ───────────────────
+   post ── lane card ── post ── lane card ── … ── post (terminal)
+   Stage posts sit AT boundaries. Lane cards name their destination explicitly.
    ─────────────────────────────────────────────────────────────────────────── */
 
-/* Outer container — vertical stack */
-.ctg-flow {
+.ctg-h-track {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: flex-start;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
 }
 
-/* ── Stage divider ────────────────────────────────────────────── */
+/* ── Stage post (milestone dot + label) ── */
 
-/* Row: [spine with dot] + [stage label] */
-.ctg-divider {
+.ctg-post {
+  flex: 0 0 auto;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding-top: 20px;
-}
-
-.ctg-divider--first {
+  gap: 5px;
+  z-index: 1;
   padding-top: 0;
 }
 
-/* Left spine column — holds the dot and the vertical line */
-.ctg-divider__spine {
-  flex: 0 0 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-/* Stage milestone dot */
-.ctg-divider__dot {
+.ctg-post__dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
   border: 1.5px solid var(--accent-blue-80, #0055cc);
-  background: var(--accent-white-100, #fff);
+  background: var(--ct-surface, var(--accent-white-100, #fff));
   box-sizing: border-box;
   flex-shrink: 0;
-  position: relative;
-  z-index: 1;
 }
 
-/* Terminal dot — filled, signals end of the flow */
-.ctg-divider__dot--terminal {
+/* Terminal post: filled dot signals end of the journey */
+.ctg-post__dot--end {
   background: var(--accent-blue-80, #0055cc);
 }
 
-.ctg-divider__label {
-  font-size: 12px;
+.ctg-post__label {
+  font-size: 10px;
   font-weight: var(--font-medium, 500);
-  color: var(--accent-black-80, #333);
-  line-height: 1;
-  letter-spacing: -0.01em;
+  color: var(--accent-black-50, #888);
+  white-space: nowrap;
+  text-align: center;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
 }
 
-/* ── Gate section (conditions between two stage dividers) ─────── */
+/* ── Lane (conditions between two posts) ── */
 
-.ctg-section {
-  display: flex;
-  flex-direction: row;
-  gap: 0;
-  padding-top: 0;
-}
-
-/* Spine column — continuous vertical line connecting divider dots */
-.ctg-section__spine {
-  flex: 0 0 20px;
-  display: flex;
-  justify-content: center;
-  padding: 0;
-}
-
-.ctg-section__spine::after {
-  content: '';
-  width: 0.5px;
-  background: var(--ct-line, var(--accent-black-12));
-  display: block;
-  flex: 1 1 auto;
-  margin-top: 2px;
-}
-
-/* Content: heading + condition cards + add button */
-.ctg-section__content {
-  flex: 1 1 auto;
+.ctg-lane {
+  flex: 1 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 0 8px 12px;
+  align-items: stretch;
 }
 
-/* Section heading row: "To advance to Underwriting" + count badge */
-.ctg-section__head {
+/* Rail at dot height: hairlines flanking the destination tag */
+.ctg-lane__rail {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  height: 12px;
 }
 
-.ctg-section__heading {
-  font-size: 11px;
-  font-weight: var(--font-book, 400);
-  color: var(--accent-black-40, #999);
-  line-height: 1.3;
-  white-space: nowrap;
+.ctg-lane__rule {
+  flex: 1 1 auto;
+  height: 0;
+  border-top: 0.5px solid var(--ct-line, var(--accent-black-12));
 }
 
-.ctg-section__heading strong {
-  font-weight: var(--font-medium, 500);
-  color: var(--accent-black-60, #666);
-}
-
-.ctg-section__count {
-  font-size: 10px;
-  font-weight: var(--font-medium, 500);
-  color: var(--accent-black-40, #aaa);
+/* "→ Underwriting" pill on the rail — names the destination stage */
+.ctg-lane__dest-tag {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px 1px 5px;
   background: var(--accent-black-4, #f5f5f5);
   border: 0.5px solid var(--accent-black-12, #e0e0e0);
   border-radius: 100px;
-  padding: 1px 7px;
-  min-width: 20px;
-  text-align: center;
   flex-shrink: 0;
-  line-height: 1.6;
+  white-space: nowrap;
 }
 
-.ctg-section__count:empty {
-  display: none;
+.ctg-lane__arrow {
+  font-size: 9px;
+  color: var(--accent-blue-60, #4488ee);
+  line-height: 1;
+  flex-shrink: 0;
 }
 
-/* Condition list */
-.ctg-section__list {
+.ctg-lane__dest-name {
+  font-size: 10px;
+  font-weight: var(--font-medium, 500);
+  color: var(--accent-black-60, #666);
+  line-height: 1.3;
+}
+
+.ctg-lane__count {
+  font-size: 9px;
+  font-weight: var(--font-medium, 500);
+  color: var(--accent-black-40, #aaa);
+  background: var(--accent-black-8, #ebebeb);
+  border-radius: 100px;
+  padding: 0 5px;
+  line-height: 1.8;
+  min-width: 14px;
+  text-align: center;
+}
+
+/* Short vertical drop connecting rail to the top of the card */
+.ctg-lane__drop {
+  width: 0.5px;
+  height: 10px;
+  background: var(--ct-line, var(--accent-black-12));
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* White card wrapping all conditions for this gate */
+.ctg-lane__card {
+  margin: 0 6px;
+  background: var(--ct-surface, var(--accent-white-100, #fff));
+  border: 0.5px solid var(--ct-line, var(--accent-black-12));
+  border-radius: 12px;
+  overflow: clip;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: 100%;
 }
 
-/* Reuse .ct-condition card — slightly tighter radius in this context */
-.ctg-section__list .ct-condition {
-  border-radius: 10px;
+/* Conditions as list rows with dividers (not individual cards) */
+.ctg-lane__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ctg-lane__list .ct-condition {
+  border: none;
+  border-radius: 0;
+  border-bottom: 0.5px solid var(--ct-line, var(--accent-black-12));
+  background: transparent;
   min-height: 36px;
   padding: 10px 12px;
 }
 
-/* Empty state — dashed placeholder */
-.ctg-section__empty {
+.ctg-lane__list .ct-condition:last-child {
+  border-bottom: none;
+}
+
+.ctg-lane__empty {
   font-size: 11px;
   color: var(--accent-black-30, #bbb);
-  padding: 10px 12px;
-  background: var(--ct-surface, #fff);
-  border: 0.5px dashed var(--accent-black-12, #e0e0e0);
-  border-radius: 10px;
+  padding: 14px 12px;
   text-align: center;
 }
 
-/* Add Condition pill — scoped to gate sections */
-.ctg-section__add {
+/* Add Condition — sits as a tappable footer row at the bottom of the card */
+.ctg-lane__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  padding: 9px 12px;
+  border: none;
+  border-top: 0.5px solid var(--ct-line, var(--accent-black-12));
+  border-radius: 0 0 12px 12px;
+  background: var(--accent-black-2, #fafafa);
+  font-family: var(--font-sans);
   font-size: 11px;
-  padding: 8px 12px;
+  font-weight: var(--font-book, 400);
+  color: var(--accent-black-40, #aaa);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.ctg-lane__add:hover {
+  background: var(--accent-black-4, #f5f5f5);
+  color: var(--accent-black-70, #555);
+}
+
+.ctg-lane__add:focus-visible {
+  outline: 2px solid var(--accent-blue-60, #66aaff);
+  outline-offset: -2px;
 }
 
 @media (max-width: 900px) {

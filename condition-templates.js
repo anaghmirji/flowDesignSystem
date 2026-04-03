@@ -32,82 +32,71 @@ function buildConditionRow(text) {
 }
 
 /**
- * Vertical stage-gate layout.
+ * Horizontal stage-gate track (v3 — clear & scannable)
  *
- * Reading order: stage divider → conditions to clear → next stage divider → …
+ * Layout: post ── lane card ── post ── lane card ── … ── post (terminal)
  *
- *   ─── Application ──────────────────────────────────────────
- *        │
- *   ── To advance to Underwriting ─────────────────  4 conds
- *        [Condition Name #1                       ]
- *        [Condition Name #2                       ]
- *        …                            + Add Condition
- *        │
- *   ─── Underwriting ─────────────────────────────────────────
- *        │
- *   ── To advance to Closing ──────────────────────  8 conds
- *        …
+ *  ●          ╔═══════════════╗          ●          ╔══════════════╗          ●
+ * App         ║ → Underwriting║         UW          ║  → Closing  ║        Closing …
+ *             ║ ──────────────║                     ║─────────────║
+ *             ║ Condition 1   ║                     ║ Condition 1 ║
+ *             ║ Condition 2   ║                     ║ Condition 2 ║
+ *             ║ + Add         ║                     ║ + Add       ║
+ *             ╚═══════════════╝                     ╚═════════════╝
+ *
+ * Stage posts sit at boundaries. Lane cards explicitly name the destination stage.
+ * Conditions are list rows inside each card — one card per gate, not per condition.
  */
 
-/** Horizontal stage divider with dot on the left spine. */
-function buildStageDivider(stage, isFirst) {
-  return `<div class="ctg-divider${isFirst ? ' ctg-divider--first' : ''}" data-stage="${stage.id}">
-    <div class="ctg-divider__spine" aria-hidden="true">
-      <div class="ctg-divider__dot"></div>
-    </div>
-    <div class="ctg-divider__label">${stage.label}</div>
+/** Narrow stage-post: dot on the connecting line + label below. */
+function buildStagePost(stage, isFirst, isLast) {
+  return `<div class="ctg-post${isFirst ? ' ctg-post--first' : ''}${isLast ? ' ctg-post--last' : ''}" data-stage="${stage.id}">
+    <div class="ctg-post__dot${isLast ? ' ctg-post__dot--end' : ''}" aria-hidden="true"></div>
+    <div class="ctg-post__label">${stage.label}</div>
   </div>`;
 }
 
-/** Gate section: heading + scrollable condition list + Add button. */
-function buildGateSection(fromStage, toStage) {
+/** Lane card between two stage posts — conditions required to reach the destination. */
+function buildLane(fromStage, toStage) {
   const { id, items } = fromStage;
   const count = items.length;
 
-  const conditionCards = items.length
+  const rows = items.length
     ? items.map(t => buildConditionRow(t)).join('')
-    : `<div class="ctg-section__empty">No conditions required</div>`;
+    : `<div class="ctg-lane__empty">No conditions required</div>`;
 
-  const addBtn = `<button type="button" class="ct-add-condition ctg-section__add" data-ct-add="${id}">Add Condition</button>`;
-
-  return `<div class="ctg-section" data-gate="${id}-to-${toStage.id}">
-    <div class="ctg-section__spine" aria-hidden="true"></div>
-    <div class="ctg-section__content">
-      <div class="ctg-section__head">
-        <span class="ctg-section__heading">To advance to <strong>${toStage.label}</strong></span>
-        <span class="ctg-section__count">${count > 0 ? count : ''}</span>
+  return `<div class="ctg-lane" data-gate="${id}-to-${toStage.id}">
+    <div class="ctg-lane__rail" aria-hidden="true">
+      <div class="ctg-lane__rule"></div>
+      <div class="ctg-lane__dest-tag">
+        <span class="ctg-lane__arrow">→</span>
+        <span class="ctg-lane__dest-name">${toStage.label}</span>
+        ${count > 0 ? `<span class="ctg-lane__count">${count}</span>` : ''}
       </div>
-      <div class="ctg-section__list" data-ct-list="${id}">
-        ${conditionCards}
-      </div>
-      ${addBtn}
+      <div class="ctg-lane__rule"></div>
     </div>
-  </div>`;
-}
-
-/** Terminal section: the final stage marker + "no more conditions" note. */
-function buildTerminalDivider(stage) {
-  return `<div class="ctg-divider ctg-divider--terminal" data-stage="${stage.id}">
-    <div class="ctg-divider__spine" aria-hidden="true">
-      <div class="ctg-divider__dot ctg-divider__dot--terminal"></div>
+    <div class="ctg-lane__drop" aria-hidden="true"></div>
+    <div class="ctg-lane__card">
+      <div class="ctg-lane__list" data-ct-list="${id}">${rows}</div>
+      <button type="button" class="ctg-lane__add" data-ct-add="${id}">Add Condition</button>
     </div>
-    <div class="ctg-divider__label">${stage.label}</div>
   </div>`;
 }
 
 /**
- * Full vertical flow:
- *   stage-divider → gate-section → stage-divider → gate-section → … → terminal-divider
+ * Full horizontal track:
+ *   post[0] lane[0→1] post[1] lane[1→2] … post[n-1] lane[n-1→n] post[n]
  */
 function buildConditionTemplateGridHtml() {
   const parts = CT_STAGES.map((stage, i) => {
     const isFirst = i === 0;
     const isLast  = i === CT_STAGES.length - 1;
-    if (isLast) return buildTerminalDivider(stage);
-    return buildStageDivider(stage, isFirst) + buildGateSection(stage, CT_STAGES[i + 1]);
+    const post = buildStagePost(stage, isFirst, isLast);
+    const lane = !isLast ? buildLane(stage, CT_STAGES[i + 1]) : '';
+    return post + lane;
   }).join('');
 
-  return `<div class="ctg-flow">${parts}</div>`;
+  return `<div class="ctg-h-track">${parts}</div>`;
 }
 
 function buildSidebarTemplateRows() {
@@ -181,18 +170,29 @@ function addConditionToStage(stageId, scope) {
   const root = scope && scope.querySelector ? scope : document;
   const list = root.querySelector(`[data-ct-list="${stageId}"]`);
   if (!list) return;
+  // Remove "no conditions" placeholder on first real add
+  const placeholder = list.querySelector('.ctg-lane__empty');
+  if (placeholder) placeholder.remove();
   const n = list.querySelectorAll('[data-ct-condition]').length + 1;
-  const label = `New condition #${n}`;
-  // Remove empty placeholder if present
-  const empty = list.querySelector('.ctg-section__empty');
-  if (empty) empty.remove();
   const div = document.createElement('div');
-  div.innerHTML = buildConditionRow(label);
+  div.innerHTML = buildConditionRow(`New condition #${n}`);
   list.appendChild(div.firstElementChild);
-  // Update count badge
-  const section = list.closest('.ctg-section');
-  const badge = section?.querySelector('.ctg-section__count');
-  if (badge) badge.textContent = list.querySelectorAll('[data-ct-condition]').length;
+  // Sync count badge
+  const lane = list.closest('.ctg-lane');
+  const badge = lane?.querySelector('.ctg-lane__count');
+  if (badge) {
+    badge.textContent = list.querySelectorAll('[data-ct-condition]').length;
+    badge.style.display = '';
+  } else {
+    // Badge didn't exist (was empty lane) — insert it
+    const tag = lane?.querySelector('.ctg-lane__dest-tag');
+    if (tag) {
+      const span = document.createElement('span');
+      span.className = 'ctg-lane__count';
+      span.textContent = '1';
+      tag.appendChild(span);
+    }
+  }
 }
 
 function bindConditionTemplates(root) {
