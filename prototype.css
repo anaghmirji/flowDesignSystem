@@ -2739,6 +2739,213 @@ body.proto-ct-modal-open {
   overflow: hidden;
 }
 
+/* ── Stage-Gate redesign (feat/condition-stage-gates) ────────────────────────
+   Layout: node → gate → node → gate → … → terminal node
+   Conditions live BETWEEN milestone dots — visually and semantically "between stages".
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Track: horizontal flex row, starts flush with editor padding */
+.ctg-track {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  padding-top: 4px;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+/* ── Stage node (milestone) ── */
+.ctg-node {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 1;
+}
+
+/* Horizontal rail holding the stems + dot, all vertically centred */
+.ctg-node__rail {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 14px;
+}
+
+.ctg-node__stem--before,
+.ctg-node__stem--after {
+  width: 6px;
+  height: 0;
+  border-top: 0.5px solid var(--ct-line, var(--accent-black-12));
+}
+
+.ctg-node__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent-blue-80, #0055cc);
+  background: var(--ct-surface, #fff);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* First / last nodes have no inward stems — the gate lines reach them */
+.ctg-node--first .ctg-node__dot,
+.ctg-node--last  .ctg-node__dot {
+  /* slightly bolder to signal start / end */
+  background: var(--accent-blue-8, #e8f0ff);
+}
+
+.ctg-node__label {
+  font-size: 11px;
+  font-weight: var(--font-medium, 500);
+  color: var(--accent-black-60, #666);
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+/* ── Gate (conditions between two nodes) ── */
+.ctg-gate {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Rail: line ── [→ Stage badge] ── line */
+.ctg-gate__rail {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 14px;
+  gap: 0;
+}
+
+.ctg-gate__line {
+  flex: 1 1 auto;
+  height: 0;
+  border-top: 0.5px solid var(--ct-line, var(--accent-black-12));
+  min-width: 8px;
+}
+
+/* Destination pill: "→ Underwriting" — shows the stage this gate unlocks */
+.ctg-gate__badge {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px 2px 6px;
+  background: var(--accent-black-4, #f5f5f5);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 100px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.ctg-gate__arrow {
+  font-size: 10px;
+  color: var(--accent-blue-60, #4488ee);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ctg-gate__badge-label {
+  font-size: 10px;
+  font-weight: var(--font-medium, 500);
+  color: var(--accent-black-60, #666);
+  line-height: 1.3;
+}
+
+/* Short vertical drop from rail to the first condition card */
+.ctg-gate__drop {
+  width: 0.5px;
+  height: 14px;
+  background: var(--ct-line, var(--accent-black-12));
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* Body: conditions + Add button */
+.ctg-gate__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 8px;
+}
+
+/* Condition list — no wrapper card; each condition is its own card */
+.ctg-gate__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+/* Empty state */
+.ctg-gate__empty {
+  font-size: 11px;
+  font-weight: var(--font-book, 400);
+  color: var(--accent-black-40, #aaa);
+  padding: 10px 12px;
+  background: var(--ct-surface, #fff);
+  border: 0.5px dashed var(--accent-black-12, #e0e0e0);
+  border-radius: 10px;
+  text-align: center;
+}
+
+/* Add Condition — same pill style, smaller in gate context */
+.ctg-gate__add {
+  padding: 8px 12px;
+  font-size: 11px;
+}
+
+/* Condition card — same white card as before, slightly tighter radius */
+.ctg-gate__list .ct-condition {
+  border-radius: 10px;
+  min-height: 36px;
+  padding: 10px 12px;
+}
+
+/* Responsive: collapse to vertical stack, hide destination badges */
+@media (max-width: 860px) {
+  .ctg-track {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ctg-node__rail {
+    display: none;
+  }
+
+  .ctg-gate__rail {
+    display: none;
+  }
+
+  .ctg-gate__drop {
+    display: none;
+  }
+
+  .ctg-node {
+    padding: 8px 0 4px;
+    align-items: flex-start;
+  }
+
+  .ctg-node__label {
+    font-size: 12px;
+    font-weight: var(--font-medium, 500);
+    color: var(--accent-black-80, #333);
+  }
+
+  .ctg-gate__body {
+    padding: 0;
+  }
+}
+
 @media (max-width: 900px) {
   .ct-row--heads {
     display: none;
