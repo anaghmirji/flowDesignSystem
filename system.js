@@ -306,6 +306,9 @@ window.SYSTEM = {
       svg: '<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.8617 4.48667L18.5492 2.79917C19.2814 2.06694 20.4686 2.06694 21.2008 2.79917C21.9331 3.53141 21.9331 4.71859 21.2008 5.45083L6.83218 19.8195C6.30351 20.3481 5.65144 20.7368 4.93489 20.9502L2.25 21.75L3.04978 19.0651C3.26323 18.3486 3.65185 17.6965 4.18052 17.1678L16.8617 4.48667ZM16.8617 4.48667L19.5 7.12499" stroke="var(--stroke-0,#333)" stroke-width="2.18" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
     { name: 'home',
       svg: '<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" stroke="var(--stroke-0,#333)" stroke-width="2.18" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+    // bolt: Current Design System › Icons (Figma node 1-72) — https://www.figma.com/design/LeF2Rd3VnWhhzyXyVqTQsN/Current-Design-System?node-id=1-72
+    { name: 'bolt',
+      svg: '<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.75 13.5 10.5 2.25 9 7.5h7.5l-6.75 11.25L12 13.5H3.75z" stroke="var(--stroke-0,#333)" stroke-width="2.18" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
   ],
 
   // ── Components ──────────────────────────────────────────────────────────────

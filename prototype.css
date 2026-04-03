@@ -480,7 +480,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   flex-shrink: 0;
 }
 
-/* ── Sidebar border — hidden while board is full-width, appears when morph begins ── */
+/* ── Sidebar border — morph-only overlay (board has no right stroke while morphing).
+   Not kept on after swap: .loans-panel border-right owns the steady-state seam. ── */
 .proto-sidebar-border {
   position: absolute;
   left: 278px;
@@ -490,7 +491,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   background: var(--accent-black-12, #e0e0e0);
   z-index: 25;
   pointer-events: none;
-  opacity: 0;         /* starts hidden; JS reveals it when the morph fires */
+  opacity: 0;         /* JS → 1 during morph; cleared when loans panel is shown (avoid double hairline) */
 }
 
 /* ── Loans Panel (left sidebar inside proto-card) ───────────────────────────── */
@@ -1961,7 +1962,9 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   transition: background 160ms ease;
 }
 
-/* ── Condition templates (Figma Lender Exploration · 794:5271) ─────────────── */
+/* ── Condition templates — Manage Conditions 797:5582 + inner track 794:5271 ──
+   Modal shell 797:5582: gray frame · 283px sidebar · white editor card · Cancel / Save
+   Inner grid 794:5271: title↔block gap 28 · timeline 288×4+76 · columns --ct-col-grow */
 
 .ct-page {
   min-height: 100vh;
@@ -1971,7 +1974,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ct-shell {
-  max-width: 1120px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 24px 20px 48px;
   box-sizing: border-box;
@@ -1988,7 +1991,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .ct-shell__back {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: var(--font-medium, 500);
   color: var(--accent-blue-100, #0088ff);
   text-decoration: none;
 }
@@ -2002,25 +2005,42 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   color: var(--accent-black-40, #999);
 }
 
+/* Token aliases — maps frame to accent scale (global.css) */
+.ct-template,
+.proto-ct-modal__panel .ct-manage {
+  --ct-surface: var(--accent-white-100);
+  --ct-border-hairline: 0.5px solid var(--accent-black-12);
+  --ct-title: var(--accent-black-100);
+  --ct-label: var(--accent-black-100);
+  --ct-row-text: var(--accent-black-80);
+  --ct-line: var(--accent-black-12);
+  --ct-node: var(--accent-blue-80);
+  --ct-pill: var(--accent-black-4);
+  --ct-pill-hover: var(--accent-black-8);
+  --ct-focus-ring: var(--accent-blue-8);
+}
+
 .ct-template {
-  background: var(--accent-white-100, #fff);
-  border: 0.5px solid var(--accent-black-12, #e0e0e0);
-  border-radius: 40px;
-  padding: 40px;
+  background: var(--ct-surface);
+  border: var(--ct-border-hairline);
+  border-radius: 20px;
+  padding: 28px;
   box-sizing: border-box;
 }
 
 .ct-template__title {
   margin: 0;
   font-size: 16px;
-  font-weight: 500;
-  color: var(--accent-black-100, #000);
+  font-weight: var(--font-medium, 500);
+  color: var(--ct-title);
+  font-family: var(--font-sans);
+  line-height: normal;
   letter-spacing: -0.02em;
 }
 
 .ct-template__title:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--accent-blue-8, #ebf5ff);
+  box-shadow: 0 0 0 2px var(--ct-focus-ring);
   border-radius: 4px;
 }
 
@@ -2028,28 +2048,382 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   margin-top: 28px;
 }
 
-.ct-stack {
+/* ── Manage Conditions shell (797:5582) ───────────────────────────────────── */
+
+/* Scroll still works; bars hidden (modal + standalone). */
+.ct-manage .ct-manage__tpl-scroll,
+.ct-manage .ct-manage__editor-body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ct-manage .ct-manage__tpl-scroll::-webkit-scrollbar,
+.ct-manage .ct-manage__editor-body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.ct-manage {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  min-height: min(72vh, 560px);
+  max-height: min(90vh, 720px);
+  background: var(--accent-black-4, #f7f7f7);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 20px;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+}
+
+.ct-manage__sidebar {
+  position: relative;
+  flex: 0 0 283px;
+  width: 283px;
+  max-width: 283px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.ct-manage__sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ct-manage__sidebar-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.ct-manage__sidebar-title {
+  font-size: 16px;
+  font-weight: var(--font-medium, 500);
+  color: var(--accent-black-80, #333);
+  line-height: normal;
+  letter-spacing: -0.02em;
+}
+
+.ct-manage__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: var(--accent-white-100);
+  cursor: pointer;
+  line-height: 0;
+  color: var(--accent-black-80, #333);
+}
+
+.ct-manage__icon-btn--pill {
+  width: 32px;
+  height: 32px;
+  border-radius: 100px;
+  border: 0.5px solid var(--accent-black-12);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.ct-manage__icon-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.ct-manage__icon-btn:focus-visible {
+  outline: 2px solid var(--accent-blue-60, #66aaff);
+  outline-offset: 2px;
+}
+
+.ct-manage__tpl-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 52px;
+  margin-right: -4px;
+  padding-right: 4px;
+}
+
+.ct-manage__tpl {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin: 0;
+  padding: 12px;
+  border: none;
+  border-bottom: 0.5px solid var(--accent-black-8, #ebebeb);
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: var(--font-book, 400);
+  color: var(--accent-black-80, #333);
+  line-height: normal;
+  cursor: pointer;
+  box-sizing: border-box;
+  border-radius: 0;
+}
+
+.ct-manage__tpl--active {
+  background: var(--accent-white-100);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 12px;
+  border-bottom: 0.5px solid var(--accent-black-12);
+}
+
+.ct-manage__tpl:focus-visible {
+  outline: 2px solid var(--accent-blue-60, #66aaff);
+  outline-offset: -2px;
+  border-radius: 12px;
+}
+
+.ct-manage__search-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 16px 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(247, 247, 247, 0) 0%,
+    var(--accent-black-4, #f7f7f7) 42%
+  );
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.ct-manage__search-fade .ct-manage__search {
+  pointer-events: auto;
+}
+
+.ct-manage__search {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 4px 12px;
+  box-sizing: border-box;
+  background: var(--accent-white-100);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 100px;
+}
+
+.ct-manage__search-icon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--accent-black-40, #999);
+}
+
+.ct-manage__search-icon svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+.ct-manage__search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: var(--font-book, 400);
+  color: var(--accent-black-80, #333);
+  line-height: normal;
+}
+
+.ct-manage__search-input::placeholder {
+  color: var(--accent-black-40, #999);
+}
+
+.ct-manage__search-input:focus {
+  outline: none;
+}
+
+.ct-manage__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 12px 12px 12px 0;
+  box-sizing: border-box;
+}
+
+.ct-manage__card {
+  position: relative;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--accent-white-100);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 20px;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.ct-manage__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+}
+
+.ct-manage__editor {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  padding-right: 36px;
+}
+
+.ct-manage__editor-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: var(--font-medium, 500);
+  color: var(--ct-title, var(--accent-black-100));
+  font-family: var(--font-sans);
+  line-height: normal;
+  letter-spacing: -0.02em;
+}
+
+.ct-manage__editor-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ct-manage__footer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ct-manage__btn {
+  margin: 0;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 100px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: var(--font-book, 400);
+  line-height: normal;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.ct-manage__btn--ghost {
+  background: transparent;
+  color: var(--accent-black-60, #666);
+}
+
+.ct-manage__btn--ghost:hover {
+  color: var(--accent-black-80, #333);
+}
+
+.ct-manage__btn--primary {
+  background: var(--accent-black-80, #333);
+  color: var(--accent-white-100, #fff);
+}
+
+.ct-manage__btn--primary:hover {
+  filter: brightness(1.06);
+}
+
+.ct-manage__btn:focus-visible {
+  outline: 2px solid var(--accent-blue-60, #66aaff);
+  outline-offset: 2px;
+}
+
+/* Figma 794:5283 — 8px between header row and track block */
+.ct-stack--figma {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
+  max-width: 1228px;
+  min-width: 0;
 }
 
-.ct-stack--dense {
-  gap: 8px;
+/* Figma track: heads row + proportional columns (interval + cards per stage) */
+.ct-track-wrap {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 4px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1228px;
 }
 
 .ct-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  box-sizing: border-box;
+}
+
+.ct-row--heads {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-end;
   width: 100%;
+  max-width: 1228px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.ct-head-slot {
+  flex: var(--ct-col-grow, 275) 1 0;
+  min-width: 0;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.ct-row--cols {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: 100%;
+  min-width: 0;
   box-sizing: border-box;
 }
 
 .ct-stage-head {
   font-size: 12px;
-  font-weight: 400;
-  color: var(--accent-black-100, #000);
-  line-height: 1.25;
+  font-weight: var(--font-book, 400);
+  color: var(--ct-label);
+  font-family: var(--font-sans);
+  line-height: normal;
   min-width: 0;
 }
 
@@ -2057,129 +2431,210 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   padding-right: 12px;
 }
 
-.ct-timeline__cell {
+/* Each non-first label shifts left 32px to sit above its junction dot.
+   32 = right-padding(12) of prev col + left-padding(12) of this col + dot-width(8). */
+.ct-head-slot + .ct-head-slot .ct-stage-head {
+  margin-left: -32px;
+  white-space: nowrap;
+}
+
+.ct-head-slot {
+  overflow: visible;
+}
+
+/* Per-column interval: condition cards sit below the dot–line–dot band (“between” stage markers). */
+.ct-column__interval {
   display: flex;
+  flex-direction: row;
   align-items: center;
+  width: 100%;
   min-width: 0;
-  padding-right: 12px;
+  min-height: 8px;
+  margin-bottom: 0;
   box-sizing: border-box;
 }
 
-.ct-row--timeline .ct-timeline__cell:last-child {
-  padding-right: 0;
+.ct-column + .ct-column .ct-column__interval--mid,
+.ct-column + .ct-column .ct-column__interval--last {
+  /* Bridge the full inter-column gap: 12px right padding of prev col + 12px left padding of this col */
+  margin-left: -24px;
+  width: calc(100% + 24px);
 }
 
-.ct-timeline__dot {
+.ct-column__interval-dot {
   width: 8px;
   height: 8px;
   border-radius: 100px;
-  background: #33a0ff;
+  background: var(--ct-node);
   flex-shrink: 0;
 }
 
-.ct-timeline__rule {
+.ct-column__interval-rule {
   flex: 1 1 auto;
   height: 0;
   border: none;
-  border-top: 0.5px solid var(--accent-black-12, #e0e0e0);
-  min-width: 4px;
+  border-top: 0.5px solid var(--ct-line);
+  min-width: 0;
   margin: 0;
 }
 
-.ct-timeline__rule--tail {
+.ct-column__interval-rule--tail {
   flex: 0 0 68px;
-  border-top-style: dashed;
+  max-width: 68px;
+  min-width: 48px;
 }
 
+.ct-column__interval--last .ct-column__interval-rule:first-child {
+  flex: 1 1 auto;
+}
+
+/* Vertical hairline from the interval row down into the condition stack (ties “between” to the cards). */
+/* Vertical hairline — centered in column.
+   margin-top: -4px pulls the connector up so its line starts at the dot center
+   (interval is 8px tall but the visible dot/rule are centered 4px from the top). */
+.ct-column__connector {
+  width: 8px;
+  height: 20px;
+  flex-shrink: 0;
+  align-self: center;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  box-sizing: border-box;
+  margin-top: -4px;
+  margin-bottom: 0;
+}
+
+.ct-column__connector::after {
+  content: '';
+  width: 0.5px;
+  flex: 0 0 0.5px;
+  height: 100%;
+  background: var(--ct-line);
+}
+
+.ct-column__connector--first,
+.ct-column__connector--mid,
+.ct-column__connector--last {
+  align-self: center;
+  margin-right: 0;
+}
+
+/* Proportional columns — same flex basis as .ct-head-slot */
 .ct-column {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: stretch;
+  flex: var(--ct-col-grow, 275) 1 0;
   min-width: 0;
   padding: 0 12px;
   box-sizing: border-box;
 }
 
-.ct-row--cols .ct-column:first-child {
-  padding-left: 0;
+.ct-column__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
 }
 
-.ct-row--cols .ct-column:last-child {
-  padding-right: 0;
-}
-
+/* List container is neutral; each condition is its own white card between stage markers. */
 .ct-column__card {
-  background: var(--accent-white-100, #fff);
-  border: 0.5px solid var(--accent-black-12, #e0e0e0);
-  border-radius: 20px;
-  padding: 16px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
   box-sizing: border-box;
+  overflow: visible;
+  width: 100%;
+}
+
+.ct-column__card--empty {
+  min-height: 0;
 }
 
 .ct-column__list {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  width: 100%;
 }
 
 .ct-column__list--empty {
-  min-height: 48px;
-  justify-content: center;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.ct-empty-card {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 12px;
+  box-sizing: border-box;
+  background: var(--ct-surface);
+  border: 0.5px solid var(--ct-line);
+  border-radius: 12px;
+  width: 100%;
 }
 
 .ct-column__empty {
   font-size: 12px;
+  font-weight: var(--font-book, 400);
   color: var(--accent-black-40, #999);
-  line-height: 1.35;
+  font-family: var(--font-sans);
+  line-height: normal;
+}
+
+/* Figma row frame height 39 · text 15px line · p 12 — each row is a white card */
+.ct-condition {
+  display: flex;
+  align-items: center;
+  min-height: 39px;
+  padding: 12px;
+  box-sizing: border-box;
+  background: var(--ct-surface);
+  border: 0.5px solid var(--ct-line);
+  border-radius: 12px;
+  width: 100%;
 }
 
 .ct-condition__text {
   font-size: 12px;
-  font-weight: 400;
-  color: rgba(0, 0, 0, 0.8);
-  line-height: 1.25;
+  font-weight: var(--font-book, 400);
+  color: var(--ct-row-text);
+  font-family: var(--font-sans);
+  line-height: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.ct-condition--spaced {
-  padding: 12px 8px 12px 0;
-}
-
-.ct-condition--spaced-first {
-  padding-top: 0;
-}
-
-.ct-condition--spaced-last {
-  padding-bottom: 0;
-}
-
-.ct-condition--padded {
-  padding-left: 0;
-  padding-right: 8px;
-}
-
-.ct-condition--ruled {
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.12);
-}
-
+/* Figma: px 16 py 12 · r pill · bg rgba(0,0,0,0.04) → accent-black-4 */
 .ct-add-condition {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
+  min-height: 39px;
   margin: 0;
   padding: 12px 16px;
   border: none;
   border-radius: 100px;
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--ct-pill);
   font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 400;
-  color: var(--accent-black-100, #000);
+  font-weight: var(--font-book, 400);
+  color: var(--ct-label);
+  line-height: 15px;
   cursor: pointer;
   box-sizing: border-box;
 }
 
 .ct-add-condition:hover {
-  background: rgba(0, 0, 0, 0.07);
+  background: var(--ct-pill-hover);
 }
 
 .ct-add-condition:focus-visible {
@@ -2187,25 +2642,154 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   outline-offset: 2px;
 }
 
-@media (max-width: 900px) {
-  .ct-row {
-    grid-template-columns: 1fr;
-  }
+/* ── Condition templates modal (lender prototype · top bar bolt) ─────────────── */
 
-  .ct-row--heads,
-  .ct-row--timeline {
+.proto-ct-modal:not([hidden]) {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, 3vw);
+  box-sizing: border-box;
+}
+
+.proto-ct-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.42);
+  cursor: pointer;
+}
+
+.proto-ct-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: min(1511px, calc(100vw - 32px));
+  max-height: min(92vh, 780px);
+  box-sizing: border-box;
+  filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.18));
+}
+
+.proto-ct-modal__panel .ct-manage {
+  margin: 0;
+  max-height: inherit;
+}
+
+.proto-ct-modal__chrome {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.proto-ct-modal__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 20px;
+  flex-shrink: 0;
+  padding-bottom: 20px;
+}
+
+.ct-template__title--modal {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 16px;
+  font-weight: var(--font-medium, 500);
+  font-family: var(--font-sans);
+  color: var(--ct-title, var(--accent-black-100));
+  line-height: normal;
+}
+
+.proto-ct-modal__close {
+  flex-shrink: 0;
+}
+
+.ct-template__body--modal {
+  margin-top: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ct-template__body--modal::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.proto-ct-modal__fallback {
+  margin: 0;
+  font-size: 13px;
+  color: var(--accent-black-50, #808080);
+}
+
+body.proto-ct-modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .ct-row--heads {
     display: none;
   }
 
+  .ct-column__interval {
+    display: none;
+  }
+
+  .ct-column__connector {
+    display: none;
+  }
+
+  .ct-row--cols {
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .ct-column {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .ct-column + .ct-column .ct-column__interval--mid,
+  .ct-column + .ct-column .ct-column__interval--last {
+    margin-left: 0;
+    padding-left: 0;
+    width: 100%;
+  }
+
+  .ct-column__connector--last {
+    margin-right: 0;
+  }
+
+  .ct-column__stack {
+    max-width: none;
+  }
+
   .ct-row--cols .ct-column {
-    padding: 0;
+    padding: 0 0 16px;
+    align-items: stretch;
   }
 
   .ct-row--cols .ct-column::before {
     content: attr(data-stage-label);
     font-size: 12px;
-    font-weight: 500;
-    margin-bottom: 4px;
+    font-weight: var(--font-medium, 500);
+    margin-bottom: 8px;
     color: var(--accent-black-80, #333);
+    font-family: var(--font-sans);
   }
 }

@@ -192,6 +192,9 @@ function buildTopBar() {
       ${t.closeable ? `<span class="proto-tab__close" data-close="${t.id}">${iconSvg('x-mark')}</span>` : ''}
     </button>`).join('');
 
+  // Bolt opens condition-templates modal (Current Design System icon — system.js `bolt`)
+  const conditionsIcon = `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg('bolt')}</div></div></div>`;
+  const conditionsBtn = `<button type="button" class="btn btn--s1 proto-conditions-btn" aria-label="Condition templates" tabindex="0">${conditionsIcon}</button>`;
   // Use the exact same buildBtnPreviewHtml() from platform.js — zero duplication
   const searchBtn = buildBtnPreviewHtml({ id: 's1', icons: ['magnifying-glass'] });
   const bellBtn   = buildBtnPreviewHtml({ id: 's1', icons: ['bell'] });
@@ -214,6 +217,7 @@ function buildTopBar() {
     <div class="proto-topbar">
       <div class="proto-topbar__tabs">${tabsHtml}</div>
       <div class="proto-topbar__actions">
+        ${conditionsBtn}
         ${searchBtn}
         ${bellBtn}
         ${panelBtn}
@@ -1474,6 +1478,12 @@ function initBoardView() {
       commitMorphedBoardColumns(cols, colRects, bvRect, PAD, innerW, naturalHeights, targetYs);
       boardView.style.display = 'none';
       syncProtoCardBoardSeamClass();
+      // Morph turns this overlay on for continuity while the board has no right border;
+      // loans panel already paints border-right — hide overlay or the seam reads ~2× thick.
+      if (sidebarBorder) {
+        sidebarBorder.style.transition = 'opacity 140ms ease';
+        sidebarBorder.style.opacity = '0';
+      }
       if (heroPlusBtn)  heroPlusBtn.remove();
       if (protoMain)    protoMain.style.transition  = '';
       if (loansPanel)   loansPanel.style.transition = '';
@@ -1516,6 +1526,21 @@ function buildBody() {
     </div>`;
 }
 
+// ─── Condition templates modal (content from condition-templates.js) ─────────
+
+function buildConditionModalHtml() {
+  const inner = typeof buildConditionTemplateModalDialogHtml === 'function'
+    ? buildConditionTemplateModalDialogHtml()
+    : '<div class="proto-ct-modal__chrome"><p class="proto-ct-modal__fallback">Condition templates script not loaded.</p></div>';
+  return `
+<div id="proto-ct-modal" class="proto-ct-modal" hidden aria-hidden="true">
+  <button type="button" class="proto-ct-modal__backdrop" data-ct-modal-dismiss tabindex="-1" aria-label="Close dialog"></button>
+  <div class="proto-ct-modal__panel" role="dialog" aria-modal="true" aria-labelledby="proto-ct-modal-title">
+    ${inner}
+  </div>
+</div>`;
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function buildApp() {
@@ -1524,7 +1549,46 @@ function buildApp() {
     <div class="proto-content">
       ${buildTopBar()}
       ${buildBody()}
-    </div>`;
+    </div>
+    ${buildConditionModalHtml()}`;
+}
+
+function bindConditionModal() {
+  const modal = document.getElementById('proto-ct-modal');
+  const trigger = document.querySelector('.proto-conditions-btn');
+  if (!modal || !trigger) return;
+
+  bindConditionTemplates(modal);
+
+  const open = () => {
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('proto-ct-modal-open');
+    modal.querySelector('[data-ct-modal-close]')?.focus();
+  };
+
+  const close = () => {
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('proto-ct-modal-open');
+    trigger.focus();
+  };
+
+  trigger.addEventListener('click', () => open());
+
+  modal.addEventListener('click', e => {
+    if (
+      e.target.closest('[data-ct-modal-dismiss]') ||
+      e.target.closest('[data-ct-modal-close]') ||
+      e.target.closest('[data-ct-cancel]')
+    ) {
+      close();
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !modal.hidden) close();
+  });
 }
 
 // ─── Interactions ─────────────────────────────────────────────────────────────
@@ -2672,6 +2736,7 @@ function bindLoanDragDrop() {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('app').innerHTML = buildApp();
+  bindConditionModal();
   if (typeof initLpStatusOutsideClose === 'function') initLpStatusOutsideClose();
   initTogglePills();
   bindInteractions();
