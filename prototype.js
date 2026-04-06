@@ -186,7 +186,7 @@ const tabs = [
 // ─── Top Bar ──────────────────────────────────────────────────────────────────
 
 /** Set true to allow the bolt to open Manage Conditions; false keeps it visible but inert. */
-const PROTO_CONDITIONS_ENTRY_ENABLED = false;
+const PROTO_CONDITIONS_ENTRY_ENABLED = true;
 
 function buildTopBar() {
   const tabsHtml = tabs.map(t => `
