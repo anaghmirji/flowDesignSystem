@@ -445,19 +445,23 @@ function buildSearchBarHtml(v = {}) {
 </div>`;
 }
 
-function buildSearchSectionHtml() {
+function buildSearchSectionHtml(opts) {
+  const includeSecondary = !opts || opts.includeSecondary !== false;
   const wrap = (name) =>
     `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg(name)}</div></div></div>`;
+  const secondary = includeSecondary
+    ? `<button class="btn btn--secondary" aria-label="Filter and archive">
+      ${wrap('funnel')}
+      ${wrap('archive-box')}
+    </button>`
+    : '';
   return `<div class="search-section">
   <div class="search-section__row">
     <div class="search-bar__input">
       ${wrap('magnifying-glass')}
       <span class="search-bar__placeholder">Search</span>
     </div>
-    <button class="btn btn--secondary" aria-label="Filter and archive">
-      ${wrap('funnel')}
-      ${wrap('archive-box')}
-    </button>
+    ${secondary}
   </div>
 </div>`;
 }

@@ -110,31 +110,39 @@ function buildSidebarTemplateRows() {
 
 function buildManageConditionsInnerHtml(templateTitle) {
   const title = templateTitle || CT_TEMPLATE_NAMES[0];
-  const plusIcon = typeof iconSvg === 'function' ? iconSvg('plus') : '';
+  const plusBtn =
+    typeof iconSvg === 'function'
+      ? `<button type="button" class="btn btn--s1" aria-label="Add template" tabindex="-1"><div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg('plus')}</div></div></div></button>`
+      : '';
   const searchIcon = typeof iconSvg === 'function' ? iconSvg('magnifying-glass') : '';
   const closeIcon = typeof iconSvg === 'function' ? iconSvg('x-mark') : '';
+
+  const searchSectionHtml =
+    typeof buildSearchSectionHtml === 'function'
+      ? buildSearchSectionHtml({ includeSecondary: false })
+      : `<div class="search-section">
+  <div class="search-section__row">
+    <div class="search-bar__input">
+      <span class="ct-manage__search-fallback-icon" aria-hidden="true">${searchIcon}</span>
+      <input type="search" class="ct-manage__search-input" placeholder="Search" autocomplete="off" data-ct-search />
+    </div>
+  </div>
+</div>`;
 
   return `
 <div class="ct-manage" data-ct-manage>
   <aside class="ct-manage__sidebar">
-    <div class="ct-manage__sidebar-inner">
-      <div class="ct-manage__sidebar-head">
-        <span class="ct-manage__sidebar-title">Manage Conditions</span>
-        <button type="button" class="ct-manage__icon-btn ct-manage__icon-btn--pill" aria-label="Add template">${plusIcon}</button>
-      </div>
-      <div class="ct-manage__tpl-viewport">
-        <div class="ct-manage__tpl-scroll" data-ct-tpl-list>
-          ${buildSidebarTemplateRows()}
-        </div>
-        <!-- After scroll in DOM so the gradient paints above scrolling list items -->
-        <div class="ct-manage__tpl-edge ct-manage__tpl-edge--top" aria-hidden="true"></div>
+    <div class="ct-manage__sidebar-head">
+      <span class="ct-manage__sidebar-title">Manage Conditions</span>
+      ${plusBtn}
+    </div>
+    <div class="ct-manage__sidebar-body">
+      <div class="ct-manage__tpl-scroll" data-ct-tpl-list>
+        ${buildSidebarTemplateRows()}
       </div>
     </div>
-    <div class="ct-manage__search-fade">
-      <div class="ct-manage__search">
-        <span class="ct-manage__search-icon" aria-hidden="true">${searchIcon}</span>
-        <input type="search" class="ct-manage__search-input" placeholder="Search" autocomplete="off" data-ct-search />
-      </div>
+    <div class="ct-manage__sidebar-footer">
+      ${searchSectionHtml}
     </div>
   </aside>
   <div class="ct-manage__main">
@@ -203,6 +211,39 @@ function addConditionToStage(stageId, scope) {
 
 function bindConditionTemplates(root) {
   if (!root) return;
+
+  const sidebarBody = root.querySelector('.ct-manage__sidebar-body');
+  const tplList = root.querySelector('[data-ct-tpl-list]');
+  const footer = root.querySelector('.ct-manage__sidebar-footer');
+
+  if (footer && typeof mountSearchBarInteractive === 'function') {
+    mountSearchBarInteractive(footer);
+  }
+
+  const wireSearchFilter = () => {
+    if (!tplList) return;
+    const input =
+      root.querySelector('.ct-manage__sidebar-footer .search-bar__field') ||
+      root.querySelector('[data-ct-search]');
+    if (!input) return;
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      tplList.querySelectorAll('.ct-manage__tpl').forEach(btn => {
+        const t = btn.textContent.toLowerCase();
+        btn.style.display = !q || t.includes(q) ? '' : 'none';
+      });
+    });
+  };
+  wireSearchFilter();
+
+  if (sidebarBody) {
+    const onScroll = () => {
+      sidebarBody.classList.toggle('ct-manage__sidebar-body--scrolled', sidebarBody.scrollTop > 4);
+    };
+    onScroll();
+    sidebarBody.addEventListener('scroll', onScroll, { passive: true });
+  }
+
   root.addEventListener('click', e => {
     const add = e.target.closest('[data-ct-add]');
     if (add && root.contains(add)) {
@@ -221,17 +262,6 @@ function bindConditionTemplates(root) {
     }
   });
 
-  const search = root.querySelector('[data-ct-search]');
-  const tplList = root.querySelector('[data-ct-tpl-list]');
-  if (search && tplList) {
-    search.addEventListener('input', () => {
-      const q = search.value.trim().toLowerCase();
-      tplList.querySelectorAll('.ct-manage__tpl').forEach(btn => {
-        const t = btn.textContent.toLowerCase();
-        btn.style.display = !q || t.includes(q) ? '' : 'none';
-      });
-    });
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

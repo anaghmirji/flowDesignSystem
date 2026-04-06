@@ -2094,42 +2094,54 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   font-family: var(--font-sans);
 }
 
+/* Left column — same width / chrome as .loans-panel inside .proto-card */
 .ct-manage__sidebar {
   position: relative;
-  flex: 0 0 283px;
-  width: 283px;
-  max-width: 283px;
+  flex: 0 0 278px;
+  width: 278px;
+  max-width: 278px;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 16px;
+  padding: 0;
   box-sizing: border-box;
-}
-
-.ct-manage__sidebar-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  flex: 1 1 auto;
-  min-height: 0;
+  background: none;
+  border-right: none;
   overflow: hidden;
+  --ct-sidebar-footer-fade-height: 32px;
 }
 
+/* Match .proto-card .loans-panel__header — frosted bar */
 .ct-manage__sidebar-head {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 12px;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.ct-manage__sidebar-head .btn.btn--s1 {
   flex-shrink: 0;
 }
 
+/* Match .loans-pill__label */
 .ct-manage__sidebar-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-80, #333);
   line-height: normal;
-  letter-spacing: -0.02em;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ct-manage__icon-btn {
@@ -2165,47 +2177,43 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   outline-offset: 2px;
 }
 
-/* Scroll list + top fade strip below “Manage Conditions” */
-.ct-manage__tpl-viewport {
-  position: relative;
-  flex: 1 1 auto;
+/* Scroll list — match .proto-card .loans-panel__body padding + footer fade band */
+.ct-manage__sidebar-body {
+  flex: 1 1 0;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0 12px calc(12px + var(--ct-sidebar-footer-fade-height)) 12px;
+  z-index: 1;
+  box-sizing: border-box;
+  transition: -webkit-mask-image 0.2s ease, mask-image 0.2s ease;
 }
 
-/* Blur + fade under the header — frosted edge (not a colour tint) */
-.ct-manage__tpl-edge--top {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 56px;
-  z-index: 5;
-  pointer-events: none;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  background: linear-gradient(
-    180deg,
-    rgba(247, 247, 247, 0.88) 0%,
-    rgba(247, 247, 247, 0.45) 42%,
-    rgba(247, 247, 247, 0) 100%
-  );
+.ct-manage__sidebar-body::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+.ct-manage__sidebar-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ct-manage__sidebar-body::-webkit-scrollbar-thumb,
+.ct-manage__sidebar-body:hover::-webkit-scrollbar-thumb,
+.ct-manage__sidebar-body::-webkit-scrollbar-thumb:hover {
+  background: transparent;
+}
+
+.ct-manage__sidebar-body--scrolled {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 24px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 24px, black 100%);
 }
 
 .ct-manage__tpl-scroll {
-  position: relative;
-  z-index: 0;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
-  padding-bottom: 52px;
-  margin-right: -4px;
-  padding-right: 4px;
+  min-height: min-content;
 }
 
 .ct-manage__tpl {
@@ -2238,76 +2246,74 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border-radius: 12px;
 }
 
-.ct-manage__search-fade {
+/* Footer — same treatment as .proto-card .loans-panel__footer + search-section */
+.ct-manage__sidebar-footer {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  background: none;
+}
+
+.ct-manage__sidebar-footer::before {
+  content: '';
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: 4;
-  padding: 12px 16px 16px;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  /* Fade + blur list into search (same shell grey, no blue) */
+  bottom: 100%;
+  height: var(--ct-sidebar-footer-fade-height);
   background: linear-gradient(
-    180deg,
-    rgba(247, 247, 247, 0) 0%,
-    rgba(247, 247, 247, 0.42) 28%,
-    rgba(247, 247, 247, 0.88) 55%,
-    var(--accent-black-4, #f7f7f7) 100%
+    to bottom,
+    transparent 0%,
+    transparent 48%,
+    transparent 100%
   );
   pointer-events: none;
+}
+
+.ct-manage__sidebar-footer .search-section {
+  width: 100%;
+  max-width: none;
+  background: var(--background-1, #fcfcfd);
+  /* Same as .proto-card .loans-panel__footer .search-section — hairline comes from panel context */
+  border-top: none;
   box-sizing: border-box;
+  padding: 0 12px;
 }
 
-.ct-manage__search-fade .ct-manage__search {
-  pointer-events: auto;
-}
-
-.ct-manage__search {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+.ct-manage__sidebar-footer .search-section__row {
   gap: 8px;
-  height: 36px;
-  padding: 4px 12px;
-  box-sizing: border-box;
-  background: var(--accent-white-100);
-  border: 0.5px solid var(--accent-black-12);
-  border-radius: 100px;
+  padding: 12px 0;
+  width: 100%;
 }
 
-.ct-manage__search-icon {
+/* Fallback search (no platform.js): icon lines up like .search-bar__input magnify wrap */
+.ct-manage__sidebar-footer .search-bar__input .ct-manage__search-fallback-icon {
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  color: var(--accent-black-40, #999);
+  width: 28px;
+  height: 28px;
 }
-
-.ct-manage__search-icon svg {
-  width: 14px;
-  height: 14px;
+.ct-manage__sidebar-footer .search-bar__input .ct-manage__search-fallback-icon svg {
+  width: 16px;
+  height: 16px;
   display: block;
 }
 
-.ct-manage__search-input {
-  flex: 1 1 auto;
+.ct-manage__sidebar-footer .search-bar__input .ct-manage__search-input {
+  flex: 1;
   min-width: 0;
   border: none;
-  margin: 0;
-  padding: 0;
+  outline: none;
   background: transparent;
   font-family: var(--font-sans);
   font-size: 11px;
   font-weight: var(--font-book, 400);
   color: var(--accent-black-80, #333);
-  line-height: normal;
 }
-
-.ct-manage__search-input::placeholder {
-  color: var(--accent-black-40, #999);
-}
-
-.ct-manage__search-input:focus {
-  outline: none;
+.ct-manage__sidebar-footer .search-bar__input .ct-manage__search-input::placeholder {
+  color: var(--accent-black-60, #666);
 }
 
 .ct-manage__main {
@@ -2320,6 +2326,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   gap: 12px;
   padding: 12px 12px 12px 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .ct-manage__card {
@@ -2370,6 +2377,9 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   min-width: 0;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  /* Breathing room so lane rails / cards aren’t flush against the scroll clip */
+  padding: 8px 4px 20px 0;
+  box-sizing: border-box;
 }
 
 .ct-manage__footer {
@@ -2722,13 +2732,21 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   width: 100%;
   max-width: min(1511px, calc(100vw - 32px));
   max-height: min(92vh, 780px);
+  min-height: 0;
   box-sizing: border-box;
   filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.18));
+  /* Flex column so .ct-manage can shrink below its content min-height and scroll inside */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .proto-ct-modal__panel .ct-manage {
   margin: 0;
-  max-height: inherit;
+  flex: 1 1 auto;
+  max-height: 100%;
+  /* Override base .ct-manage min-height — otherwise 72vh/560px can exceed the panel and clip top/bottom */
+  min-height: 0;
 }
 
 .proto-ct-modal__chrome {
