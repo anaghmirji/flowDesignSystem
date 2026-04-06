@@ -6,26 +6,32 @@ Internal static site: **tokens**, **icons**, **buttons**, **Lender Portal** comp
 
 | File | Use |
 |------|-----|
-| **`platform.html`** | Main design-system tool (nav, search, code panel) |
-| **`button-library.html`** | Button-only showcase |
-| **`index.html`** | Lender dashboard mock (separate from the platform) |
+| **`index.html`** | Main design-system tool (nav, search, code panel) |
+| **`platform.html`** | Redirects to `index.html` (same as docs / old links) |
+| **`prototype.html`** | Lender portal prototype (interactive mock) |
+| **`button-library.html`** | Button-only showcase (if present) |
 
-After hosting on GitHub Pages, share:  
-`https://YOUR_USER.github.io/YOUR_REPO/platform.html`  
-(There is no redirect from the site root; root serves `index.html`, which is the dashboard.)
+**CSS bundle:** run `npm run build` to generate `dist/flow-design-system.css` plus `tokens.css`, `icons.css`, `buttons.css`, and `lender-portal.css` at the repo root. The static pages load `design-system/css/global.css` directly; the `dist/` file is mainly for npm packaging.
+
+After hosting on GitHub Pages, open:  
+`https://YOUR_USER.github.io/YOUR_REPO/` or `.../index.html`  
+(`platform.html` also works and forwards to `index.html`.)
 
 ## Run locally (Cursor / VS Code)
 
 1. **Terminal → Run Task…** → **Serve design system (static)**  
-2. Browser: [http://localhost:8080/platform.html](http://localhost:8080/platform.html)
+2. Browser: [http://localhost:8080/index.html](http://localhost:8080/index.html)
 
 Or in a terminal from this folder:
 
 ```bash
-python3 -m http.server 8080
+npm run serve
 ```
 
-Then open `http://localhost:8080/platform.html`.
+Then open [http://localhost:8080/index.html](http://localhost:8080/index.html) (design system) or [http://localhost:8080/prototype.html](http://localhost:8080/prototype.html) (lender prototype).  
+`http://localhost:8080/platform.html` redirects to `index.html`.
+
+If the browser shows **ERR_EMPTY_RESPONSE**, a stale server on 8080 is often the cause: stop any old `python3 -m http.server` (**Ctrl+C**), or run `lsof -i :8080` and `kill <PID>`, then `npm run serve` again. If `localhost` still misbehaves, try `http://127.0.0.1:8080/…` once.
 
 ## Comments (free real-time)
 
@@ -90,7 +96,7 @@ git push -u origin main
 2. **Build and deployment** → Source: **Deploy from a branch**  
 3. Branch: **`main`**, folder: **`/ (root)`** → **Save**  
 4. After a minute, the site is live. Share:  
-   `https://YOUR_USER.github.io/YOUR_REPO/platform.html`
+   `https://YOUR_USER.github.io/YOUR_REPO/` or `.../index.html`
 
 ## Easier GUI option
 
@@ -100,6 +106,6 @@ Install **[GitHub Desktop](https://desktop.github.com/)**, sign in, **File → A
 
 - **`system.js`** — Data source (nav, tokens, icons, components, products)  
 - **`platform.js`** — UI and code snippets  
-- **`tokens.css`**, **`icons.css`**, **`buttons.css`**, **`lender-portal.css`** — Styles  
+- **`tokens.css`**, **`icons.css`**, **`buttons.css`**, **`lender-portal.css`** — Split styles (run `npm run build`; source of truth is `design-system/css/global.css`)  
 
 Figma asset URLs in `system.js` can expire; refresh or self-host icons for long-term stability.

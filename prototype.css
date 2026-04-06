@@ -61,6 +61,21 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   flex-shrink: 0;
 }
 
+/* Bolt — Manage Conditions entry off (see PROTO_CONDITIONS_ENTRY_ENABLED in prototype.js) */
+.proto-conditions-btn--disabled,
+.proto-conditions-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .proto-conditions-btn--disabled .btn__icon-wrap:hover,
+  .proto-conditions-btn:disabled .btn__icon-wrap:hover {
+    background: var(--accent-white-100, #ffffff);
+  }
+}
+
 /* ── Panel-toggle button ───────────────────────────────────────────────────── */
 
 /* SVG rect geometry is CSS-animatable — transition x/y/width/height directly */
@@ -2150,7 +2165,38 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   outline-offset: 2px;
 }
 
+/* Scroll list + top fade strip below “Manage Conditions” */
+.ct-manage__tpl-viewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Blur + fade under the header — frosted edge (not a colour tint) */
+.ct-manage__tpl-edge--top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  z-index: 5;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background: linear-gradient(
+    180deg,
+    rgba(247, 247, 247, 0.88) 0%,
+    rgba(247, 247, 247, 0.45) 42%,
+    rgba(247, 247, 247, 0) 100%
+  );
+}
+
 .ct-manage__tpl-scroll {
+  position: relative;
+  z-index: 0;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -2169,7 +2215,6 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   margin: 0;
   padding: 12px;
   border: none;
-  border-bottom: 0.5px solid var(--accent-black-8, #ebebeb);
   background: transparent;
   font-family: var(--font-sans);
   font-size: 12px;
@@ -2185,7 +2230,6 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   background: var(--accent-white-100);
   border: 0.5px solid var(--accent-black-12);
   border-radius: 12px;
-  border-bottom: 0.5px solid var(--accent-black-12);
 }
 
 .ct-manage__tpl:focus-visible {
@@ -2199,11 +2243,17 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   left: 0;
   right: 0;
   bottom: 0;
+  z-index: 4;
   padding: 12px 16px 16px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  /* Fade + blur list into search (same shell grey, no blue) */
   background: linear-gradient(
     180deg,
     rgba(247, 247, 247, 0) 0%,
-    var(--accent-black-4, #f7f7f7) 42%
+    rgba(247, 247, 247, 0.42) 28%,
+    rgba(247, 247, 247, 0.88) 55%,
+    var(--accent-black-4, #f7f7f7) 100%
   );
   pointer-events: none;
   box-sizing: border-box;
@@ -2863,18 +2913,26 @@ body.proto-ct-modal-open {
   flex-shrink: 0;
 }
 
-/* White card wrapping all conditions for this gate */
-.ctg-lane__card {
+/* Figma 797:5499 — stack: white condition card + 8px gap + pill Add Condition */
+.ctg-lane__body {
   margin: 0 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+/* Figma 797:5500 — white list container only (Add is sibling below) */
+.ctg-lane__card {
   background: var(--ct-surface, var(--accent-white-100, #fff));
   border: 0.5px solid var(--ct-line, var(--accent-black-12));
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: clip;
   display: flex;
   flex-direction: column;
 }
 
-/* Conditions as list rows with dividers (not individual cards) */
+/* Conditions as stacked rows inside the card (Figma — no row dividers) */
 .ctg-lane__list {
   display: flex;
   flex-direction: column;
@@ -2883,46 +2941,42 @@ body.proto-ct-modal-open {
 .ctg-lane__list .ct-condition {
   border: none;
   border-radius: 0;
-  border-bottom: 0.5px solid var(--ct-line, var(--accent-black-12));
   background: transparent;
-  min-height: 36px;
-  padding: 10px 12px;
-}
-
-.ctg-lane__list .ct-condition:last-child {
-  border-bottom: none;
+  min-height: 0;
+  padding: 12px;
+  width: 100%;
 }
 
 .ctg-lane__empty {
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: var(--font-book, 400);
   color: var(--accent-black-30, #bbb);
-  padding: 14px 12px;
+  padding: 12px;
   text-align: center;
 }
 
-/* Add Condition — sits as a tappable footer row at the bottom of the card */
+/* Figma 797:5509 — full-width pill, bg rgba(0,0,0,0.04), 12px type */
 .ctg-lane__add {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   margin: 0;
-  padding: 9px 12px;
+  padding: 12px 16px;
   border: none;
-  border-top: 0.5px solid var(--ct-line, var(--accent-black-12));
-  border-radius: 0 0 12px 12px;
-  background: var(--accent-black-2, #fafafa);
+  border-radius: 100px;
+  background: var(--accent-black-4, rgba(0, 0, 0, 0.04));
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: var(--font-book, 400);
-  color: var(--accent-black-40, #aaa);
+  color: var(--accent-black-100, #000);
   cursor: pointer;
   box-sizing: border-box;
 }
 
 .ctg-lane__add:hover {
-  background: var(--accent-black-4, #f5f5f5);
-  color: var(--accent-black-70, #555);
+  background: var(--accent-black-8, rgba(0, 0, 0, 0.08));
+  color: var(--accent-black-100, #000);
 }
 
 .ctg-lane__add:focus-visible {

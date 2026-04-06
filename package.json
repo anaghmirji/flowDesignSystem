@@ -19,7 +19,8 @@
     "build": "sh scripts/build-css-bundle.sh",
     "build:node": "node scripts/build-css-bundle.js",
     "build:react": "npm run build --prefix design-system/react",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "serve": "python3 -m http.server 8080"
   },
   "exports": {
     ".": "./package.json",

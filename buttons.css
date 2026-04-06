@@ -1,0 +1,248 @@
+/* ============================================================
+   BUTTON / PRIMARY — Current Design System
+   Source of truth: Figma › Button/Primary
+   Depends on: tokens.css
+   ============================================================
+
+   VARIANTS
+   .btn.btn--s1           Symbol 1  — single icon
+   .btn.btn--s2           Symbol 2  — two icons
+   .btn.btn--s3           Symbol 3  — three icons
+   .btn.btn--label        Symbol + Text
+   .btn.btn--label-trail  Symbol + Text + Symbol
+   ============================================================ */
+
+.btn {
+  background: var(--accent-white-100, #ffffff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 100px;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+  padding: 0;
+}
+
+/* ── Icon-only variants ── */
+.btn--s1, .btn--s2, .btn--s3 { padding: 2px; }
+
+.btn__icon-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* 28px circle housing each icon */
+.btn__icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 160px;
+  background: var(--accent-white-100, #ffffff);
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* 18px icon centred inside the 28px circle */
+.btn__icon-wrap .btn__icon-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+}
+
+.btn__icon-wrap .btn__icon-vector {
+  position: absolute;
+  top: 12.5%; left: 12.5%; right: 12.5%; bottom: 12.5%;
+}
+
+.btn__icon-wrap .btn__icon-vector img {
+  position: absolute;
+  top: -5%; left: -5%;
+  width: 110%; height: 110%;
+  display: block;
+  max-width: none;
+}
+
+.btn__icon-wrap .btn__icon-vector svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Label variants ── */
+.btn--label       { padding: 8px 12px 8px 8px; gap: 8px; }
+.btn--label-trail { padding: 8px; gap: 8px; }
+
+/* 16px inline icon slot — centres the SVG within the 16×16 hit area */
+.btn__icon-slot {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Most icons render at 12px (12.5% inset on a 16px slot, matching Figma) */
+.btn__icon-slot .btn__icon-vector {
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn__icon-slot .btn__icon-vector svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Chevron-down is a wide-short shape (viewBox 11×6).
+   Override to natural width so it doesn't scale up to a square.
+   Figma: vector inset-[34.38%_18.75%] → ~10px wide × 6px tall */
+.btn__icon-slot--chevron-down .btn__icon-vector {
+  width: 10px;
+  height: 6px;
+}
+
+/* ── Label ── */
+.btn__label {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: normal;
+  color: var(--accent-black-80, #333333);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Hover: only the single icon-wrap being hovered changes ── */
+@media (hover: hover) {
+  .btn__icon-wrap:hover {
+    background: var(--accent-black-4, #f5f5f5);
+  }
+  .btn--label:hover,
+  .btn--label-trail:hover {
+    background: var(--accent-black-2, #fafafa);
+  }
+}
+.btn__icon-wrap:active {
+  background: var(--accent-black-4, #f5f5f5);
+}
+
+/* ── Button / Secondary ──────────────────────────────────────────────────── */
+.btn--secondary {
+  background: var(--accent-black-8, #ebebeb);
+  border: none;
+  border-radius: 100px;
+  padding: 2px;
+  overflow: hidden;
+}
+.btn--secondary .btn__icon-wrap {
+  background: var(--accent-black-8, #ebebeb);
+  --stroke-0: var(--accent-black-80, #333);
+}
+@media (hover: hover) {
+  .btn--secondary .btn__icon-wrap:hover {
+    background: var(--accent-black-16, #d6d6d6);
+  }
+}
+.btn--secondary .btn__icon-wrap:active {
+  background: var(--accent-black-20, #cccccc);
+}
+
+/* ── Search Bar — standalone pill input ──────────────────────────────────── */
+.search-bar__input {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 4px;
+  background: var(--accent-white-100, #ffffff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 100px;
+  overflow: hidden;
+  cursor: text;
+  box-sizing: border-box;
+  transition: border-color 0.2s var(--ease-smooth);
+}
+.search-bar__input .btn__icon-wrap {
+  background: unset;
+  background-color: var(--accent-white-100);
+  --stroke-0: var(--accent-black-60, #666);
+  flex-shrink: 0;
+}
+/* Focus state — triggered by :focus-within (real input) or --focused modifier (static preview) */
+.search-bar__input:focus-within,
+.search-bar__input--focused {
+  border-color: var(--accent-black-30, #b3b3b3);
+}
+/* Placeholder text (static display) */
+.search-bar__placeholder {
+  font-family: 'Circular Std', -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--accent-black-60, #666);
+  white-space: nowrap;
+  padding-left: 0;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+/* Value text (static filled display) */
+.search-bar__value {
+  font-family: 'Circular Std', -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--accent-black-80, #333);
+  white-space: nowrap;
+  padding-left: 0;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+/* Real input field (interactive preview) */
+.search-bar__field {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Circular Std', -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--accent-black-80, #333);
+  white-space: nowrap;
+}
+.search-bar__field::placeholder {
+  color: var(--accent-black-60, #666);
+}
+
+/* ── Search Section — sticky bottom bar with search input + actions ──────── */
+.search-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 12px;
+  background: var(--background-1, #fcfcfd);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.12);
+  width: 100%;
+  box-sizing: border-box;
+}
+.search-section__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  width: 100%;
+}

@@ -1,0 +1,1404 @@
+/* =============================================================================
+   LENDER PORTAL — Product-specific component styles
+   Source: Figma › Lender Exploration (PYHG9Pu8YLs4ACMPljBiSG)
+   All values use tokens from tokens.css — no hardcoded hex values.
+   ============================================================================= */
+
+/* ── Loans Pill ────────────────────────────────────────────────────────────────
+   Figma node: 270:1898
+   A pill chip showing a loan category label + count + sort icon.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.loans-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 12px;
+  background: var(--accent-white-100);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.loans-pill:hover {
+  background: var(--accent-black-2);
+}
+
+.loans-pill__label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+.loans-pill__badge {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.loans-pill__count {
+  font-size: 12px;
+  color: var(--accent-black-60);
+}
+
+.loans-pill__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loans-pill__icon img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* ── Loans Dropdown ────────────────────────────────────────────────────────────
+   Figma node: 114:301
+   Appears below the Loans Pill when clicked. Shows loan filter options.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.loans-dropdown {
+  background: var(--accent-bg-1);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 16px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 154px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  will-change: transform, opacity;
+}
+
+.loans-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.loans-dropdown__item:hover {
+  background: var(--accent-black-4);
+}
+
+.loans-dropdown__item--hover {
+  background: var(--accent-black-4);
+}
+
+.loans-dropdown__item--active,
+.loans-dropdown__item--selected {
+  background: var(--accent-black-8);
+}
+
+.loans-dropdown__item-label {
+  font-size: 12px;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+.loans-dropdown__item-count {
+  font-size: 12px;
+  color: var(--accent-black-50);
+}
+
+/* Status filter menu — same dropdown component, label-only rows (no counts) */
+.loans-dropdown--status-menu {
+  width: auto;
+  min-width: 168px;
+}
+
+.loans-dropdown--status-menu .loans-dropdown__item {
+  justify-content: flex-start;
+}
+
+.loans-dropdown__item--disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.loans-dropdown__item-soon {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--accent-black-40);
+}
+
+/* ── LP Status ─────────────────────────────────────────────────────────────────
+   Figma node: 438:3508
+   Left pill — green dot + status label, left-rounded.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.lp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 8px 12px;
+  background: var(--accent-black-8);
+  border-radius: 100px 4px 4px 100px;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.lp-status:hover {
+  background: var(--accent-black-12);
+}
+
+.lp-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lp-status__dot--green { background: var(--accent-green-100); }
+.lp-status__dot--amber { background: #f59e0b; }
+.lp-status__dot--red   { background: var(--accent-red-100); }
+
+.lp-status__label {
+  font-size: 12px;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+}
+
+.lp-status-dropdown-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.lp-status--clickable {
+  cursor: pointer;
+}
+
+/* ── LP Stage ──────────────────────────────────────────────────────────────────
+   Figma node: 438:3509
+   Right pill — stage label + forward button circle, right-rounded.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.lp-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding-left: 12px;
+  background: var(--accent-black-8);
+  border-radius: 4px 100px 100px 4px;
+  overflow: hidden;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.lp-stage:hover {
+  background: var(--accent-black-12);
+}
+
+.lp-stage__label {
+  font-size: 12px;
+  color: var(--accent-black-80);
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* Outer ring: white 2px border + 2px padding */
+.lp-stage__btn {
+  border-radius: 100px;
+  border: 2px solid var(--accent-white-100);
+  padding: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Inner circle: 28×28, holds the icon centered */
+.lp-stage__btn-inner {
+  width: 28px;
+  height: 28px;
+  border-radius: 100px;
+  background: var(--accent-black-8);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.lp-stage__btn:hover .lp-stage__btn-inner {
+  background: var(--accent-black-20);
+}
+
+/* ── LP Status Stage ───────────────────────────────────────────────────────────
+   Figma node: 438:3545
+   Composite — Status + Stage joined with 2px gap.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.lp-status-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+}
+
+/* ── Interactive pill wrapper (used in platform preview only) ─── */
+.loans-pill-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+/* ── Profile ───────────────────────────────────────────────────────────────────
+   Figma node: 346:4038
+   A pill button: star-filled icon + circular avatar photo.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 2px 2px 8px;
+  background: var(--accent-bg-1);
+  border: 0.5px solid var(--accent-black-12);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.profile:hover {
+  background: var(--accent-black-4);
+}
+
+.profile__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 100px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--accent-white-100);
+}
+
+.profile__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s var(--ease-spring);
+}
+
+.profile__avatar:hover img {
+  transform: scale(1.2);
+}
+
+/* Star icon inside profile — animates on favourite toggle */
+.profile__star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s var(--ease-spring);
+  --stroke-0: var(--accent-black-50);
+}
+
+.profile__star svg {
+  transition: fill 0.25s var(--ease-smooth), stroke 0.25s var(--ease-smooth);
+}
+
+/* Pop animation triggered via JS by adding .star-pop class */
+@keyframes star-pop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.5); }
+  65%  { transform: scale(0.88); }
+  82%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.profile__star.star-pop {
+  animation: star-pop 0.4s var(--ease-smooth) forwards;
+}
+
+/* ── Assignees pill (Figma node 390:2745) ─────────────────────────────────────
+   Stacked circular avatars + chevron-down — shows people assigned to a file.
+   Click to open dropdown (dropdown wired in platform.js bindAssigneesRows).
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.assignees {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px 2px 2px;
+  background: var(--accent-black-8);
+  border-radius: 100px;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.assignees:hover { background: var(--accent-black-12); }
+
+/* Stacked avatars — negative margin creates overlap, z-index controls order */
+.assignees__avatars {
+  display: flex;
+  align-items: center;
+  padding-right: 8px; /* compensate for last avatar's negative margin */
+  isolation: isolate;  /* scope z-index stacking to within the avatar group */
+}
+
+.assignees__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 100px;
+  border: 1px solid var(--accent-black-8);
+  overflow: visible; /* allow tooltip to overflow */
+  flex-shrink: 0;
+  margin-right: -8px;
+  background: var(--accent-white-100);
+  position: relative;
+  transition: transform 0.2s var(--ease-spring), z-index 0s var(--ease-smooth);
+}
+
+/* Clip the image itself while keeping overflow visible for tooltip */
+.assignees__avatar img {
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.assignees__avatar:first-child { z-index: 2; }
+.assignees__avatar:nth-child(2) { z-index: 1; }
+.assignees__avatar:nth-child(3) { z-index: 0; }
+
+.assignees__avatar:hover { transform: translateY(-2px); z-index: 10; }
+
+/* Tooltip — appears above avatar on hover */
+.assignees__tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--accent-black-80, #333);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s var(--ease-smooth), transform 0.15s var(--ease-smooth);
+  z-index: 20;
+}
+.assignees__avatar:hover .assignees__tooltip,
+.assignees__avatar--hover .assignees__tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Force hover state — used for static variant preview */
+.assignees__avatar--hover {
+  transform: translateY(-2px);
+  z-index: 10;
+}
+
+.assignees__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Initials avatar — no photo, shows text initials (Figma node 553-2540) */
+.assignees__avatar--initials {
+  background: var(--background-1, #fcfcfd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.assignees__initials {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-100, #000);
+  line-height: 1;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+}
+
+/* Count bubble — shows "+N" when there are more assignees than displayed */
+.assignees__count {
+  width: 28px;
+  height: 28px;
+  border-radius: 100px;
+  border: 1px solid var(--accent-black-8);
+  background: var(--accent-black-12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--accent-black-60);
+  flex-shrink: 0;
+  margin-right: -8px;
+  z-index: 0;
+}
+
+/* Chevron — springs open/closed. 12×12 container, path renders at 7.5×3.75px (matches Figma inset 34.38% 18.75%) */
+.assignees__chevron {
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  --stroke-0: var(--accent-black-50);
+  transition: transform 0.28s var(--ease-spring);
+}
+
+.assignees__chevron svg {
+  width: 7.5px;
+  height: 3.75px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.assignees-wrap.open .assignees__chevron { transform: rotate(180deg); }
+
+/* Unassigned state — 32px circle (Figma node 545-2607) */
+.assignees--unassigned {
+  width: 32px;
+  height: 32px;
+  padding: 2px;
+  gap: 0;
+}
+
+/* 28px inner circle — the avatar placeholder */
+.assignees__unassigned-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 160px;
+  background: var(--accent-black-8, #ebebeb);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 16px icon container, vector fills 12×12 area (inset 2px each side — matches Figma) */
+.assignees__unassigned-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.assignees__unassigned-icon svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* ── Assignees wrapper — positions pill + dropdown together ────────────────── */
+.assignees-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* ── Assignees Dropdown (Figma node 553:3849) ──────────────────────────────────
+   Popover below the pill. Hidden by default (opacity 0, pointer-events none).
+   .assignees-wrap.open → visible. .assignees-wrap.search-mode → search state. */
+.assignees-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 242px;
+  background: #fcfcfd;
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 16px;
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 100;
+  opacity: 0;
+  transform: scale(0.97) translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease-smooth), transform 0.2s var(--ease-smooth);
+}
+
+.assignees-wrap.open .assignees-dropdown,
+.assignees-dropdown--standalone {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+/* Standalone mode — shown directly on page without the pill wrapper */
+.assignees-dropdown--standalone {
+  position: static;
+}
+
+.assignees-dropdown__header {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--accent-black-80, #333);
+  padding: 8px 4px;
+}
+
+.assignees-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.assignees-dropdown__item:hover { background: var(--accent-black-8, #ebebeb); }
+
+.assignees-dropdown__person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assignees-dropdown__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--accent-black-8, #ebebeb);
+}
+
+.assignees-dropdown__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.assignees-dropdown__name {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--accent-black-80, #333);
+  white-space: nowrap;
+}
+
+/* Role badge — right side of each row */
+.assignees-dropdown__role {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 4px 4px 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.assignees-dropdown__role:hover { background: var(--accent-black-8, #ebebeb); }
+
+.assignees-dropdown__role-label {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 10px;
+  color: var(--accent-black-50, #808080);
+  white-space: nowrap;
+}
+
+/* Static role label — non-admin users, same style but no chevron or picker */
+.assignees-dropdown__role-label--static { flex-shrink: 0; }
+
+.assignees-dropdown__role-chevron {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  --stroke-0: var(--accent-black-50, #808080);
+}
+
+.assignees-dropdown__role-chevron svg { width: 10px; height: 10px; }
+
+/* Add Teammate button — animates out when search-mode */
+.assignees-dropdown__add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border-top: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 0;
+  width: 100%;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  max-height: 80px;
+  overflow: hidden;
+  opacity: 1;
+  transition: background 0.2s var(--ease-smooth),
+              border-radius 0.2s var(--ease-smooth),
+              border-top-color 0.2s var(--ease-smooth),
+              max-height 0.25s var(--ease-smooth),
+              opacity 0.15s var(--ease-smooth),
+              padding 0.25s var(--ease-smooth);
+}
+
+/* Hover — border-top disappears, full pill radius + background appears */
+.assignees-dropdown__add:hover {
+  background: #e6e6e6;
+  border-top-color: transparent;
+  border-radius: 100px;
+}
+
+.assignees-dropdown__add-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  --stroke-0: var(--accent-black-60, #666);
+}
+
+/* SVG renders at 12×12 inside 16px container — matches Figma inset-[12.5%] */
+.assignees-dropdown__add-icon svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.assignees-dropdown__add-text {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-60, #666);
+}
+
+/* Search section — expands in with animation */
+.assignees-dropdown__search-section {
+  border-top: 0.5px solid var(--accent-black-12, #e0e0e0);
+  padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 0;
+  overflow: visible; /* allow role-picker dropdown to overflow without clipping */
+  opacity: 0;
+  transition: max-height 0.35s var(--ease-smooth),
+              opacity 0.25s var(--ease-smooth),
+              padding-top 0.35s var(--ease-smooth);
+}
+
+/* search-mode — Add Teammate collapses, search section expands */
+.assignees-wrap.search-mode .assignees-dropdown__add {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+
+.assignees-wrap.search-mode .assignees-dropdown__search-section {
+  max-height: 260px;
+  overflow: visible;
+  opacity: 1;
+  padding-top: 8px;
+}
+
+.assignees-dropdown__search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assignees-dropdown__search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 180px;
+  padding: 2px 4px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.assignees-dropdown__search-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  --stroke-0: var(--accent-black-60, #666);
+}
+
+.assignees-dropdown__search-icon-wrap svg { width: 16px; height: 16px; }
+
+.assignees-dropdown__search-placeholder {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--accent-black-60, #666);
+  white-space: nowrap;
+}
+
+.assignees-dropdown__search-clear {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-black-8, #ebebeb);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  --stroke-0: var(--accent-black-80, #333);
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.assignees-dropdown__search-clear:hover { background: var(--accent-black-12, #e0e0e0); }
+.assignees-dropdown__search-clear svg { width: 16px; height: 16px; }
+
+.assignees-dropdown__suggested-label {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--accent-black-60, #666);
+}
+
+.assignees-dropdown__suggested {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Suggested role text — right-aligned, no role picker chevron */
+.assignees-dropdown__suggested-role {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--accent-black-40, #999);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Avatar with + overlay on hover */
+.assignees-dropdown__avatar--suggested {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.assignees-dropdown__avatar-add {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--accent-black-8, #ebebeb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-smooth);
+}
+
+.assignees-dropdown__avatar-add svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Show + overlay when hovering the suggested item */
+.assignees-dropdown__item--suggested:hover .assignees-dropdown__avatar-add {
+  opacity: 1;
+}
+
+/* Fade out the photo when + overlay appears */
+.assignees-dropdown__item--suggested:hover .assignees-dropdown__avatar--suggested img {
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-smooth);
+}
+
+/* ── Role Picker (Figma node 553:3003) ────────────────────────────────────────
+   Popover that shows when clicking a role badge in the people dropdown.
+   146px wide, roles list + separator section with transfer + remove actions. */
+.role-picker {
+  background: #fcfcfd;
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 16px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  width: 146px;
+  overflow: hidden;
+}
+
+.role-picker__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-80, #333);
+  white-space: nowrap;
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  text-align: left;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.role-picker__item:hover { background: var(--accent-black-4, #f5f5f5); }
+.role-picker__item--active { background: var(--accent-black-8, #ebebeb); }
+.role-picker__item--danger { color: var(--accent-red-100, #ff383c); }
+
+.role-picker__section {
+  display: flex;
+  flex-direction: column;
+  border-top: 0.5px solid var(--accent-black-12, #e0e0e0);
+}
+
+/* Role picker as a popover inside people dropdown — positioned absolute */
+.assignees-dropdown__role-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.assignees-dropdown__role-wrap .role-picker {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 200;
+  opacity: 0;
+  transform: scale(0.97) translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.18s var(--ease-smooth), transform 0.18s var(--ease-smooth);
+}
+
+.assignees-dropdown__role-wrap.open .role-picker {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+/* ── Sidebar Item (Figma node 6:92) ────────────────────────────────────────────
+   3 states: default (no bg), hover (accent-black-8 bg, icon 24px),
+   selected (accent-black-12 bg, icon 20px). Icon transitions via CSS.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.sidebar-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sidebar-item__icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+/* Icon container — fixed at 24px, scale transform used for smooth 20→24 transition */
+.sidebar-item__icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.833); /* 20÷24 — renders at 20px equivalent */
+  transform-origin: center;
+  transition: transform 0.25s var(--ease-spring);
+}
+
+.sidebar-item__icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  flex-shrink: 0;
+}
+
+.sidebar-item__label {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-80, #333333);
+  white-space: nowrap;
+  line-height: normal;
+}
+
+/* Hover — background appears, icon springs to full 24px */
+.sidebar-item:hover .sidebar-item__icon-wrap,
+.sidebar-item--hover .sidebar-item__icon-wrap {
+  background: var(--accent-black-8, #ebebeb);
+}
+
+.sidebar-item:hover .sidebar-item__icon,
+.sidebar-item--hover .sidebar-item__icon {
+  transform: scale(1);
+}
+
+/* Selected — darker background, icon stays at 20px even on hover */
+.sidebar-item--selected .sidebar-item__icon-wrap {
+  background: var(--accent-black-12, #e0e0e0);
+}
+.sidebar-item--selected .sidebar-item__icon,
+.sidebar-item--selected:hover .sidebar-item__icon {
+  transform: scale(0.833);
+}
+
+/* ── Sidebar Nav (Figma node 362:2876) ─────────────────────────────────────────
+   Full navigation panel — nav items at top, user avatar at bottom.
+   Width: 77px. Height: 1117px (matches Figma frame — full viewport height).
+   Background: --accent-bg-0.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.sidebar-nav {
+  width: 77px;
+  height: 1117px;
+  background: var(--accent-bg-0, #f3f3f4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 52px 16px 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Stacked nav items */
+.sidebar-nav__items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+/* User avatar — rounded square, 36×36, object-fit cover */
+.sidebar-nav__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-nav__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s var(--ease-spring);
+}
+
+.sidebar-nav__avatar:hover img {
+  transform: scale(1.2);
+}
+
+/* ─── Loan List Item ──────────────────────────────────────────────────────── */
+
+.loan-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 288px;
+  height: 92px;
+  padding: 12px;
+  box-sizing: border-box;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 0;
+  border: none;
+  border-bottom: 0.5px solid var(--accent-black-16, #d6d6d6);
+  transition: background 0.2s var(--ease-smooth), border-radius 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth);
+}
+
+.loan-list-item:hover,
+.loan-list-item--hover {
+  background: var(--accent-black-8, #EBEBEB);
+  border-radius: 16px;
+  border-bottom-color: transparent;
+}
+
+/* Hide the bottom border of the item directly above a hovered or selected item */
+.loan-list-item:has(+ .loan-list-item:hover),
+.loan-list-item:has(+ .loan-list-item--hover),
+.loan-list-item:has(+ .loan-list-item--selected) {
+  border-bottom-color: transparent;
+}
+
+.loan-list-item--selected {
+  background: var(--accent-black-2, #FAFAFA);
+  border-radius: 16px;
+  border: 0.5px solid var(--accent-black-16, #d6d6d6);
+  box-shadow:
+    0px 35px 10px 0px rgba(0,0,0,0),
+    0px 23px  9px 0px rgba(0,0,0,0.01),
+    0px 13px  8px 0px rgba(0,0,0,0.02),
+    0px  6px  6px 0px rgba(0,0,0,0.03),
+    0px  1px  3px 0px rgba(0,0,0,0.04);
+}
+
+.loan-list-item__left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+
+.loan-list-item__top {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.loan-list-item__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent-black-80, #333);
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.loan-list-item__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--accent-black-60, #666);
+  white-space: nowrap;
+  line-height: normal;
+}
+
+.loan-list-item__meta-amount { font-weight: 500; }
+.loan-list-item__meta-sep,
+.loan-list-item__meta-type   { font-weight: 400; }
+
+.loan-list-item__time {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-60, #666);
+  white-space: nowrap;
+  line-height: normal;
+}
+
+.loan-list-item__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.loan-list-item__badge {
+  font-size: 11px;
+  font-weight: 400;
+  padding: 4px 8px;
+  border-radius: 100px;
+  white-space: nowrap;
+  line-height: normal;
+}
+
+.loan-list-item__badge--active   { background: var(--accent-green-20, #D6F4DE); color: var(--accent-green-100, #34C759); }
+.loan-list-item__badge--on-hold  { background: #FFF1CC; color: #996600; }
+.loan-list-item__badge--withdrawn,
+.loan-list-item__badge--cancelled,
+.loan-list-item__badge--denied   { background: #FFE5E5; color: #CC3333; }
+
+.loan-list-item__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  --stroke-0: var(--accent-black-50, #808080);
+}
+
+/* Trailing icon: same 16×16 .icon wrapper as Icons page (SVG from SYSTEM.icons) */
+.loan-list-item__icon .icon {
+  display: inline-block;
+}
+
+/* ── Loan Stage Group ─────────────────────────────────────────────────────── */
+
+.loan-stage-group {
+  width: 254px;
+  background: var(--accent-black-4, #f5f5f5);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 12px 0 12px 0;
+  box-sizing: border-box;
+}
+
+.loan-stage-group--expanded {
+  padding-bottom: 4px;
+}
+
+.loan-stage-group__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.loan-stage-group__name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-black-60, #666);
+  white-space: nowrap;
+}
+
+.loan-stage-group__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.loan-stage-group__count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-black-60, #666);
+}
+
+.loan-stage-group__chevron {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  --stroke-0: var(--accent-black-60, #666);
+  transition: transform 340ms var(--ease-smooth);
+}
+
+.loan-stage-group__chevron svg {
+  width: 10.98px;
+  height: 5.99px;
+  display: block;
+}
+
+.loan-stage-group--expanded .loan-stage-group__chevron {
+  transform: rotate(180deg);
+}
+
+.loan-stage-group__body {
+  display: flex;
+  flex-direction: column;
+  padding: 0 4px;
+  overflow: hidden;
+  max-height: 0;
+}
+
+.loan-stage-group--expanded .loan-stage-group__body {
+  max-height: none;
+  padding-top: 12px;
+}
+
+/* Items inside the group fill the container — remove hardcoded 288px */
+.loan-stage-group__body .loan-list-item {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Last item in group: no bottom border */
+.loan-stage-group__body .loan-list-item:last-child {
+  border-bottom: none;
+}
+
+
+/* ── Loans Panel ──────────────────────────────────────────────────────────────
+   Figma node: 270:1895
+   Full sidebar panel composing Loans Pill, Loan Stage Groups, and Search Section.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.loans-panel {
+  display: flex;
+  flex-direction: column;
+  width: 278px;
+  height: 100%;
+  background: var(--background-1, #fcfcfd);
+  border-right: 0.5px solid var(--accent-black-12, #e0e0e0);
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+.loans-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--background-1, #fcfcfd);
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.loans-panel__body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* stable gutter permanently reserves scrollbar space so content
+     width never shifts when the scrollbar appears or disappears */
+  scrollbar-gutter: stable;
+  /* Right padding minus scrollbar gutter width (6px) keeps both sides visually equal */
+  padding: 0 6px 12px 12px;
+  z-index: 1;
+}
+
+.loans-panel__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.loans-panel__body::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 2px;
+}
+
+.loans-panel__body::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 6px;
+  transition: background 0.2s var(--ease-smooth);
+}
+
+.loans-panel__body:hover::-webkit-scrollbar-thumb {
+  background: var(--accent-black-20, rgba(0, 0, 0, 0.2));
+}
+
+.loans-panel__body::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-black-40, rgba(0, 0, 0, 0.4));
+}
+
+.loans-panel__footer {
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+/* Override loan-stage-group inside the panel — fill width, block stacking with gap */
+.loans-panel .loan-stage-group {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.loans-panel .loan-stage-group:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Segment Picker ────────────────────────────────────────────────────────── */
+
+.proto-toggle {
+  display: inline-flex;
+  align-self: flex-start;
+  background: var(--accent-black-8, #ebebeb);
+  border-radius: 100px;
+  padding: 4px;
+  gap: 2px;
+  position: relative;
+}
+
+.proto-toggle__pill {
+  position: absolute;
+  background: var(--accent-white-100, #fff);
+  border-radius: 100px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.06);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.proto-toggle__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 100px;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+  border: none;
+  background: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: background 0.16s cubic-bezier(0.4, 0, 1, 0.8);
+}
+
+.proto-toggle__btn--active { padding-right: 12px; }
+
+.proto-toggle__btn:not(.proto-toggle__btn--active):hover,
+.proto-toggle__btn--preview-hover {
+  background: var(--accent-black-12, #e0e0e0);
+}
+
+.proto-toggle__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.proto-toggle__label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  margin-left: 0;
+}
+
+.proto-toggle__btn--active .proto-toggle__label {
+  max-width: 80px;
+  opacity: 1;
+  margin-left: 8px;
+}

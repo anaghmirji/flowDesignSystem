@@ -2251,13 +2251,13 @@ function buildAssigneesDropdownHtml(viewerRole = "Loan Officer") {
 
   const isLoanOfficer = viewerRole === 'Loan Officer';
   const people = [
-    { name: 'Anagh (You)', role: viewerRole,    img: 'https://i.pravatar.cc/28?img=12', isAdmin: isLoanOfficer },
-    { name: 'Sarah K',     role: 'Underwriter', img: 'https://i.pravatar.cc/28?img=5',  isAdmin: isLoanOfficer },
+    { name: 'Anagh (You)', role: viewerRole,    img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=56&h=56&q=80', isAdmin: isLoanOfficer },
+    { name: 'Sarah K',     role: 'Underwriter', img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=56&h=56&q=80', isAdmin: isLoanOfficer },
   ];
   const suggested = [
-    { name: 'Rosy',  role: 'Underwriter', img: 'https://i.pravatar.cc/28?img=23' },
-    { name: 'James', role: 'Processor',   img: 'https://i.pravatar.cc/28?img=53' },
-    { name: 'Jeff',  role: 'Closer',      img: 'https://i.pravatar.cc/28?img=11' },
+    { name: 'Rosy',  role: 'Underwriter', img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=56&h=56&q=80' },
+    { name: 'James', role: 'Processor',   img: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=56&h=56&q=80' },
+    { name: 'Jeff',  role: 'Closer',      img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=56&h=56&q=80' },
   ];
 
   const personRows = people.map(p => `

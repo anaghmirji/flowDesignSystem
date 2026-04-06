@@ -41,8 +41,8 @@ function buildConditionRow(text) {
  *             ║ ──────────────║                     ║─────────────║
  *             ║ Condition 1   ║                     ║ Condition 1 ║
  *             ║ Condition 2   ║                     ║ Condition 2 ║
- *             ║ + Add         ║                     ║ + Add       ║
  *             ╚═══════════════╝                     ╚═════════════╝
+ *               ( Add pill )                          ( Add pill )
  *
  * Stage posts sit at boundaries. Lane cards explicitly name the destination stage.
  * Conditions are list rows inside each card — one card per gate, not per condition.
@@ -76,8 +76,10 @@ function buildLane(fromStage, toStage) {
       <div class="ctg-lane__rule"></div>
     </div>
     <div class="ctg-lane__drop" aria-hidden="true"></div>
-    <div class="ctg-lane__card">
-      <div class="ctg-lane__list" data-ct-list="${id}">${rows}</div>
+    <div class="ctg-lane__body">
+      <div class="ctg-lane__card">
+        <div class="ctg-lane__list" data-ct-list="${id}">${rows}</div>
+      </div>
       <button type="button" class="ctg-lane__add" data-ct-add="${id}">Add Condition</button>
     </div>
   </div>`;
@@ -120,8 +122,12 @@ function buildManageConditionsInnerHtml(templateTitle) {
         <span class="ct-manage__sidebar-title">Manage Conditions</span>
         <button type="button" class="ct-manage__icon-btn ct-manage__icon-btn--pill" aria-label="Add template">${plusIcon}</button>
       </div>
-      <div class="ct-manage__tpl-scroll" data-ct-tpl-list>
-        ${buildSidebarTemplateRows()}
+      <div class="ct-manage__tpl-viewport">
+        <div class="ct-manage__tpl-scroll" data-ct-tpl-list>
+          ${buildSidebarTemplateRows()}
+        </div>
+        <!-- After scroll in DOM so the gradient paints above scrolling list items -->
+        <div class="ct-manage__tpl-edge ct-manage__tpl-edge--top" aria-hidden="true"></div>
       </div>
     </div>
     <div class="ct-manage__search-fade">

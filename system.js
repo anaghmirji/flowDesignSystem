@@ -502,7 +502,8 @@ window.SYSTEM = {
             { name: 'star-filled icon', pageId: 'icons' },
           ],
         },
-        avatarUrl: 'https://www.figma.com/api/mcp/asset/c7282667-898c-4558-b46c-a85b2bb9995f',
+        // Public headshot (not Figma MCP — those URLs only work inside MCP, not in the browser)
+        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&h=256&q=80',
         variants: [
           { id: 'profile-favorited',   label: 'Favorited',   favorited: true  },
           { id: 'profile-unfavorited', label: 'Unfavorited', favorited: false },
@@ -538,10 +539,10 @@ window.SYSTEM = {
             { name: 'x-mark',         pageId: 'icon-x-mark'          },
           ],
         },
-        // Avatar URLs — replace with real user photos in production
-        avatar1Url: 'https://www.figma.com/api/mcp/asset/4247bb8a-1c40-4062-851e-d9659c386128',
-        avatar2Url: 'https://www.figma.com/api/mcp/asset/e48e30d2-f0f0-4fc5-8733-9d4dced30960',
-        avatar3Url: 'https://www.figma.com/api/mcp/asset/c7282667-898c-4558-b46c-a85b2bb9995f',
+        // Avatar URLs — Unsplash headshots (same set as prototype borrower portraits)
+        avatar1Url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&h=256&q=80',
+        avatar2Url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&h=256&q=80',
+        avatar3Url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&h=256&q=80',
         // Sample initials for no-photo variant (Figma node 553-2540)
         initials: ['AM', 'TK', 'KP'],
         // Names and roles for tooltip display on avatar hover
@@ -602,7 +603,8 @@ window.SYSTEM = {
         subtitle: 'Source: Figma › Lender Exploration · node 362-2876 · 77px navigation panel',
         figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=362-2876',
         cssFile: 'global.css',
-        avatarUrl: 'https://www.figma.com/api/mcp/asset/c7282667-898c-4558-b46c-a85b2bb9995f',
+        // Public headshot (not Figma MCP — those URLs only work inside MCP, not in the browser)
+        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&h=256&q=80',
         relations: {
           uses: [{ name: 'Sidebar Item', pageId: 'lender-sidebar-item' }],
         },

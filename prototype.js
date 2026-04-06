@@ -185,6 +185,9 @@ const tabs = [
 
 // ─── Top Bar ──────────────────────────────────────────────────────────────────
 
+/** Set true to allow the bolt to open Manage Conditions; false keeps it visible but inert. */
+const PROTO_CONDITIONS_ENTRY_ENABLED = false;
+
 function buildTopBar() {
   const tabsHtml = tabs.map(t => `
     <button class="proto-tab${t.active ? ' proto-tab--active' : ''}" data-tab="${t.id}">
@@ -194,7 +197,9 @@ function buildTopBar() {
 
   // Bolt opens condition-templates modal (Current Design System icon — system.js `bolt`)
   const conditionsIcon = `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg('bolt')}</div></div></div>`;
-  const conditionsBtn = `<button type="button" class="btn btn--s1 proto-conditions-btn" aria-label="Condition templates" tabindex="0">${conditionsIcon}</button>`;
+  const conditionsBtn = PROTO_CONDITIONS_ENTRY_ENABLED
+    ? `<button type="button" class="btn btn--s1 proto-conditions-btn" aria-label="Condition templates" tabindex="0">${conditionsIcon}</button>`
+    : `<button type="button" class="btn btn--s1 proto-conditions-btn proto-conditions-btn--disabled" disabled aria-disabled="true" aria-label="Condition templates (not available)" tabindex="-1">${conditionsIcon}</button>`;
   // Use the exact same buildBtnPreviewHtml() from platform.js — zero duplication
   const searchBtn = buildBtnPreviewHtml({ id: 's1', icons: ['magnifying-glass'] });
   const bellBtn   = buildBtnPreviewHtml({ id: 's1', icons: ['bell'] });
@@ -1557,6 +1562,7 @@ function bindConditionModal() {
   const modal = document.getElementById('proto-ct-modal');
   const trigger = document.querySelector('.proto-conditions-btn');
   if (!modal || !trigger) return;
+  if (!PROTO_CONDITIONS_ENTRY_ENABLED || trigger.disabled) return;
 
   bindConditionTemplates(modal);
 

@@ -18,6 +18,12 @@ venv/
 # Editor / local-only (machine-specific permissions)
 .claude/settings.local.json
 
+# Dependencies
+node_modules/
+
+# Generated (run npm run build:react in design-system/react)
+design-system/react/dist/
+
 # Logs
 *.log
 npm-debug.log*

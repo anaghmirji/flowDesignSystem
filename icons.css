@@ -1,0 +1,66 @@
+/* ============================================================
+   ICON COMPONENT — Current Design System
+   Source of truth: Figma › Icons page
+   Usage: <span class="icon icon--magnifying-glass"></span>
+   ============================================================ */
+
+.icon {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.icon__vector {
+  position: absolute;
+}
+
+.icon__vector img {
+  position: absolute;
+  display: block;
+  max-width: none;
+}
+
+/* ── Per-icon vector positions (from Figma) ── */
+
+/* magnifying-glass */
+.icon--magnifying-glass .icon__vector { top: 12.5%; left: 12.5%; right: 12.5%; bottom: 12.5%; }
+.icon--magnifying-glass .icon__vector img { top: -5%; left: -5%; width: 110%; height: 110%; }
+
+/* plus */
+.icon--plus .icon__vector { top: 12.5%; left: 12.5%; right: 12.5%; bottom: 12.5%; }
+.icon--plus .icon__vector img { top: -5%; left: -5%; width: 110%; height: 110%; }
+
+/* funnel */
+.icon--funnel .icon__vector { top: 12.5%; left: 12.5%; right: 12.5%; bottom: 12.5%; }
+.icon--funnel .icon__vector img { top: -5%; left: -5%; width: 110%; height: 110%; }
+
+/* archive-box */
+.icon--archive-box .icon__vector { top: 15.63%; left: 9.38%; right: 9.38%; bottom: 15.63%; }
+.icon--archive-box .icon__vector img { top: -5.45%; left: -4.62%; width: 109.24%; height: 110.9%; }
+
+/* bell */
+.icon--bell .icon__vector { top: 9.39%; left: 12.5%; right: 12.5%; bottom: 9.41%; }
+.icon--bell .icon__vector img { top: -4.45%; left: -4.81%; width: 109.62%; height: 108.9%; }
+
+/* star */
+.icon--star .icon__vector { top: 13.13%; left: 11.85%; right: 11.85%; bottom: 14.07%; }
+.icon--star .icon__vector img { top: -5.15%; left: -4.91%; width: 109.82%; height: 110.3%; }
+
+/* star-filled (direct img, no inner offset) */
+.icon--star-filled .icon__vector { top: 10.01%; left: 8.72%; right: 8.72%; bottom: 10.93%; }
+.icon--star-filled .icon__vector img { top: 0; left: 0; width: 100%; height: 100%; }
+
+/* chevron-down */
+.icon--chevron-down .icon__vector { top: 34.38%; left: 18.75%; right: 18.75%; bottom: 34.38%; }
+.icon--chevron-down .icon__vector img { top: -10%; left: -5%; width: 110%; height: 120%; }
+
+/* document */
+.icon--document .icon__vector { top: 9.37%; left: 15.63%; right: 15.63%; bottom: 9.38%; }
+.icon--document .icon__vector img { top: -4.62%; left: -5.45%; width: 110.9%; height: 109.24%; }
+
+/* forward */
+.icon--forward .icon__vector { top: 31.51%; left: 12.5%; right: 7.88%; bottom: 25.27%; }
+.icon--forward .icon__vector img { top: -8.69%; left: -4.71%; width: 109.42%; height: 117.37%; }
