@@ -1678,80 +1678,137 @@ const AI_PANEL_TABS = [
 ];
 
 let _aiActiveTab = 'summary';
+let _aiAnimating  = false;
 
 function switchAiTab(newId) {
-  if (newId === _aiActiveTab) return;
-  const switcher = document.querySelector('.ai-panel__switcher');
+  if (newId === _aiActiveTab || _aiAnimating) return;
+  const switcher  = document.querySelector('.ai-panel__switcher');
   if (!switcher) return;
-
-  const activePill  = switcher.querySelector('.ai-panel__tab-active');
-  const clickedBtn  = switcher.querySelector(`.ai-panel__tab-btn[data-ai-tab="${newId}"]`);
+  const activePill = switcher.querySelector('.ai-panel__tab-active');
+  const clickedBtn = switcher.querySelector(`.ai-panel__tab-btn[data-ai-tab="${newId}"]`);
   if (!activePill || !clickedBtn) return;
-
-  const activeIcon  = activePill.querySelector('.ai-panel__tab-icon');
-  const activeLabel = activePill.querySelector('.ai-panel__tab-label');
-  const btnIcon     = clickedBtn.querySelector('.ai-panel__tab-icon');
 
   const newTab = AI_PANEL_TABS.find(t => t.id === newId);
   const oldTab = AI_PANEL_TABS.find(t => t.id === _aiActiveTab);
 
-  const EASE_OUT   = 'cubic-bezier(0.4,0,1,0.6)';
-  const EASE_ENTER = 'cubic-bezier(0.16,1,0.3,1)';
-  const OUT_MS = 100;
-  const IN_MS  = 260;
+  const PR = activePill.getBoundingClientRect();   // pill rect
+  const BR = clickedBtn.getBoundingClientRect();   // button rect
 
-  // --- EXIT: active pill content slides right ---
-  activeIcon.animate([
-    { opacity: 1, transform: 'translateX(0) scale(1)' },
-    { opacity: 0, transform: 'translateX(16px) scale(0.8)' },
-  ], { duration: OUT_MS, easing: EASE_OUT, fill: 'forwards' });
+  _aiAnimating = true;
 
-  activeLabel.animate([
-    { opacity: 1, transform: 'translateX(0)' },
-    { opacity: 0, transform: 'translateX(12px)' },
-  ], { duration: OUT_MS, easing: EASE_OUT, fill: 'forwards' });
+  // Hide real elements; ghosts take over visually
+  activePill.style.visibility  = 'hidden';
+  clickedBtn.style.visibility  = 'hidden';
 
-  // --- EXIT: clicked button icon shrinks/fades toward the left ---
-  btnIcon.animate([
-    { opacity: 1, transform: 'scale(1)' },
-    { opacity: 0, transform: 'scale(0.6) translateX(-6px)' },
-  ], { duration: OUT_MS, easing: EASE_OUT, fill: 'forwards' });
+  const DUR  = '300ms';
+  const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+  const MOVE = `top ${DUR} ${EASE}, left ${DUR} ${EASE}, width ${DUR} ${EASE}, height ${DUR} ${EASE}`;
+  const BG   = `background ${DUR} ${EASE}, border-color ${DUR} ${EASE}`;
 
-  // --- SWAP content after exit, then animate in ---
+  function ghost(r, icon, label, isPill) {
+    const el = document.createElement('div');
+    el.style.cssText = `
+      position: fixed;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      top: ${r.top}px;
+      left: ${r.left}px;
+      width: ${r.width}px;
+      height: ${r.height}px;
+      background: ${isPill ? 'var(--accent-white-100,#fff)' : 'transparent'};
+      border: 0.5px solid ${isPill ? 'var(--accent-black-12,#e0e0e0)' : 'transparent'};
+      border-radius: 100px;
+      overflow: hidden;
+      box-sizing: border-box;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 9999;
+    `;
+    el.innerHTML = `
+      <span style="width:16px;height:16px;flex-shrink:0;display:block;overflow:hidden">${iconSvg(icon)}</span>
+      <span style="
+        font-size:12px;
+        font-family:var(--font-sans,sans-serif);
+        color:var(--accent-black-80,#333);
+        white-space:nowrap;
+        flex-shrink:0;
+        overflow:hidden;
+        max-width:${isPill ? '160px' : '0px'};
+        opacity:${isPill ? '1' : '0'};
+        transition: max-width ${DUR} ${EASE}, opacity 160ms ease ${isPill ? '0ms' : '120ms'};
+      ">${label}</span>
+    `;
+    document.body.appendChild(el);
+    return el;
+  }
+
+  // g1: current active pill → shrinks and travels to button position
+  const g1 = ghost(PR, oldTab.icon, oldTab.label, true);
+  // g2: clicked button → expands and travels to pill position
+  const g2 = ghost(BR, newTab.icon, newTab.label, false);
+
+  // Force layout before starting transitions
+  g1.offsetHeight;
+  g2.offsetHeight;
+
+  g1.style.transition = `${MOVE}, ${BG}`;
+  g2.style.transition = `${MOVE}, ${BG}`;
+
+  // Force a second reflow so browser registers start state
+  g1.offsetHeight;
+
+  // g1 travels to button, shrinks to circle
+  Object.assign(g1.style, {
+    top:         `${BR.top}px`,
+    left:        `${BR.left}px`,
+    width:       `${BR.width}px`,
+    height:      `${BR.height}px`,
+    background:  'transparent',
+    borderColor: 'transparent',
+  });
+  const g1Label = g1.querySelector('span:last-child');
+  g1Label.style.maxWidth = '0px';
+  g1Label.style.opacity  = '0';
+
+  // g2 travels to pill, expands with label
+  Object.assign(g2.style, {
+    top:         `${PR.top}px`,
+    left:        `${PR.left}px`,
+    width:       `${PR.width}px`,
+    height:      `${PR.height}px`,
+    background:  'var(--accent-white-100,#fff)',
+    borderColor: 'var(--accent-black-12,#e0e0e0)',
+  });
+  const g2Label = g2.querySelector('span:last-child');
+  g2Label.style.maxWidth = '160px';
+  g2Label.style.opacity  = '1';
+
+  // After transition: swap real DOM, remove ghosts
   setTimeout(() => {
-    activeIcon.getAnimations().forEach(a => a.cancel());
-    activeLabel.getAnimations().forEach(a => a.cancel());
-    btnIcon.getAnimations().forEach(a => a.cancel());
+    const activeIcon  = activePill.querySelector('.ai-panel__tab-icon');
+    const activeLabel = activePill.querySelector('.ai-panel__tab-label');
+    const btnIcon     = clickedBtn.querySelector('.ai-panel__tab-icon');
 
-    // Update active pill
-    activeIcon.innerHTML = iconSvg(newTab.icon);
-    activeLabel.textContent = newTab.label;
+    activeIcon.innerHTML      = iconSvg(newTab.icon);
+    activeLabel.textContent   = newTab.label;
     activePill.setAttribute('data-ai-tab', newId);
 
-    // Swap clicked button to show old active tab
     clickedBtn.setAttribute('data-ai-tab', oldTab.id);
     clickedBtn.setAttribute('aria-label', oldTab.label);
     btnIcon.innerHTML = iconSvg(oldTab.icon);
 
     _aiActiveTab = newId;
 
-    // --- ENTER: new active pill content slides in from the left ---
-    activeIcon.animate([
-      { opacity: 0, transform: 'translateX(-16px) scale(0.8)' },
-      { opacity: 1, transform: 'translateX(0) scale(1)' },
-    ], { duration: IN_MS, easing: EASE_ENTER });
+    activePill.style.visibility = '';
+    clickedBtn.style.visibility = '';
 
-    activeLabel.animate([
-      { opacity: 0, transform: 'translateX(-12px)' },
-      { opacity: 1, transform: 'translateX(0)' },
-    ], { duration: IN_MS, easing: EASE_ENTER });
+    g1.remove();
+    g2.remove();
 
-    // --- ENTER: new button icon pops in from the right ---
-    btnIcon.animate([
-      { opacity: 0, transform: 'scale(0.6) translateX(6px)' },
-      { opacity: 1, transform: 'scale(1) translateX(0)' },
-    ], { duration: IN_MS, easing: EASE_ENTER });
-  }, OUT_MS + 10);
+    _aiAnimating = false;
+  }, 340);
 }
 
 function bindAiPanelSwitcher() {
