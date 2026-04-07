@@ -317,9 +317,9 @@ window.SYSTEM = {
     // Current Design System › Icons (Figma node 1-72) — clock, automation, sparkle
     { name: 'clock',
       svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6.5" stroke="var(--stroke-0,#333)" stroke-width="1.2"/><path d="M8 5V8.5L10.5 10" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
-    // automation — DS node 104:54 — exact Figma rendering (3 positioned image fragments)
+    // automation — DS node 104:54 — two connected rounded squares (conditions/workflow icon)
     { name: 'automation',
-      svg: '<span style="position:relative;display:block;width:16px;height:16px;overflow:hidden"><span style="position:absolute;top:12.5%;right:54.17%;bottom:54.17%;left:12.5%"><img style="position:absolute;inset:-11.25%;display:block;max-width:none;width:100%;height:100%" src="https://www.figma.com/api/mcp/asset/769e354d-2760-4b30-8c6b-24014b9b0a22" alt="" /></span><span style="position:absolute;top:45.83%;right:45.83%;bottom:29.17%;left:29.17%"><img style="position:absolute;inset:-15%;display:block;max-width:none;width:100%;height:100%" src="https://www.figma.com/api/mcp/asset/2d9d6914-ea66-43a0-80e9-c48be8ea5c72" alt="" /></span><span style="position:absolute;top:54.17%;right:12.5%;bottom:12.5%;left:54.17%"><img style="position:absolute;inset:-11.25%;display:block;max-width:none;width:100%;height:100%" src="https://www.figma.com/api/mcp/asset/06aa80cd-d07d-4256-9994-6d9b85957eee" alt="" /></span></span>' },
+      svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.8" y="1.8" width="5.6" height="5.6" rx="1.5" stroke="var(--stroke-0,#333)" stroke-width="1.2"/><rect x="8.6" y="8.6" width="5.6" height="5.6" rx="1.5" stroke="var(--stroke-0,#333)" stroke-width="1.2"/><circle cx="6.7" cy="9.3" r="1.1" fill="var(--stroke-0,#333)"/></svg>' },
     { name: 'sparkle',
       svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1.5L9.15 6.85L14.5 8L9.15 9.15L8 14.5L6.85 9.15L1.5 8L6.85 6.85L8 1.5Z" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linejoin="round"/></svg>' },
   ],

@@ -750,14 +750,13 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ai-panel__tab-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
   width: 28px;
   height: 28px;
   flex-shrink: 0;
   background: transparent;
   border-radius: 160px;
+  overflow: hidden;
   cursor: pointer;
   transition: background 0.14s ease;
 }
@@ -766,19 +765,20 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ai-panel__tab-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 16px;
   height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  overflow: hidden;
+  display: block;
   pointer-events: none;
 }
 .ai-panel__tab-icon svg {
   width: 16px;
   height: 16px;
   display: block;
-  flex-shrink: 0;
 }
 
 /* ── AI panel body ───────────────────────────────────────────────────────────── */
