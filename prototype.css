@@ -3147,7 +3147,7 @@ body.proto-ct-modal-open {
   overflow-x: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 4px 8px 40px;
+  padding: 4px 12px 40px;
 }
 .ct2-sidebar__body::-webkit-scrollbar { display: none; }
 
@@ -3374,6 +3374,218 @@ body.proto-ct-modal-open {
   padding: 24px 20px 20px;
   scrollbar-width: thin;
   scrollbar-color: var(--accent-black-16, #d6d6d6) transparent;
+}
+
+/* ── Activity log canvas ─────────────────────────────────────────────────── */
+.ct2-canvas__log-wrap {
+  width: 100%;
+  height: 100%;
+  padding: 12px 0 0px 0px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.ct2-log-card {
+  background: var(--accent-white-100, #fff);
+  border-radius: 20px;
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ct2-log-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.ct2-log-head::after {
+  content: '';
+  position: absolute;
+  bottom: -24px;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background: linear-gradient(to bottom, var(--accent-white-100, #fff), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ct2-log-head__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-black-100, #111);
+  letter-spacing: -0.01em;
+}
+
+.ct2-log-head__filters {
+  display: flex;
+  gap: 2px;
+}
+
+.ct2-log-filter {
+  padding: 4px 11px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-black-40, #999);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.ct2-log-filter:hover {
+  background: var(--accent-black-4, #f5f5f5);
+  color: var(--accent-black-80, #333);
+}
+.ct2-log-filter--active {
+  background: var(--accent-black-8, #ebebeb);
+  color: var(--accent-black-100, #111);
+}
+
+.ct2-log-stats {
+  display: flex;
+  padding: 16px 20px;
+  border-bottom: 0.5px solid var(--accent-black-8, #ebebeb);
+  flex-shrink: 0;
+  gap: 0;
+}
+
+.ct2-log-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ct2-log-stat + .ct2-log-stat {
+  border-left: 0.5px solid var(--accent-black-8, #ebebeb);
+  padding-left: 24px;
+}
+
+.ct2-log-stat__num {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--accent-black-100, #111);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.ct2-log-stat__label {
+  font-size: 11px;
+  color: var(--accent-black-40, #999);
+  font-weight: 500;
+}
+
+.ct2-log-feed {
+  flex: 1 1 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.ct2-log-feed::-webkit-scrollbar { display: none; }
+
+.ct2-log-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px 6px;
+}
+.ct2-log-divider::before,
+.ct2-log-divider::after {
+  content: '';
+  flex: 1 1 0;
+  height: 1px;
+  background: var(--accent-black-8, #ebebeb);
+}
+.ct2-log-divider__label {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: var(--font-semibold, 600);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-black-30, #b5b5b5);
+}
+
+.ct2-log-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 0.5px solid var(--accent-black-8, #ebebeb);
+  transition: background 0.12s var(--ease-smooth, ease);
+}
+.ct2-log-entry:last-child { border-bottom: none; }
+.ct2-log-entry:hover { background: var(--accent-black-2, #fafafa); }
+
+.ct2-log-entry__body {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ct2-log-entry__line1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ct2-log-entry__cond {
+  font-size: 12px;
+  font-weight: var(--font-medium, 500);
+  color: var(--accent-black-80, #333);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.4;
+}
+.ct2-log-entry__cond:hover {
+  color: var(--accent-black-100, #111);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-black-25, #ccc);
+  text-underline-offset: 2px;
+}
+
+
+.ct2-log-entry__meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ct2-log-entry__loan {
+  font-size: 11px;
+  font-weight: var(--font-medium, 500);
+  color: var(--accent-black-40, #999);
+  line-height: 1.4;
+}
+
+.ct2-log-entry__sep {
+  font-size: 11px;
+  color: var(--accent-black-16, #d6d6d6);
+}
+
+.ct2-log-entry__loan-id {
+  font-size: 11px;
+  color: var(--accent-black-30, #b5b5b5);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct2-log-entry__time {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--accent-black-30, #b5b5b5);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Stage-gate track ────────────────────────────────────────────────────── */

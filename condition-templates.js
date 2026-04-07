@@ -134,6 +134,34 @@ let CT_CONDITIONS = [
   },
 ];
 
+// ─── Activity log (mock data — prototype) ─────────────────────────────────────
+const CT_ACTIVITY_LOG = [
+  { id: 'a1',  condId: 'c2', condName: 'Upload W2',                 event: 'fulfilled',  loanId: 'L-4821', loanName: 'Johnson Property',    loanType: 'Fix & Flip', stage: 'underwriting', minsAgo: 28   },
+  { id: 'a2',  condId: 'c1', condName: 'Sign Purchase Agreement',   event: 'triggered',  loanId: 'L-5109', loanName: 'Park Ave Deal',        loanType: 'Bridge',     stage: 'application',  minsAgo: 95   },
+  { id: 'a3',  condId: 'c5', condName: 'Appraisal Report',          event: 'requested',  loanId: 'L-3302', loanName: 'Martinez Refi',        loanType: 'DSCR',       stage: 'underwriting', minsAgo: 180  },
+  { id: 'a4',  condId: 'c7', condName: 'Bank Statements (3mo)',     event: 'pending',    loanId: 'L-3302', loanName: 'Martinez Refi',        loanType: 'Bridge',     stage: 'underwriting', minsAgo: 360  },
+  { id: 'a5',  condId: 'c4', condName: 'Title Search',              event: 'triggered',  loanId: 'L-4821', loanName: 'Johnson Property',    loanType: 'Fix & Flip', stage: 'closing',      minsAgo: 1440 },
+  { id: 'a6',  condId: 'c6', condName: 'Proof of Insurance',        event: 'fulfilled',  loanId: 'L-2208', loanName: 'Chen Office Bldg',    loanType: 'Bridge',     stage: 'closing',      minsAgo: 1800 },
+  { id: 'a7',  condId: 'c3', condName: 'Business Tax Returns',      event: 'waived',     loanId: 'L-2208', loanName: 'Chen Office Bldg',    loanType: 'Bridge',     stage: 'underwriting', minsAgo: 2880 },
+  { id: 'a8',  condId: 'c1', condName: 'Sign Purchase Agreement',   event: 'fulfilled',  loanId: 'L-4007', loanName: 'Rivera Townhomes',    loanType: 'Fix & Flip', stage: 'application',  minsAgo: 4320 },
+  { id: 'a9',  condId: 'c5', condName: 'Appraisal Report',          event: 'triggered',  loanId: 'L-4007', loanName: 'Rivera Townhomes',    loanType: 'Fix & Flip', stage: 'underwriting', minsAgo: 5040 },
+  { id: 'a10', condId: 'c2', condName: 'Upload W2',                 event: 'pending',    loanId: 'L-5109', loanName: 'Park Ave Deal',        loanType: 'Bridge',     stage: 'closing',      minsAgo: 7200 },
+  { id: 'a11', condId: 'c4', condName: 'Title Search',              event: 'requested',  loanId: 'L-4007', loanName: 'Rivera Townhomes',    loanType: 'Fix & Flip', stage: 'closing',      minsAgo: 8640 },
+  { id: 'a12', condId: 'c6', condName: 'Proof of Insurance',        event: 'triggered',  loanId: 'L-5109', loanName: 'Park Ave Deal',        loanType: 'Bridge',     stage: 'closing',      minsAgo: 10080},
+  { id: 'a13', condId: 'c3', condName: 'Entity Docs',               event: 'fulfilled',  loanId: 'L-6614', loanName: 'Nguyen Duplex',        loanType: 'DSCR',       stage: 'underwriting', minsAgo: 11520},
+  { id: 'a14', condId: 'c8', condName: 'Rent Roll',                 event: 'requested',  loanId: 'L-6614', loanName: 'Nguyen Duplex',        loanType: 'DSCR',       stage: 'underwriting', minsAgo: 12960},
+  { id: 'a15', condId: 'c2', condName: 'Upload W2',                 event: 'fulfilled',  loanId: 'L-3302', loanName: 'Martinez Refi',        loanType: 'DSCR',       stage: 'application',  minsAgo: 14400},
+  { id: 'a16', condId: 'c9', condName: 'Credit Authorization',      event: 'triggered',  loanId: 'L-7731', loanName: 'Patel Warehouse',      loanType: 'Bridge',     stage: 'application',  minsAgo: 15120},
+  { id: 'a17', condId: 'c5', condName: 'Appraisal Report',          event: 'fulfilled',  loanId: 'L-7731', loanName: 'Patel Warehouse',      loanType: 'Bridge',     stage: 'underwriting', minsAgo: 16560},
+  { id: 'a18', condId: 'c4', condName: 'Title Search',              event: 'waived',     loanId: 'L-2208', loanName: 'Chen Office Bldg',    loanType: 'Bridge',     stage: 'closing',      minsAgo: 17280},
+  { id: 'a19', condId: 'c7', condName: 'Bank Statements (3mo)',     event: 'fulfilled',  loanId: 'L-4821', loanName: 'Johnson Property',    loanType: 'Fix & Flip', stage: 'application',  minsAgo: 18720},
+  { id: 'a20', condId: 'c3', condName: 'Business Tax Returns',      event: 'requested',  loanId: 'L-8802', loanName: 'Kim Mixed-Use',        loanType: 'Fix & Flip', stage: 'underwriting', minsAgo: 20160},
+  { id: 'a21', condId: 'c6', condName: 'Proof of Insurance',        event: 'pending',    loanId: 'L-8802', loanName: 'Kim Mixed-Use',        loanType: 'Fix & Flip', stage: 'closing',      minsAgo: 21600},
+  { id: 'a22', condId: 'c1', condName: 'Sign Purchase Agreement',   event: 'triggered',  loanId: 'L-6614', loanName: 'Nguyen Duplex',        loanType: 'DSCR',       stage: 'application',  minsAgo: 22320},
+  { id: 'a23', condId: 'c9', condName: 'Credit Authorization',      event: 'fulfilled',  loanId: 'L-4007', loanName: 'Rivera Townhomes',    loanType: 'Fix & Flip', stage: 'application',  minsAgo: 24480},
+  { id: 'a24', condId: 'c8', condName: 'Rent Roll',                 event: 'waived',     loanId: 'L-5109', loanName: 'Park Ave Deal',        loanType: 'Bridge',     stage: 'underwriting', minsAgo: 25920},
+];
+
 let CT_SELECTED_ID = null;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -260,7 +288,72 @@ function buildSidebar(activeId) {
 </aside>`;
 }
 
-// ─── Canvas (Mode 1) ──────────────────────────────────────────────────────────
+// ─── Canvas (Mode 1) — Activity log ──────────────────────────────────────────
+
+function ct2RelTime(minsAgo) {
+  if (minsAgo < 60)    return `${minsAgo}m ago`;
+  if (minsAgo < 1440)  return `${Math.floor(minsAgo / 60)}h ago`;
+  if (minsAgo < 10080) return `${Math.floor(minsAgo / 1440)}d ago`;
+  return `${Math.floor(minsAgo / 10080)}w ago`;
+}
+
+function buildLogEntry(e) {
+  return `<div class="ct2-log-entry" data-ct2-log-event="${e.event}">
+    <div class="ct2-log-entry__body">
+      <div class="ct2-log-entry__line1">
+        <button type="button" class="ct2-log-entry__cond" data-ct2-cid="${e.condId}">${e.condName}</button>
+      </div>
+      <div class="ct2-log-entry__meta">
+        <span class="ct2-log-entry__loan">${e.loanName}</span>
+        <span class="ct2-log-entry__sep">·</span>
+        <span class="ct2-log-entry__loan-id">${e.loanId}</span>
+      </div>
+    </div>
+    <span class="ct2-log-entry__time">${ct2RelTime(e.minsAgo)}</span>
+  </div>`;
+}
+
+function ct2LogBucket(minsAgo) {
+  if (minsAgo < 1440) return 'Today';
+  if (minsAgo < 2880) return 'Yesterday';
+  if (minsAgo < 7 * 1440) {
+    const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    // Prototype reference date: Tuesday Apr 7 2026 (dow = 2)
+    const daysAgo = Math.floor(minsAgo / 1440);
+    const dow = ((2 - daysAgo) % 7 + 7) % 7;
+    return DAYS[dow];
+  }
+  if (minsAgo < 14 * 1440) return 'Last Week';
+  return 'Last Month';
+}
+
+function buildCanvas() {
+  let currentBucket = null;
+  let entries = '';
+  CT_ACTIVITY_LOG.forEach(e => {
+    const bucket = ct2LogBucket(e.minsAgo);
+    if (bucket !== currentBucket) {
+      currentBucket = bucket;
+      entries += `<div class="ct2-log-divider"><span class="ct2-log-divider__label">${bucket}</span></div>`;
+    }
+    entries += buildLogEntry(e);
+  });
+
+  return `<div class="ct2-canvas" data-ct2-canvas>
+  <div class="ct2-canvas__log-wrap">
+    <div class="ct2-log-card">
+      <div class="ct2-log-head">
+        <span class="ct2-log-head__title">Activity</span>
+      </div>
+      <div class="ct2-log-feed" data-ct2-log-feed>
+        ${entries}
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+// ─── Canvas track (kept for reference) ───────────────────────────────────────
 
 function buildCanvasTrack(conditions) {
   // Collect all conditions per stage (use first product's dueBefore as primary)
@@ -322,13 +415,6 @@ function buildCanvasTrack(conditions) {
   return html;
 }
 
-function buildCanvas() {
-  return `<div class="ct2-canvas" data-ct2-canvas>
-    <div class="ct2-canvas__scroll">
-      ${buildCanvasTrack(CT_CONDITIONS)}
-    </div>
-  </div>`;
-}
 
 // ─── Detail (Mode 2) — 3-col: sidebar | center | right ───────────────────────
 
@@ -1231,9 +1317,27 @@ function reRenderRules(container, rules) {
 function bindCanvas(root) {
   const canvas = root.querySelector('[data-ct2-canvas]');
   if (!canvas) return;
+
   canvas.addEventListener('click', e => {
-    const row = e.target.closest('[data-ct2-cid]');
-    if (row) enterDetail(row.getAttribute('data-ct2-cid'), root);
+    // Condition name click → open detail
+    const condBtn = e.target.closest('.ct2-log-entry__cond[data-ct2-cid]');
+    if (condBtn) {
+      enterDetail(condBtn.getAttribute('data-ct2-cid'), root);
+      return;
+    }
+
+    // Filter tab click
+    const filterBtn = e.target.closest('[data-ct2-log-filter]');
+    if (filterBtn) {
+      const filter = filterBtn.getAttribute('data-ct2-log-filter');
+      canvas.querySelectorAll('[data-ct2-log-filter]').forEach(b =>
+        b.classList.toggle('ct2-log-filter--active', b.getAttribute('data-ct2-log-filter') === filter)
+      );
+      canvas.querySelectorAll('[data-ct2-log-event]').forEach(entry => {
+        const ev = entry.getAttribute('data-ct2-log-event');
+        entry.style.display = (filter === 'all' || ev === filter) ? '' : 'none';
+      });
+    }
   });
 }
 
