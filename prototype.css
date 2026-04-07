@@ -746,6 +746,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   padding: 2px;
   background: var(--accent-black-8, #ebebeb);
   border-radius: 100px;
+  gap: 0;
 }
 
 .ai-panel__tab-btn {
@@ -755,10 +756,10 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   width: 28px;
   height: 28px;
   flex-shrink: 0;
-  background: var(--accent-black-8, #ebebeb);
-  border-radius: 100px;
+  background: transparent;
+  border-radius: 160px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.14s ease;
 }
 .ai-panel__tab-btn:hover {
   background: var(--accent-black-20, #ccc);
@@ -770,16 +771,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   display: block;
   flex-shrink: 0;
   pointer-events: none;
-}
-.ai-panel__tab-icon--multi {
-  position: relative;
-  display: block;
-}
-.ai-panel__tab-icon--multi img {
-  display: block;
-  max-width: none;
-  width: 100%;
-  height: 100%;
+  object-fit: contain;
 }
 
 /* ── AI panel body ───────────────────────────────────────────────────────────── */

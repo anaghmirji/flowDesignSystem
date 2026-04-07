@@ -1543,11 +1543,7 @@ function buildBody() {
                 <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/f9d5ae8b-405d-46fb-be00-40ca59c4c44a" alt="" />
               </button>
               <button type="button" class="ai-panel__tab-btn" data-ai-tab="conditions" aria-label="Conditions">
-                <span class="ai-panel__tab-icon ai-panel__tab-icon--multi">
-                  <img style="position:absolute;top:12.5%;right:54.17%;bottom:29.17%;left:12.5%" src="https://www.figma.com/api/mcp/asset/ec0e244e-4f2b-4478-8cd8-e3845644f257" alt="" />
-                  <img style="position:absolute;top:45.83%;right:45.83%;bottom:29.17%;left:29.17%" src="https://www.figma.com/api/mcp/asset/ba82cc84-c3ba-4b9e-b283-0a6bf775859f" alt="" />
-                  <img style="position:absolute;top:54.17%;right:12.5%;bottom:12.5%;left:54.17%" src="https://www.figma.com/api/mcp/asset/d928450f-cc1c-41b3-b15a-94f090a0d5dc" alt="" />
-                </span>
+                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/ecb0b63b-df76-4bad-8487-d4515792fa3e" alt="" />
               </button>
               <button type="button" class="ai-panel__tab-btn" data-ai-tab="activity" aria-label="Activity">
                 <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/6a75f851-c4d0-48f9-a26b-cb23dd2ae493" alt="" />
