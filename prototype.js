@@ -1532,7 +1532,33 @@ function buildBody() {
         </div>
         <div class="proto-resize-handle" id="ai-resize-handle"></div>
         <div class="proto-ai-panel" id="ai-panel">
-          <span class="proto-ai-panel__label">AI Panel</span>
+          <!-- Switcher bar -->
+          <div class="ai-panel__switcher">
+            <div class="ai-panel__tab-active" data-ai-tab="summary">
+              <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/02afaaa0-e5a1-4009-8b74-8627878222be" alt="" />
+              <span class="ai-panel__tab-label">Summary</span>
+            </div>
+            <div class="ai-panel__tab-others">
+              <button type="button" class="ai-panel__tab-btn" data-ai-tab="documents" aria-label="Documents">
+                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/1e335045-059f-4b2e-b957-d30c3b6d88dc" alt="" />
+              </button>
+              <button type="button" class="ai-panel__tab-btn" data-ai-tab="conditions" aria-label="Conditions">
+                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/ecb0b63b-df76-4bad-8487-d4515792fa3e" alt="" />
+              </button>
+              <button type="button" class="ai-panel__tab-btn" data-ai-tab="activity" aria-label="Activity">
+                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/3c40e449-0b70-4932-ba1a-260b65e6367b" alt="" />
+              </button>
+            </div>
+          </div>
+          <!-- Main content area -->
+          <div class="ai-panel__body"></div>
+          <!-- Internal Notes footer -->
+          <button type="button" class="ai-panel__notes-footer">
+            <span class="ai-panel__notes-label">Internal Notes</span>
+            <div class="ai-panel__notes-btn">
+              <img src="https://www.figma.com/api/mcp/asset/8ff2809c-5dc4-4c4b-afb4-92082d5efbcf" width="16" height="16" alt="" />
+            </div>
+          </button>
         </div>
       </div>
     </div>`;
