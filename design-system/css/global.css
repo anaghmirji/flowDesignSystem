@@ -536,8 +536,9 @@
 .loans-dropdown {
   background: var(--accent-bg-1);
   border: 0.5px solid var(--accent-black-12);
-  border-radius: 16px;
-  padding: 4px;
+  border-radius: 20px;
+  padding: 12px;
+  color: var(--accent-black-12);
   display: flex;
   flex-direction: column;
   gap: 4px;
