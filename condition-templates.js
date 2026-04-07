@@ -329,12 +329,15 @@ function ct2LogBucket(minsAgo) {
 
 function buildCanvas() {
   let currentBucket = null;
+  let isFirst = true;
   let entries = '';
   CT_ACTIVITY_LOG.forEach(e => {
     const bucket = ct2LogBucket(e.minsAgo);
     if (bucket !== currentBucket) {
       currentBucket = bucket;
+      if (!isFirst) entries += `<div class="ct2-log-sep"></div>`;
       entries += `<div class="ct2-log-divider"><span class="ct2-log-divider__label">${bucket}</span></div>`;
+      isFirst = false;
     }
     entries += buildLogEntry(e);
   });
@@ -1319,11 +1322,11 @@ function bindCanvas(root) {
   if (!canvas) return;
 
   canvas.addEventListener('click', e => {
-    // Condition name click → open detail
-    const condBtn = e.target.closest('.ct2-log-entry__cond[data-ct2-cid]');
-    if (condBtn) {
-      enterDetail(condBtn.getAttribute('data-ct2-cid'), root);
-      return;
+    // Entire log row click → open detail
+    const logRow = e.target.closest('.ct2-log-entry[data-ct2-log-event]');
+    if (logRow) {
+      const condBtn = logRow.querySelector('[data-ct2-cid]');
+      if (condBtn) { enterDetail(condBtn.getAttribute('data-ct2-cid'), root); return; }
     }
 
     // Filter tab click
