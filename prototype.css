@@ -768,10 +768,17 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .ai-panel__tab-icon {
   width: 16px;
   height: 16px;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   pointer-events: none;
-  object-fit: contain;
+}
+.ai-panel__tab-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* ── AI panel body ───────────────────────────────────────────────────────────── */

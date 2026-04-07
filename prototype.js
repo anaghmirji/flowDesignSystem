@@ -1535,18 +1535,18 @@ function buildBody() {
           <!-- Switcher bar -->
           <div class="ai-panel__switcher">
             <div class="ai-panel__tab-active" data-ai-tab="summary">
-              <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/b45a793e-ac94-4c8a-bc7b-184c2dbd5d4e" alt="" />
+              <span class="ai-panel__tab-icon">${iconSvg('sparkle')}</span>
               <span class="ai-panel__tab-label">Summary</span>
             </div>
             <div class="ai-panel__tab-others">
               <button type="button" class="ai-panel__tab-btn" data-ai-tab="documents" aria-label="Documents">
-                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/5f331fe6-8a1d-400c-8116-d4a341c10d9f" alt="" />
+                <span class="ai-panel__tab-icon">${iconSvg('document')}</span>
               </button>
               <button type="button" class="ai-panel__tab-btn" data-ai-tab="conditions" aria-label="Conditions">
-                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/04451b40-3b66-4368-bb5c-7bdbb45a62b7" alt="" />
+                <span class="ai-panel__tab-icon">${iconSvg('automation')}</span>
               </button>
               <button type="button" class="ai-panel__tab-btn" data-ai-tab="activity" aria-label="Activity">
-                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/48fe670d-b139-47f5-97de-792f56678e67" alt="" />
+                <span class="ai-panel__tab-icon">${iconSvg('clock')}</span>
               </button>
             </div>
           </div>
@@ -1556,7 +1556,7 @@ function buildBody() {
           <button type="button" class="ai-panel__notes-footer">
             <span class="ai-panel__notes-label">Internal Notes</span>
             <div class="ai-panel__notes-btn">
-              <img src="https://www.figma.com/api/mcp/asset/d2c13c39-769c-4630-bcca-d93926a4f2e0" width="16" height="16" alt="" />
+              <span class="ai-panel__tab-icon">${iconSvg('chevron-down')}</span>
             </div>
           </button>
         </div>

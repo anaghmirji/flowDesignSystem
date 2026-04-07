@@ -314,6 +314,13 @@ window.SYSTEM = {
     { name: 'chevron-left',
       svg: '<svg width="100%" height="100%" viewBox="4.5 2.5 7 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 12L6 8l4-4" stroke="var(--stroke-0,#333)" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
     { name: 'chevron-up-down', svg: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 10L8 12.5L10.5 10M5.5 6L8 3.5L10.5 6" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+    // Current Design System › Icons (Figma node 1-72) — clock, automation, sparkle
+    { name: 'clock',
+      svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6.5" stroke="var(--stroke-0,#333)" stroke-width="1.2"/><path d="M8 5V8.5L10.5 10" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+    { name: 'automation',
+      svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="3.5" cy="8" r="1.9" stroke="var(--stroke-0,#333)" stroke-width="1.2"/><circle cx="12.5" cy="3.5" r="1.9" stroke="var(--stroke-0,#333)" stroke-width="1.2"/><circle cx="12.5" cy="12.5" r="1.9" stroke="var(--stroke-0,#333)" stroke-width="1.2"/><path d="M5.35 7.07L10.65 4.4M5.35 8.93L10.65 11.6" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round"/></svg>' },
+    { name: 'sparkle',
+      svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1.5L9.15 6.85L14.5 8L9.15 9.15L8 14.5L6.85 9.15L1.5 8L6.85 6.85L8 1.5Z" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linejoin="round"/></svg>' },
   ],
 
   // ── Components ──────────────────────────────────────────────────────────────
