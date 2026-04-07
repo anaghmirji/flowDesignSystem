@@ -1682,7 +1682,7 @@ let _aiAnimating  = false;
 
 function switchAiTab(newId) {
   if (newId === _aiActiveTab || _aiAnimating) return;
-  const switcher  = document.querySelector('.ai-panel__switcher');
+  const switcher = document.querySelector('.ai-panel__switcher');
   if (!switcher) return;
   const activePill = switcher.querySelector('.ai-panel__tab-active');
   const clickedBtn = switcher.querySelector(`.ai-panel__tab-btn[data-ai-tab="${newId}"]`);
@@ -1691,124 +1691,102 @@ function switchAiTab(newId) {
   const newTab = AI_PANEL_TABS.find(t => t.id === newId);
   const oldTab = AI_PANEL_TABS.find(t => t.id === _aiActiveTab);
 
-  const PR = activePill.getBoundingClientRect();   // pill rect
-  const BR = clickedBtn.getBoundingClientRect();   // button rect
-
   _aiAnimating = true;
 
-  // Hide real elements; ghosts take over visually
-  activePill.style.visibility  = 'hidden';
-  clickedBtn.style.visibility  = 'hidden';
+  const pillIconEl  = activePill.querySelector('.ai-panel__tab-icon');
+  const pillLabelEl = activePill.querySelector('.ai-panel__tab-label');
+  const btnIconEl   = clickedBtn.querySelector('.ai-panel__tab-icon');
 
-  const DUR  = '300ms';
-  const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
-  const MOVE = `top ${DUR} ${EASE}, left ${DUR} ${EASE}, width ${DUR} ${EASE}, height ${DUR} ${EASE}`;
-  const BG   = `background ${DUR} ${EASE}, border-color ${DUR} ${EASE}`;
+  // Lock pill width so layout doesn't reflow while label is hidden
+  activePill.style.width = activePill.offsetWidth + 'px';
 
-  function ghost(r, icon, label, isPill) {
-    const el = document.createElement('div');
-    el.style.cssText = `
-      position: fixed;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px;
-      top: ${r.top}px;
-      left: ${r.left}px;
-      width: ${r.width}px;
-      height: ${r.height}px;
-      background: ${isPill ? 'var(--accent-white-100,#fff)' : 'transparent'};
-      border: 0.5px solid ${isPill ? 'var(--accent-black-12,#e0e0e0)' : 'transparent'};
-      border-radius: 100px;
-      overflow: hidden;
-      box-sizing: border-box;
-      white-space: nowrap;
-      pointer-events: none;
-      z-index: 9999;
-    `;
-    el.innerHTML = `
-      <span style="width:16px;height:16px;flex-shrink:0;display:block;overflow:hidden">${iconSvg(icon)}</span>
-      <span style="
-        font-size:12px;
-        font-family:var(--font-sans,sans-serif);
-        color:var(--accent-black-80,#333);
-        white-space:nowrap;
-        flex-shrink:0;
-        overflow:hidden;
-        max-width:${isPill ? '160px' : '0px'};
-        opacity:${isPill ? '1' : '0'};
-        transition: max-width ${DUR} ${EASE}, opacity 160ms ease ${isPill ? '0ms' : '120ms'};
-      ">${label}</span>
-    `;
+  // Snapshot exact icon positions before any DOM change
+  const pillIconR = pillIconEl.getBoundingClientRect();
+  const btnIconR  = btnIconEl.getBoundingClientRect();
+
+  // Travel vector: pill icon → button icon
+  const dx = btnIconR.left - pillIconR.left;
+  const dy = btnIconR.top  - pillIconR.top;
+
+  const DUR      = 340;
+  const EASE     = 'cubic-bezier(0.16, 1, 0.3, 1)';
+  const EASE_OUT = 'cubic-bezier(0.4, 0, 1, 0.6)';
+
+  // Ghost icon: fixed position, animates purely via transform (compositor-only)
+  function makeGhostIcon(rect, svgContent) {
+    const el = document.createElement('span');
+    Object.assign(el.style, {
+      position:      'fixed',
+      top:           `${rect.top}px`,
+      left:          `${rect.left}px`,
+      width:         '16px',
+      height:        '16px',
+      display:       'block',
+      overflow:      'hidden',
+      pointerEvents: 'none',
+      zIndex:        '9999',
+      willChange:    'transform, opacity',
+    });
+    el.innerHTML = svgContent;
     document.body.appendChild(el);
     return el;
   }
 
-  // g1: current active pill → shrinks and travels to button position
-  const g1 = ghost(PR, oldTab.icon, oldTab.label, true);
-  // g2: clicked button → expands and travels to pill position
-  const g2 = ghost(BR, newTab.icon, newTab.label, false);
+  // g1: old active icon, travels from pill → button
+  const g1 = makeGhostIcon(pillIconR, iconSvg(oldTab.icon));
+  // g2: new tab icon, travels from button → pill
+  const g2 = makeGhostIcon(btnIconR, iconSvg(newTab.icon));
 
-  // Force layout before starting transitions
-  g1.offsetHeight;
-  g2.offsetHeight;
+  // Hide real icons (opacity so no layout reflow)
+  pillIconEl.style.opacity = '0';
+  btnIconEl.style.opacity  = '0';
 
-  g1.style.transition = `${MOVE}, ${BG}`;
-  g2.style.transition = `${MOVE}, ${BG}`;
+  // Label slides out toward button direction
+  pillLabelEl.animate([
+    { opacity: 1, transform: 'translateX(0)' },
+    { opacity: 0, transform: 'translateX(8px)' },
+  ], { duration: 140, easing: EASE_OUT, fill: 'forwards' });
 
-  // Force a second reflow so browser registers start state
-  g1.offsetHeight;
+  // g1: pill icon flies to button, shrinks + fades
+  g1.animate([
+    { transform: 'translate(0,0) scale(1)',                opacity: 1 },
+    { transform: `translate(${dx}px,${dy}px) scale(0.5)`, opacity: 0 },
+  ], { duration: DUR, easing: EASE_OUT, fill: 'forwards' });
 
-  // g1 travels to button, shrinks to circle
-  Object.assign(g1.style, {
-    top:         `${BR.top}px`,
-    left:        `${BR.left}px`,
-    width:       `${BR.width}px`,
-    height:      `${BR.height}px`,
-    background:  'transparent',
-    borderColor: 'transparent',
-  });
-  const g1Label = g1.querySelector('span:last-child');
-  g1Label.style.maxWidth = '0px';
-  g1Label.style.opacity  = '0';
+  // g2: button icon flies to pill, grows + fades in
+  g2.animate([
+    { transform: 'translate(0,0) scale(0.5)',                  opacity: 0 },
+    { transform: `translate(${-dx}px,${-dy}px) scale(1)`,     opacity: 1 },
+  ], { duration: DUR, easing: EASE, fill: 'forwards' });
 
-  // g2 travels to pill, expands with label
-  Object.assign(g2.style, {
-    top:         `${PR.top}px`,
-    left:        `${PR.left}px`,
-    width:       `${PR.width}px`,
-    height:      `${PR.height}px`,
-    background:  'var(--accent-white-100,#fff)',
-    borderColor: 'var(--accent-black-12,#e0e0e0)',
-  });
-  const g2Label = g2.querySelector('span:last-child');
-  g2Label.style.maxWidth = '160px';
-  g2Label.style.opacity  = '1';
-
-  // After transition: swap real DOM, remove ghosts
   setTimeout(() => {
-    const activeIcon  = activePill.querySelector('.ai-panel__tab-icon');
-    const activeLabel = activePill.querySelector('.ai-panel__tab-label');
-    const btnIcon     = clickedBtn.querySelector('.ai-panel__tab-icon');
-
-    activeIcon.innerHTML      = iconSvg(newTab.icon);
-    activeLabel.textContent   = newTab.label;
+    // Swap real DOM
+    pillIconEl.innerHTML    = iconSvg(newTab.icon);
+    pillLabelEl.textContent = newTab.label;
     activePill.setAttribute('data-ai-tab', newId);
 
     clickedBtn.setAttribute('data-ai-tab', oldTab.id);
     clickedBtn.setAttribute('aria-label', oldTab.label);
-    btnIcon.innerHTML = iconSvg(oldTab.icon);
+    btnIconEl.innerHTML = iconSvg(oldTab.icon);
 
     _aiActiveTab = newId;
 
-    activePill.style.visibility = '';
-    clickedBtn.style.visibility = '';
+    // Restore
+    pillIconEl.style.opacity = '';
+    btnIconEl.style.opacity  = '';
+    activePill.style.width   = '';
+
+    // New label enters from the button direction
+    pillLabelEl.getAnimations().forEach(a => a.cancel());
+    pillLabelEl.animate([
+      { opacity: 0, transform: 'translateX(-8px)' },
+      { opacity: 1, transform: 'translateX(0)' },
+    ], { duration: 240, easing: EASE });
 
     g1.remove();
     g2.remove();
-
     _aiAnimating = false;
-  }, 340);
+  }, DUR + 15);
 }
 
 function bindAiPanelSwitcher() {
