@@ -1581,10 +1581,17 @@ function bindConditionModal() {
   };
 
   const close = () => {
-    modal.hidden = true;
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('proto-ct-modal-open');
-    trigger.focus();
+    modal.classList.add('is-closing');
+    const onDone = () => {
+      modal.classList.remove('is-closing');
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('proto-ct-modal-open');
+      trigger.focus();
+    };
+    // Wait for the exit animation (200ms) then hide
+    modal.querySelector('.proto-ct-modal__panel')
+      .addEventListener('animationend', onDone, { once: true });
   };
 
   trigger.addEventListener('click', () => open());
