@@ -196,16 +196,18 @@ function buildTopBar() {
     </button>`).join('');
 
   // Bolt opens condition-templates modal (Current Design System icon — system.js `bolt`)
-  const conditionsIcon = `<div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${iconSvg('bolt')}</div></div></div>`;
   const conditionsBtn = PROTO_CONDITIONS_ENTRY_ENABLED
-    ? `<button type="button" class="btn btn--s1 proto-conditions-btn" aria-label="Condition templates" tabindex="0">${conditionsIcon}</button>`
-    : `<button type="button" class="btn btn--s1 proto-conditions-btn proto-conditions-btn--disabled" disabled aria-disabled="true" aria-label="Condition templates (not available)" tabindex="-1">${conditionsIcon}</button>`;
+    ? buildBtnPreviewHtml({ id: 's1', icons: ['bolt'] })
+        .replace('<button class="btn btn--s1" tabindex="-1"', '<button class="btn btn--s1 proto-conditions-btn" tabindex="0" aria-label="Condition templates"')
+    : buildBtnPreviewHtml({ id: 's1', icons: ['bolt'] })
+        .replace('<button class="btn btn--s1" tabindex="-1"', '<button class="btn btn--s1 proto-conditions-btn proto-conditions-btn--disabled" disabled aria-disabled="true" aria-label="Condition templates (not available)" tabindex="-1"');
   // Use the exact same buildBtnPreviewHtml() from platform.js — zero duplication
   const searchBtn = buildBtnPreviewHtml({ id: 's1', icons: ['magnifying-glass'] });
   const bellBtn   = buildBtnPreviewHtml({ id: 's1', icons: ['bell'] });
 
   // Panel-toggle button — matches Figma node 8:312
   // The inner bar slides from right-narrow (closed) to center-wide (open) on click
+  // NOTE: raw SVG required — animated .proto-panel-toggle__bar element prevents iconSvg() usage
   const panelBtn = `<button class="btn btn--s1 proto-panel-toggle" data-panel-open="false" tabindex="-1" aria-label="Toggle panel">
     <div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">
       <svg width="100%" height="100%" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -972,7 +974,7 @@ function buildBoardColHtml(stage) {
 }
 
 function buildBoardView() {
-  const updownSvg = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5.5 10L8 12.5L10.5 10M5.5 6L8 3.5L10.5 6" stroke="var(--stroke-0,#666)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const updownSvg = iconSvg('chevron-up-down');
   const plusBtn = buildBtnPreviewHtml({ id: 's1', icons: ['plus'] });
   const colsHtml = BOARD_STAGES.map(buildBoardColHtml).join('');
   return `<div class="board-view">
@@ -1163,13 +1165,13 @@ function reverseToBoard() {
 
   // ── R3. Loans panel fades out ──
   Object.assign(loansPanel.style, {
-    transition : 'opacity 350ms ease',
+    transition : 'opacity 350ms cubic-bezier(0.4, 0, 0.2, 1)',
     opacity    : '0',
   });
 
   // ── R4. Sidebar border fades out ──
   if (sidebarBorder) {
-    sidebarBorder.style.transition = 'opacity 200ms ease';
+    sidebarBorder.style.transition = 'opacity 200ms cubic-bezier(0.4, 0, 0.2, 1)';
     sidebarBorder.style.opacity    = '0';
   }
 
@@ -1193,7 +1195,7 @@ function reverseToBoard() {
 
       // Inline transition → width animates back to full; radius matches .proto-main / .board-view CSS
       Object.assign(boardView.style, {
-        transition   : 'width 685ms cubic-bezier(0.4, 0, 0.2, 1), border-radius 685ms ease',
+        transition   : 'width 685ms cubic-bezier(0.4, 0, 0.2, 1), border-radius 685ms cubic-bezier(0.4, 0, 0.2, 1)',
         width        : 'calc(100% - var(--proto-board-right-inset, 376px))',
         borderRadius : '0 20px 20px 0',
       });
@@ -1215,7 +1217,7 @@ function reverseToBoard() {
           { duration : 520,
             delay    : (numCols - 1 - i) * 55,
             easing   : 'cubic-bezier(0.4, 0, 0.2, 1)',
-            fill     : 'forwards' }
+            fill     : 'none' }
         );
       });
     });
@@ -1281,12 +1283,17 @@ function initBoardView() {
   const sidebarBorder = document.querySelector('.proto-sidebar-border');
   if (!boardView || !boardBody) return;
 
+  // Default view is the loans list — hide board on load
+  boardView.style.display = 'none';
+  syncProtoCardBoardSeamClass();
+
+  // Expand the pill capsule so the home/board button is visible from the start
+  const pillCapsule = document.querySelector('.loans-pill-capsule');
+  if (pillCapsule) pillCapsule.classList.add('loans-pill-capsule--expanded');
+
   // Footer starts fully below the board's overflow:hidden clip — slides up after columns land
   const footerEl = boardView.querySelector('.board-view__footer');
   if (footerEl) Object.assign(footerEl.style, { opacity: '0', transform: 'translateY(100%)', transition: 'none' });
-
-  if (protoMain)  Object.assign(protoMain.style,  { opacity: '0', transform: 'translateX(32px)', transition: 'none' });
-  if (loansPanel) loansPanel.style.opacity = '0';
 
   syncProtoCardBoardSeamClass();
 
@@ -1357,7 +1364,7 @@ function initBoardView() {
           { transform: 'translate(0,0)' },
           { transform: `translate(${dx}px,${dy}px)` },
         ],
-        { duration: 520, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' }
+        { duration: 520, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'none' }
       );
     }
 
@@ -1410,7 +1417,7 @@ function initBoardView() {
             width:  innerW            + 'px',
             height: naturalHeights[i] + 'px' },
         ],
-        { duration: 520, delay: i * 55, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' }
+        { duration: 520, delay: i * 55, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'none' }
       );
     });
 
@@ -1418,7 +1425,7 @@ function initBoardView() {
     boardView.classList.add('board-view--morphing');
     syncProtoCardBoardSeamClass();
     if (sidebarBorder) {
-      sidebarBorder.style.transition = 'opacity 250ms ease 80ms';
+      sidebarBorder.style.transition = 'opacity 250ms cubic-bezier(0.4, 0, 0.2, 1) 80ms';
       sidebarBorder.style.opacity    = '1';
     }
 
@@ -1438,7 +1445,7 @@ function initBoardView() {
     requestAnimationFrame(() => {
       if (loansPanel) {
         Object.assign(loansPanel.style, {
-          transition : 'opacity 500ms ease',
+          transition : 'opacity 500ms cubic-bezier(0.4, 0, 0.2, 1)',
           opacity    : '1',
         });
       }
@@ -1486,7 +1493,7 @@ function initBoardView() {
       // Morph turns this overlay on for continuity while the board has no right border;
       // loans panel already paints border-right — hide overlay or the seam reads ~2× thick.
       if (sidebarBorder) {
-        sidebarBorder.style.transition = 'opacity 140ms ease';
+        sidebarBorder.style.transition = 'opacity 140ms cubic-bezier(0.4, 0, 0.2, 1)';
         sidebarBorder.style.opacity = '0';
       }
       if (heroPlusBtn)  heroPlusBtn.remove();
@@ -2784,12 +2791,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
   }
 
-  // ── Home icon button → reverse board morph ──
+  // ── Home icon button → show board view ──
   const pillIconBtn = document.querySelector('.proto-card .loans-pill-icon-btn');
   if (pillIconBtn) {
     pillIconBtn.addEventListener('click', e => {
-      e.stopPropagation(); // don't bubble to pill dropdown toggle
-      reverseToBoard();
+      e.stopPropagation();
+      if (savedMorphState) {
+        reverseToBoard();
+      } else {
+        // Board was never shown yet — reveal it directly
+        const boardView  = document.querySelector('.board-view');
+        const protoMain  = document.querySelector('.proto-main');
+        const loansPanel = document.querySelector('.proto-card .loans-panel');
+        if (boardView) {
+          boardView.style.display = '';
+          syncProtoCardBoardSeamClass();
+        }
+        if (protoMain) Object.assign(protoMain.style, { opacity: '0', transform: 'translateX(32px)', transition: 'none' });
+        if (loansPanel) loansPanel.style.opacity = '0';
+      }
     });
   }
 
