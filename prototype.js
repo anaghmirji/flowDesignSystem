@@ -1535,18 +1535,18 @@ function buildBody() {
           <!-- Switcher bar -->
           <div class="ai-panel__switcher">
             <div class="ai-panel__tab-active" data-ai-tab="summary">
-              <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/02afaaa0-e5a1-4009-8b74-8627878222be" alt="" />
+              <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/b45a793e-ac94-4c8a-bc7b-184c2dbd5d4e" alt="" />
               <span class="ai-panel__tab-label">Summary</span>
             </div>
             <div class="ai-panel__tab-others">
               <button type="button" class="ai-panel__tab-btn" data-ai-tab="documents" aria-label="Documents">
-                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/f9d5ae8b-405d-46fb-be00-40ca59c4c44a" alt="" />
+                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/5f331fe6-8a1d-400c-8116-d4a341c10d9f" alt="" />
               </button>
               <button type="button" class="ai-panel__tab-btn" data-ai-tab="conditions" aria-label="Conditions">
-                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/ecb0b63b-df76-4bad-8487-d4515792fa3e" alt="" />
+                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/04451b40-3b66-4368-bb5c-7bdbb45a62b7" alt="" />
               </button>
               <button type="button" class="ai-panel__tab-btn" data-ai-tab="activity" aria-label="Activity">
-                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/6a75f851-c4d0-48f9-a26b-cb23dd2ae493" alt="" />
+                <img class="ai-panel__tab-icon" src="https://www.figma.com/api/mcp/asset/48fe670d-b139-47f5-97de-792f56678e67" alt="" />
               </button>
             </div>
           </div>
@@ -1556,7 +1556,7 @@ function buildBody() {
           <button type="button" class="ai-panel__notes-footer">
             <span class="ai-panel__notes-label">Internal Notes</span>
             <div class="ai-panel__notes-btn">
-              <img src="https://www.figma.com/api/mcp/asset/8ff2809c-5dc4-4c4b-afb4-92082d5efbcf" width="16" height="16" alt="" />
+              <img src="https://www.figma.com/api/mcp/asset/d2c13c39-769c-4630-bcca-d93926a4f2e0" width="16" height="16" alt="" />
             </div>
           </button>
         </div>
