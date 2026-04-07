@@ -1742,14 +1742,14 @@ function switchAiTab(newId) {
   pillLabelEl.animate([
     { transform: 'translateX(0)',    opacity: 1, offset: 0, easing: EXIT },
     { transform: 'translateX(14px)', opacity: 0, offset: 1 },
-  ], { duration: 130, easing: 'linear', fill: 'none' })
+  ], { duration: 180, easing: 'linear', fill: 'none' })
     .onfinish = () => { pillLabelEl.style.opacity = '0'; };
 
   // ── G1 exits: pill → button, fast, shrinks as it goes ────────────────────
   g1.animate([
     { transform: 'translate(0,0) scale(1)',                opacity: 1, offset: 0, easing: EXIT },
     { transform: `translate(${dx}px,${dy}px) scale(0.5)`, opacity: 0, offset: 1 },
-  ], { duration: 180, easing: 'linear', fill: 'none' })
+  ], { duration: 260, easing: 'linear', fill: 'none' })
     .onfinish = () => g1.remove();
 
   // ── G2 enters: button → pill, slower, overshoots 2.5% then settles ───────
@@ -1758,7 +1758,7 @@ function switchAiTab(newId) {
     { transform: 'translate(0,0) scale(0.5)',                              opacity: 0, offset: 0,    easing: ENTER },
     { transform: `translate(${-dx - os}px,${-dy}px) scale(1.08)`,         opacity: 1, offset: 0.65, easing: EXIT  },
     { transform: `translate(${-dx}px,${-dy}px) scale(1)`,                  opacity: 1, offset: 1 },
-  ], { duration: 360, easing: 'linear', fill: 'none' })
+  ], { duration: 500, easing: 'linear', fill: 'none' })
     .onfinish = () => {
       g2.remove();
       // Reveal real pill icon the moment the ghost arrives — seamless handoff
@@ -1789,7 +1789,7 @@ function switchAiTab(newId) {
       { transform: 'translateX(14px)', opacity: 0,   offset: 0,    easing: ENTER },
       { transform: 'translateX(-2px)', opacity: 1,   offset: 0.7,  easing: ENTER },
       { transform: 'translateX(0)',    opacity: 1,   offset: 1 },
-    ], { duration: 320, easing: 'linear', fill: 'none' })
+    ], { duration: 440, easing: 'linear', fill: 'none' })
       .onfinish = () => {
         pillLabelEl.style.opacity   = '';
         pillLabelEl.style.transform = '';
@@ -1800,14 +1800,14 @@ function switchAiTab(newId) {
       { transform: 'scale(0.35)', opacity: 0,   offset: 0,   easing: SPRING },
       { transform: 'scale(1.15)', opacity: 1,   offset: 0.6, easing: SPRING },
       { transform: 'scale(1)',    opacity: 1,   offset: 1 },
-    ], { duration: 300, easing: 'linear', fill: 'none' })
+    ], { duration: 420, easing: 'linear', fill: 'none' })
       .onfinish = () => {
         btnIconEl.style.opacity   = '';
         btnIconEl.style.transform = '';
       };
 
-    setTimeout(() => { _aiAnimating = false; }, 380);
-  }, 190);
+    setTimeout(() => { _aiAnimating = false; }, 520);
+  }, 270);
 }
 
 function bindAiPanelSwitcher() {
