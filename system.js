@@ -317,9 +317,9 @@ window.SYSTEM = {
     // Current Design System › Icons (Figma node 1-72) — clock, automation, sparkle
     { name: 'clock',
       svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6.5" stroke="var(--stroke-0,#333)" stroke-width="1.2"/><path d="M8 5V8.5L10.5 10" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
-    // automation — DS node 104:54 — two connected rounded squares (conditions/workflow icon)
+    // automation — DS node 104:54
     { name: 'automation',
-      svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.8" y="1.8" width="5.6" height="5.6" rx="1.5" stroke="var(--stroke-0,#333)" stroke-width="1.2"/><rect x="8.6" y="8.6" width="5.6" height="5.6" rx="1.5" stroke="var(--stroke-0,#333)" stroke-width="1.2"/><circle cx="6.7" cy="9.3" r="1.1" fill="var(--stroke-0,#333)"/></svg>' },
+      svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 2H3.33333C2.59695 2 2 2.59695 2 3.33333V6C2 6.73638 2.59695 7.33333 3.33333 7.33333H6C6.73638 7.33333 7.33333 6.73638 7.33333 6V3.33333C7.33333 2.59695 6.73638 2 6 2Z" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.66669 7.33331V9.99998C4.66669 10.3536 4.80716 10.6927 5.05721 10.9428C5.30726 11.1928 5.6464 11.3333 6.00002 11.3333H8.66669" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.6667 8.66669H10C9.26364 8.66669 8.66669 9.26364 8.66669 10V12.6667C8.66669 13.4031 9.26364 14 10 14H12.6667C13.4031 14 14 13.4031 14 12.6667V10C14 9.26364 13.4031 8.66669 12.6667 8.66669Z" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
     { name: 'sparkle',
       svg: '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1.5L9.15 6.85L14.5 8L9.15 9.15L8 14.5L6.85 9.15L1.5 8L6.85 6.85L8 1.5Z" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linejoin="round"/></svg>' },
   ],
