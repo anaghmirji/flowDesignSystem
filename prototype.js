@@ -1668,6 +1668,101 @@ function syncProtoCardBoardSeamClass() {
   card.classList.toggle('proto-card--board-kanban-full', fullKanban);
 }
 
+// ─── AI Panel Tab Switcher animation ─────────────────────────────────────────
+
+const AI_PANEL_TABS = [
+  { id: 'summary',    label: 'Summary',    icon: 'sparkle'    },
+  { id: 'documents',  label: 'Documents',  icon: 'document'   },
+  { id: 'conditions', label: 'Conditions', icon: 'automation' },
+  { id: 'activity',   label: 'Activity',   icon: 'clock'      },
+];
+
+let _aiActiveTab = 'summary';
+
+function switchAiTab(newId) {
+  if (newId === _aiActiveTab) return;
+  const switcher = document.querySelector('.ai-panel__switcher');
+  if (!switcher) return;
+
+  const activePill  = switcher.querySelector('.ai-panel__tab-active');
+  const clickedBtn  = switcher.querySelector(`.ai-panel__tab-btn[data-ai-tab="${newId}"]`);
+  if (!activePill || !clickedBtn) return;
+
+  const activeIcon  = activePill.querySelector('.ai-panel__tab-icon');
+  const activeLabel = activePill.querySelector('.ai-panel__tab-label');
+  const btnIcon     = clickedBtn.querySelector('.ai-panel__tab-icon');
+
+  const newTab = AI_PANEL_TABS.find(t => t.id === newId);
+  const oldTab = AI_PANEL_TABS.find(t => t.id === _aiActiveTab);
+
+  const EASE_OUT   = 'cubic-bezier(0.4,0,1,0.6)';
+  const EASE_ENTER = 'cubic-bezier(0.16,1,0.3,1)';
+  const OUT_MS = 100;
+  const IN_MS  = 260;
+
+  // --- EXIT: active pill content slides right ---
+  activeIcon.animate([
+    { opacity: 1, transform: 'translateX(0) scale(1)' },
+    { opacity: 0, transform: 'translateX(16px) scale(0.8)' },
+  ], { duration: OUT_MS, easing: EASE_OUT, fill: 'forwards' });
+
+  activeLabel.animate([
+    { opacity: 1, transform: 'translateX(0)' },
+    { opacity: 0, transform: 'translateX(12px)' },
+  ], { duration: OUT_MS, easing: EASE_OUT, fill: 'forwards' });
+
+  // --- EXIT: clicked button icon shrinks/fades toward the left ---
+  btnIcon.animate([
+    { opacity: 1, transform: 'scale(1)' },
+    { opacity: 0, transform: 'scale(0.6) translateX(-6px)' },
+  ], { duration: OUT_MS, easing: EASE_OUT, fill: 'forwards' });
+
+  // --- SWAP content after exit, then animate in ---
+  setTimeout(() => {
+    activeIcon.getAnimations().forEach(a => a.cancel());
+    activeLabel.getAnimations().forEach(a => a.cancel());
+    btnIcon.getAnimations().forEach(a => a.cancel());
+
+    // Update active pill
+    activeIcon.innerHTML = iconSvg(newTab.icon);
+    activeLabel.textContent = newTab.label;
+    activePill.setAttribute('data-ai-tab', newId);
+
+    // Swap clicked button to show old active tab
+    clickedBtn.setAttribute('data-ai-tab', oldTab.id);
+    clickedBtn.setAttribute('aria-label', oldTab.label);
+    btnIcon.innerHTML = iconSvg(oldTab.icon);
+
+    _aiActiveTab = newId;
+
+    // --- ENTER: new active pill content slides in from the left ---
+    activeIcon.animate([
+      { opacity: 0, transform: 'translateX(-16px) scale(0.8)' },
+      { opacity: 1, transform: 'translateX(0) scale(1)' },
+    ], { duration: IN_MS, easing: EASE_ENTER });
+
+    activeLabel.animate([
+      { opacity: 0, transform: 'translateX(-12px)' },
+      { opacity: 1, transform: 'translateX(0)' },
+    ], { duration: IN_MS, easing: EASE_ENTER });
+
+    // --- ENTER: new button icon pops in from the right ---
+    btnIcon.animate([
+      { opacity: 0, transform: 'scale(0.6) translateX(6px)' },
+      { opacity: 1, transform: 'scale(1) translateX(0)' },
+    ], { duration: IN_MS, easing: EASE_ENTER });
+  }, OUT_MS + 10);
+}
+
+function bindAiPanelSwitcher() {
+  const switcher = document.querySelector('.ai-panel__switcher');
+  if (!switcher) return;
+  switcher.addEventListener('click', e => {
+    const btn = e.target.closest('.ai-panel__tab-btn[data-ai-tab]');
+    if (btn) switchAiTab(btn.getAttribute('data-ai-tab'));
+  });
+}
+
 function bindResizeHandle() {
   const handle = document.getElementById('ai-resize-handle');
   const panel  = document.getElementById('ai-panel');
@@ -2787,6 +2882,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTogglePills();
   bindInteractions();
   bindResizeHandle();
+  bindAiPanelSwitcher();
   syncProtoBoardRightInset();
   syncProtoCardBoardSeamClass();
   const protoCardEl = document.querySelector('.proto-card');

@@ -755,6 +755,9 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .ai-panel__tab-btn {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 28px;
   height: 28px;
   flex-shrink: 0;
@@ -775,19 +778,12 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   display: block;
   pointer-events: none;
   overflow: hidden;
+  will-change: transform, opacity;
 }
 .ai-panel__tab-icon svg {
   width: 16px;
   height: 16px;
   display: block;
-}
-
-/* Inside a button, center the icon absolutely */
-.ai-panel__tab-btn .ai-panel__tab-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 }
 
 /* ── AI panel body ───────────────────────────────────────────────────────────── */
