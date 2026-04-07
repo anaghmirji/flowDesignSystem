@@ -1697,70 +1697,45 @@ function switchAiTab(newId) {
   const pillLabelEl = activePill.querySelector('.ai-panel__tab-label');
   const btnIconEl   = clickedBtn.querySelector('.ai-panel__tab-icon');
 
-  // Lock pill width so layout doesn't reflow while label is hidden
+  // Lock pill width — prevents layout reflow when label goes invisible
   activePill.style.width = activePill.offsetWidth + 'px';
 
-  // Snapshot exact icon positions before any DOM change
-  const pillIconR = pillIconEl.getBoundingClientRect();
-  const btnIconR  = btnIconEl.getBoundingClientRect();
+  // Easing vocabulary from ANIMATION_STYLE.md — never deviate from these
+  const EXIT   = 'cubic-bezier(0.4, 0, 1, 0.8)';    // pulled away, accelerates out
+  const ENTER  = 'cubic-bezier(0.16, 1, 0.3, 1)';   // glides in, long deceleration
+  const SPRING = 'cubic-bezier(0.34, 1.48, 0.64, 1)'; // elastic overshoot, settles
 
-  // Travel vector: pill icon → button icon
-  const dx = btnIconR.left - pillIconR.left;
-  const dy = btnIconR.top  - pillIconR.top;
+  // ── EXIT (exits are always faster than entrances) ─────────────────────────
 
-  const DUR      = 340;
-  const EASE     = 'cubic-bezier(0.16, 1, 0.3, 1)';
-  const EASE_OUT = 'cubic-bezier(0.4, 0, 1, 0.6)';
+  // Icon exits RIGHT toward buttons, shrinks as it leaves
+  const eIcon = pillIconEl.animate([
+    { transform: 'translateX(0) scale(1)',      opacity: 1, offset: 0, easing: EXIT },
+    { transform: 'translateX(120%) scale(0.6)', opacity: 0, offset: 1 },
+  ], { duration: 150, easing: 'linear', fill: 'none' });
+  eIcon.onfinish = () => { pillIconEl.style.opacity = '0'; };
 
-  // Ghost icon: fixed position, animates purely via transform (compositor-only)
-  function makeGhostIcon(rect, svgContent) {
-    const el = document.createElement('span');
-    Object.assign(el.style, {
-      position:      'fixed',
-      top:           `${rect.top}px`,
-      left:          `${rect.left}px`,
-      width:         '16px',
-      height:        '16px',
-      display:       'block',
-      overflow:      'hidden',
-      pointerEvents: 'none',
-      zIndex:        '9999',
-      willChange:    'transform, opacity',
-    });
-    el.innerHTML = svgContent;
-    document.body.appendChild(el);
-    return el;
-  }
+  // Label exits RIGHT — slightly faster so icon leads
+  const eLabel = pillLabelEl.animate([
+    { transform: 'translateX(0)',    opacity: 1, offset: 0, easing: EXIT },
+    { transform: 'translateX(12px)', opacity: 0, offset: 1 },
+  ], { duration: 120, easing: 'linear', fill: 'none' });
+  eLabel.onfinish = () => { pillLabelEl.style.opacity = '0'; };
 
-  // g1: old active icon, travels from pill → button
-  const g1 = makeGhostIcon(pillIconR, iconSvg(oldTab.icon));
-  // g2: new tab icon, travels from button → pill
-  const g2 = makeGhostIcon(btnIconR, iconSvg(newTab.icon));
+  // Clicked button icon shrinks away to make room
+  const eBtn = btnIconEl.animate([
+    { transform: 'scale(1)',     opacity: 1, offset: 0, easing: EXIT },
+    { transform: 'scale(0.35)', opacity: 0, offset: 1 },
+  ], { duration: 120, easing: 'linear', fill: 'none' });
+  eBtn.onfinish = () => { btnIconEl.style.opacity = '0'; };
 
-  // Hide real icons (opacity so no layout reflow)
-  pillIconEl.style.opacity = '0';
-  btnIconEl.style.opacity  = '0';
-
-  // Label slides out toward button direction
-  pillLabelEl.animate([
-    { opacity: 1, transform: 'translateX(0)' },
-    { opacity: 0, transform: 'translateX(8px)' },
-  ], { duration: 140, easing: EASE_OUT, fill: 'forwards' });
-
-  // g1: pill icon flies to button, shrinks + fades
-  g1.animate([
-    { transform: 'translate(0,0) scale(1)',                opacity: 1 },
-    { transform: `translate(${dx}px,${dy}px) scale(0.5)`, opacity: 0 },
-  ], { duration: DUR, easing: EASE_OUT, fill: 'forwards' });
-
-  // g2: button icon flies to pill, grows + fades in
-  g2.animate([
-    { transform: 'translate(0,0) scale(0.5)',                  opacity: 0 },
-    { transform: `translate(${-dx}px,${-dy}px) scale(1)`,     opacity: 1 },
-  ], { duration: DUR, easing: EASE, fill: 'forwards' });
-
+  // ── SWAP + ENTER ──────────────────────────────────────────────────────────
   setTimeout(() => {
-    // Swap real DOM
+    // Hold invisible to prevent one-frame flash on content swap
+    pillIconEl.style.opacity  = '0';
+    pillLabelEl.style.opacity = '0';
+    btnIconEl.style.opacity   = '0';
+
+    // Swap DOM content
     pillIconEl.innerHTML    = iconSvg(newTab.icon);
     pillLabelEl.textContent = newTab.label;
     activePill.setAttribute('data-ai-tab', newId);
@@ -1770,23 +1745,44 @@ function switchAiTab(newId) {
     btnIconEl.innerHTML = iconSvg(oldTab.icon);
 
     _aiActiveTab = newId;
+    activePill.style.width = '';
 
-    // Restore
-    pillIconEl.style.opacity = '';
-    btnIconEl.style.opacity  = '';
-    activePill.style.width   = '';
+    // Icon enters from RIGHT — fast start, long glide, slight overshoot at 65%
+    // gives it organic weight and a sense of mass landing into place
+    const nIcon = pillIconEl.animate([
+      { transform: 'translateX(120%) scale(0.6)',  opacity: 0,   offset: 0,    easing: ENTER },
+      { transform: 'translateX(-3%) scale(1.07)',  opacity: 1,   offset: 0.65, easing: EXIT  },
+      { transform: 'translateX(0) scale(1)',        opacity: 1,   offset: 1 },
+    ], { duration: 320, easing: 'linear', fill: 'none' });
+    nIcon.onfinish = () => {
+      pillIconEl.style.opacity   = '';
+      pillIconEl.style.transform = '';
+    };
 
-    // New label enters from the button direction
-    pillLabelEl.getAnimations().forEach(a => a.cancel());
-    pillLabelEl.animate([
-      { opacity: 0, transform: 'translateX(-8px)' },
-      { opacity: 1, transform: 'translateX(0)' },
-    ], { duration: 240, easing: EASE });
+    // Label enters from RIGHT, fractionally delayed — arrives just after icon
+    const nLabel = pillLabelEl.animate([
+      { transform: 'translateX(14px)', opacity: 0,   offset: 0,   easing: ENTER },
+      { transform: 'translateX(-2px)', opacity: 1,   offset: 0.7, easing: ENTER },
+      { transform: 'translateX(0)',    opacity: 1,   offset: 1 },
+    ], { duration: 300, easing: 'linear', fill: 'none' });
+    nLabel.onfinish = () => {
+      pillLabelEl.style.opacity   = '';
+      pillLabelEl.style.transform = '';
+    };
 
-    g1.remove();
-    g2.remove();
-    _aiAnimating = false;
-  }, DUR + 15);
+    // New button icon springs in — elastic pop signals it's now interactive
+    const nBtn = btnIconEl.animate([
+      { transform: 'scale(0.35)', opacity: 0,   offset: 0,   easing: SPRING },
+      { transform: 'scale(1.15)', opacity: 1,   offset: 0.6, easing: SPRING },
+      { transform: 'scale(1)',    opacity: 1,   offset: 1 },
+    ], { duration: 300, easing: 'linear', fill: 'none' });
+    nBtn.onfinish = () => {
+      btnIconEl.style.opacity   = '';
+      btnIconEl.style.transform = '';
+    };
+
+    setTimeout(() => { _aiAnimating = false; }, 340);
+  }, 160);
 }
 
 function bindAiPanelSwitcher() {
