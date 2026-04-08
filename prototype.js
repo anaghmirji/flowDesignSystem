@@ -1674,17 +1674,48 @@ function syncProtoCardBoardSeamClass() {
 // ─── AI Panel body content ────────────────────────────────────────────────────
 
 // status: 'pending' | 'doc-requested' | 'doc-submitted' | 'cleared'
-// Cleared items always sort to the bottom
-const CONDITIONS_DATA = {
-  section: 'Before moving to Underwriting',
-  items: [
-    { label: 'Proof of Income',      status: 'doc-submitted' },
-    { label: 'Bank Statements',      status: 'doc-requested' },
-    { label: '12-month rent ledger', status: 'pending'       },
-    { label: 'Purchase agreement',   status: 'pending'       },
-    { label: 'Upload W2',            status: 'cleared'       },
-  ],
-};
+const ALL_CONDITIONS_DATA = [
+  {
+    section: 'Before moving to Underwriting',
+    items: [
+      { label: 'Proof of Income',      status: 'doc-submitted' },
+      { label: 'Bank Statements',      status: 'doc-requested' },
+      { label: '12-month rent ledger', status: 'pending'       },
+      { label: 'Purchase agreement',   status: 'pending'       },
+      { label: 'Upload W2',            status: 'cleared'       },
+    ],
+  },
+  {
+    section: 'Before moving to Funded',
+    items: [
+      { label: 'Proof of Income',      status: 'doc-submitted' },
+      { label: 'Bank Statements',      status: 'doc-requested' },
+      { label: '12-month rent ledger', status: 'pending'       },
+      { label: 'Purchase agreement',   status: 'pending'       },
+      { label: 'Upload W2',            status: 'cleared'       },
+    ],
+  },
+  {
+    section: 'Before moving to Closed',
+    items: [
+      { label: 'Proof of Income',      status: 'doc-submitted' },
+      { label: 'Bank Statements',      status: 'doc-requested' },
+      { label: '12-month rent ledger', status: 'pending'       },
+      { label: 'Purchase agreement',   status: 'pending'       },
+      { label: 'Upload W2',            status: 'cleared'       },
+    ],
+  },
+  {
+    section: 'Before moving to Post-Close',
+    items: [
+      { label: 'Proof of Income',      status: 'doc-submitted' },
+      { label: 'Bank Statements',      status: 'doc-requested' },
+      { label: '12-month rent ledger', status: 'pending'       },
+      { label: 'Purchase agreement',   status: 'pending'       },
+      { label: 'Upload W2',            status: 'cleared'       },
+    ],
+  },
+];
 
 const ICON_CHECK_FILLED = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" fill="#22C55E"/><path d="M6 10.5L8.5 13L14 7.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const ICON_CIRCLE_EMPTY = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="9.4" stroke="#d4d4d4" stroke-width="1.2"/></svg>`;
@@ -1728,20 +1759,33 @@ function buildCondItemHtml(item) {
     </div>`;
 }
 
+function buildCondSectionHtml(data) {
+  const cleared = data.items.filter(i => i.status === 'cleared').length;
+  const total   = data.items.length;
+  const items   = data.items.map(buildCondItemHtml).join('');
+  return `
+    <div class="ai-cond__section-group">
+      <div class="ai-cond__header">
+        <span class="ai-cond__section">${data.section}</span>
+        <span class="ai-cond__progress"><strong>${cleared} of ${total}</strong> cleared</span>
+      </div>
+      <div class="ai-cond__list">${items}</div>
+    </div>`;
+}
+
 function buildAiConditionsHtml() {
-  const cleared = CONDITIONS_DATA.items.filter(i => i.status === 'cleared').length;
-  const total   = CONDITIONS_DATA.items.length;
-  const items   = CONDITIONS_DATA.items.map(buildCondItemHtml).join('');
+  const primaryHtml = buildCondSectionHtml(ALL_CONDITIONS_DATA[0]);
+  const extraHtml   = ALL_CONDITIONS_DATA.slice(1).map(buildCondSectionHtml)
+    .map(html => `<div class="ai-cond__divider"></div>${html}`).join('');
   return `
     <div class="ai-cond__wrap">
       <div class="ai-cond__card">
-        <div class="ai-cond__header">
-          <span class="ai-cond__section">${CONDITIONS_DATA.section}</span>
-          <span class="ai-cond__progress"><strong>${cleared} of ${total}</strong> cleared</span>
+        ${primaryHtml}
+        <div class="ai-cond__extra-outer">
+          <div class="ai-cond__extra">${extraHtml}</div>
         </div>
-        <div class="ai-cond__list">${items}</div>
       </div>
-      <div class="ai-cond__show-all">
+      <div class="ai-cond__show-all" role="button" tabindex="0" aria-expanded="false">
         <span class="ai-cond__show-all__label">Show All</span>
         <span class="ai-cond__show-all__chevron">${iconSvg('chevron-down')}</span>
       </div>
@@ -1749,17 +1793,16 @@ function buildAiConditionsHtml() {
 }
 
 function initConditionsInteraction() {
-  const list = document.querySelector('.ai-cond__list');
-  if (!list) return;
+  const card       = document.querySelector('.ai-cond__card');
+  const showAll    = document.querySelector('.ai-cond__show-all');
+  const extra      = document.querySelector('.ai-cond__extra');
+  const extraOuter = extra?.closest('.ai-cond__extra-outer');
+  if (!card || !showAll || !extra || !extraOuter) return;
 
-  const updateProgress = () => {
-    const clearedCount = list.querySelectorAll('.ai-cond__label--cleared').length;
-    const totalCount   = list.querySelectorAll('.ai-cond__label').length;
-    const progress = document.querySelector('.ai-cond__progress');
-    if (progress) progress.innerHTML = `<strong>${clearedCount} of ${totalCount}</strong> cleared`;
-  };
+  extra.style.height = '';
 
-  list.addEventListener('click', (e) => {
+  // ── Check / uncheck items ────────────────────────────────────────────────
+  card.addEventListener('click', (e) => {
     if (e.target.closest('.ai-cond__review-btn')) return;
 
     const item = e.target.closest('.ai-cond__item');
@@ -1768,15 +1811,22 @@ function initConditionsInteraction() {
     const label = item.querySelector('.ai-cond__label');
     if (!label || label.classList.contains('ai-cond__label--striking') || label.classList.contains('ai-cond__label--unstriking')) return;
 
-    const check = item.querySelector('.ai-cond__check');
-    const isCleared = label.classList.contains('ai-cond__label--cleared');
+    const check        = item.querySelector('.ai-cond__check');
+    const isCleared    = label.classList.contains('ai-cond__label--cleared');
+    const group        = item.closest('.ai-cond__section-group');
+    const progress     = group?.querySelector('.ai-cond__progress');
+
+    const updateProgress = () => {
+      if (!progress || !group) return;
+      const clearedCount = group.querySelectorAll('.ai-cond__label--cleared').length;
+      const totalCount   = group.querySelectorAll('.ai-cond__label').length;
+      progress.innerHTML = `<strong>${clearedCount} of ${totalCount}</strong> cleared`;
+    };
 
     if (!isCleared) {
-      // → Check: green icon pop + strikethrough draw
       check.innerHTML = ICON_CHECK_FILLED;
       check.classList.add('ai-cond__check--animating');
       label.classList.add('ai-cond__label--striking');
-
       setTimeout(() => {
         check.classList.remove('ai-cond__check--animating');
         label.classList.remove('ai-cond__label--striking');
@@ -1784,11 +1834,9 @@ function initConditionsInteraction() {
         updateProgress();
       }, 560);
     } else {
-      // → Uncheck: empty circle pop + strikethrough fade out
       label.classList.remove('ai-cond__label--cleared');
       label.classList.add('ai-cond__label--unstriking');
       check.classList.add('ai-cond__check--animating');
-
       setTimeout(() => {
         check.innerHTML = ICON_CIRCLE_EMPTY;
         check.classList.remove('ai-cond__check--animating');
@@ -1797,13 +1845,59 @@ function initConditionsInteraction() {
       }, 280);
     }
   });
+
+  // ── Show All / Show Less toggle (CSS grid + chevron transition; reversible mid-flight) ──
+  let expanded = false;
+
+  const setExpanded = (open) => {
+    expanded = open;
+    const labelEl = showAll.querySelector('.ai-cond__show-all__label');
+    extraOuter.classList.toggle('ai-cond__extra-outer--expanded', open);
+    showAll.classList.toggle('ai-cond__show-all--expanded', open);
+    showAll.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (labelEl) labelEl.textContent = open ? 'Show Less' : 'Show All';
+  };
+
+  const toggleShowAll = () => setExpanded(!expanded);
+
+  showAll.addEventListener('click', (e) => {
+    e.preventDefault();
+    toggleShowAll();
+  });
+  showAll.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleShowAll();
+    }
+  });
 }
 
-function renderAiPanelBody(tabId) {
+function initBodyScrollFade() {
+  const body = document.querySelector('.ai-panel__body');
+  const fade = body ? body.querySelector('.ai-panel__scroll-fade') : null;
+  if (!body || !fade) return;
+
+  const update = () => {
+    fade.classList.toggle('ai-panel__scroll-fade--visible', body.scrollTop > 4);
+  };
+
+  body.removeEventListener('scroll', body._fadeHandler);
+  body._fadeHandler = update;
+  body.addEventListener('scroll', update, { passive: true });
+  update();
+}
+
+function renderAiPanelBody(tabId, { animate = false } = {}) {
   const body = document.querySelector('.ai-panel__body');
   if (!body) return;
-  body.innerHTML = tabId === 'conditions' ? buildAiConditionsHtml() : '';
+  const fadeHtml = '<div class="ai-panel__scroll-fade" aria-hidden="true"></div>';
+  const content = tabId === 'conditions' ? buildAiConditionsHtml() : '';
+  const innerClass =
+    'ai-panel__body-inner' + (animate ? ' ai-panel__body-inner--enter' : '');
+  if (animate) body.scrollTop = 0;
+  body.innerHTML = fadeHtml + `<div class="${innerClass}">${content}</div>`;
   if (tabId === 'conditions') initConditionsInteraction();
+  initBodyScrollFade();
 }
 
 // ─── AI Panel Tab Switcher animation ─────────────────────────────────────────
@@ -1921,7 +2015,7 @@ function switchAiTab(newId) {
     btnIconEl.innerHTML = iconSvg(oldTab.icon);
 
     _aiActiveTab = newId;
-    renderAiPanelBody(newId);
+    renderAiPanelBody(newId, { animate: true });
     activePill.style.width = '';
 
     // Label enters from right — glides in with slight overshoot
