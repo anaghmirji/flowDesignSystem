@@ -1719,18 +1719,33 @@ const ALL_CONDITIONS_DATA = [
 
 const ICON_CHECK_FILLED = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" fill="#22C55E"/><path d="M6 10.5L8.5 13L14 7.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const ICON_CIRCLE_EMPTY = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="9.4" stroke="#d4d4d4" stroke-width="1.2"/></svg>`;
+const ICON_NEEDS_REVIEW = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="9.4" stroke="#F59E0B" stroke-width="1.4"/><circle cx="10" cy="10" r="3.5" fill="#F59E0B"/></svg>`;
+const ICON_REJECTED     = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" fill="#EF4444"/><path d="M7 7l6 6M13 7l-6 6" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+
+const COND_STATUSES = [
+  { val: 'open',         label: 'Open',         icon: ICON_CIRCLE_EMPTY },
+  { val: 'needs-review', label: 'Needs Review',  icon: ICON_NEEDS_REVIEW },
+  { val: 'cleared',      label: 'Cleared',       icon: ICON_CHECK_FILLED },
+];
+
+function dataToCondStatus(s) {
+  if (s === 'cleared')                                return 'cleared';
+  if (s === 'doc-submitted' || s === 'doc-requested') return 'needs-review';
+  return 'open';
+}
 
 function buildCondItemHtml(item) {
-  const isCleared   = item.status === 'cleared';
+  const condStatus  = dataToCondStatus(item.status);
   const isRequested = item.status === 'doc-requested';
   const isSubmitted = item.status === 'doc-submitted';
-  const checkIcon   = isCleared ? ICON_CHECK_FILLED : ICON_CIRCLE_EMPTY;
-  const labelClass  = `ai-cond__label${isCleared ? ' ai-cond__label--cleared' : ''}`;
+  const checkIcon   = COND_STATUSES.find(s => s.val === condStatus)?.icon ?? ICON_CIRCLE_EMPTY;
+  const labelExtra  = condStatus === 'cleared' ? ' ai-cond__label--cleared' : condStatus === 'rejected' ? ' ai-cond__label--rejected' : '';
+  const labelClass  = `ai-cond__label${labelExtra}`;
 
   if (isRequested) {
     return `
-    <div class="ai-cond__item">
-      <span class="ai-cond__check">${checkIcon}</span>
+    <div class="ai-cond__item" data-cond-status="${condStatus}">
+      <span class="ai-cond__check" tabindex="0" role="button" aria-label="Set status">${checkIcon}</span>
       <div class="ai-cond__item-stack">
         <span class="${labelClass}">${item.label}</span>
         <span class="ai-cond__requested-text">Requested from Borrower</span>
@@ -1740,9 +1755,9 @@ function buildCondItemHtml(item) {
 
   if (isSubmitted) {
     return `
-    <div class="ai-cond__item ai-cond__item--has-right">
+    <div class="ai-cond__item ai-cond__item--has-right" data-cond-status="${condStatus}">
       <div class="ai-cond__item-left">
-        <span class="ai-cond__check">${checkIcon}</span>
+        <span class="ai-cond__check" tabindex="0" role="button" aria-label="Set status">${checkIcon}</span>
         <div class="ai-cond__item-stack">
           <span class="${labelClass}">${item.label}</span>
           <span class="ai-cond__submitted-text">Document submitted by Borrower</span>
@@ -1753,14 +1768,14 @@ function buildCondItemHtml(item) {
   }
 
   return `
-    <div class="ai-cond__item">
-      <span class="ai-cond__check">${checkIcon}</span>
+    <div class="ai-cond__item" data-cond-status="${condStatus}">
+      <span class="ai-cond__check" tabindex="0" role="button" aria-label="Set status">${checkIcon}</span>
       <span class="${labelClass}">${item.label}</span>
     </div>`;
 }
 
 function buildCondSectionHtml(data) {
-  const cleared = data.items.filter(i => i.status === 'cleared').length;
+  const cleared = data.items.filter(i => dataToCondStatus(i.status) === 'cleared').length;
   const total   = data.items.length;
   const items   = data.items.map(buildCondItemHtml).join('');
   return `
@@ -1801,52 +1816,156 @@ function initConditionsInteraction() {
 
   extra.style.height = '';
 
-  // ── Check / uncheck items ────────────────────────────────────────────────
-  card.addEventListener('click', (e) => {
-    if (e.target.closest('.ai-cond__review-btn')) return;
+  // ── Status picker ─────────────────────────────────────────────────────────
+  let activePicker = null;
 
-    const item = e.target.closest('.ai-cond__item');
-    if (!item) return;
+  function updateCondProgress(group) {
+    const progress = group?.querySelector('.ai-cond__progress');
+    if (!progress || !group) return;
+    const total   = group.querySelectorAll('.ai-cond__item').length;
+    const cleared = group.querySelectorAll('.ai-cond__item[data-cond-status="cleared"]').length;
+    progress.innerHTML = `<strong>${cleared} of ${total}</strong> cleared`;
+  }
 
+  function setLabelStatus(item, label, status) {
+    if (status === 'rejected') {
+      label.classList.add('ai-cond__label--rejected');
+      item.classList.add('ai-cond__item--rejected');
+    } else if (status === 'removed') {
+      item.classList.add('ai-cond__item--removed');
+    }
+  }
+
+  function applyCondStatus(item, status) {
+    const check = item.querySelector('.ai-cond__check');
     const label = item.querySelector('.ai-cond__label');
-    if (!label || label.classList.contains('ai-cond__label--striking') || label.classList.contains('ai-cond__label--unstriking')) return;
+    if (!check || !label) return;
 
-    const check        = item.querySelector('.ai-cond__check');
-    const isCleared    = label.classList.contains('ai-cond__label--cleared');
-    const group        = item.closest('.ai-cond__section-group');
-    const progress     = group?.querySelector('.ai-cond__progress');
+    const prevStatus = item.dataset.condStatus || 'open';
+    if (prevStatus === status) return;
 
-    const updateProgress = () => {
-      if (!progress || !group) return;
-      const clearedCount = group.querySelectorAll('.ai-cond__label--cleared').length;
-      const totalCount   = group.querySelectorAll('.ai-cond__label').length;
-      progress.innerHTML = `<strong>${clearedCount} of ${totalCount}</strong> cleared`;
-    };
+    item.dataset.condStatus = status;
+    const group = item.closest('.ai-cond__section-group');
 
-    if (!isCleared) {
-      check.innerHTML = ICON_CHECK_FILLED;
-      check.classList.add('ai-cond__check--animating');
+    // Swap icon with pop
+    const entry = COND_STATUSES.find(s => s.val === status);
+    check.innerHTML = entry?.icon ?? ICON_CIRCLE_EMPTY;
+    check.classList.remove('ai-cond__check--animating');
+    void check.offsetWidth; // force reflow so animation replays
+    check.classList.add('ai-cond__check--animating');
+    setTimeout(() => check.classList.remove('ai-cond__check--animating'), 400);
+
+    // Clear all label/item modifiers
+    label.classList.remove('ai-cond__label--cleared', 'ai-cond__label--rejected',
+                            'ai-cond__label--striking', 'ai-cond__label--unstriking');
+    item.classList.remove('ai-cond__item--rejected', 'ai-cond__item--removed');
+
+    if (status === 'cleared') {
       label.classList.add('ai-cond__label--striking');
       setTimeout(() => {
-        check.classList.remove('ai-cond__check--animating');
         label.classList.remove('ai-cond__label--striking');
         label.classList.add('ai-cond__label--cleared');
-        updateProgress();
+        updateCondProgress(group);
       }, 560);
     } else {
-      label.classList.remove('ai-cond__label--cleared');
-      label.classList.add('ai-cond__label--unstriking');
-      check.classList.add('ai-cond__check--animating');
-      setTimeout(() => {
-        check.innerHTML = ICON_CIRCLE_EMPTY;
-        check.classList.remove('ai-cond__check--animating');
-        label.classList.remove('ai-cond__label--unstriking');
-        updateProgress();
-      }, 280);
+      if (prevStatus === 'cleared') {
+        label.classList.add('ai-cond__label--unstriking');
+        setTimeout(() => {
+          label.classList.remove('ai-cond__label--unstriking');
+          setLabelStatus(item, label, status);
+        }, 280);
+      } else {
+        setLabelStatus(item, label, status);
+      }
+      updateCondProgress(group);
     }
+  }
+
+  function closePicker() {
+    if (!activePicker) return;
+    const p = activePicker;
+    activePicker = null;
+    const anim = p.animate(
+      [{ opacity: 1, transform: 'scale(1) translateY(0)' },
+       { opacity: 0, transform: 'scale(0.94) translateY(-5px)' }],
+      { duration: 140, easing: 'cubic-bezier(0.4, 0, 1, 0.8)', fill: 'none' }
+    );
+    anim.onfinish = () => p.remove();
+  }
+
+  function openPicker(item, checkEl) {
+    closePicker();
+
+    const curStatus = item.dataset.condStatus || 'open';
+
+    const picker = document.createElement('div');
+    picker.className = 'ai-cond__status-picker';
+    picker.innerHTML =
+      COND_STATUSES.map(s => `
+        <button class="ai-cond__status-opt${s.val === curStatus ? ' ai-cond__status-opt--active' : ''}" data-status="${s.val}">
+          <span class="ai-cond__status-dot ai-cond__status-dot--${s.val}"></span>
+          <span class="ai-cond__status-opt-label">${s.label}</span>
+          ${s.val === curStatus ? '<span class="ai-cond__status-opt-tick">✓</span>' : ''}
+        </button>`).join('');
+
+    // Append to body so it escapes all stacking contexts
+    document.body.appendChild(picker);
+    activePicker = picker;
+
+    // Position using viewport coords
+    const checkRect  = checkEl.getBoundingClientRect();
+    const pickerEstH = 210;
+    const spaceBelow = window.innerHeight - checkRect.bottom;
+
+    picker.style.left = checkRect.left + 'px';
+    if (spaceBelow < pickerEstH) {
+      picker.style.top  = 'auto';
+      picker.style.bottom = (window.innerHeight - checkRect.top + 6) + 'px';
+      picker.style.transformOrigin = 'bottom left';
+    } else {
+      picker.style.top = (checkRect.bottom + 6) + 'px';
+      picker.style.transformOrigin = 'top left';
+    }
+
+    picker.animate(
+      [{ opacity: 0, transform: 'scale(0.9) translateY(-6px)' },
+       { opacity: 1, transform: 'scale(1) translateY(0)' }],
+      { duration: 200, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'none' }
+    );
+
+    picker.addEventListener('mousedown', (e) => {
+      const btn = e.target.closest('[data-status]');
+      if (!btn) return;
+      e.stopPropagation();
+      const newStatus = btn.dataset.status;
+      closePicker();
+      applyCondStatus(item, newStatus);
+    });
+
+    setTimeout(() => {
+      document.addEventListener('click', closePicker, { once: true, capture: true });
+    }, 0);
+
+    // Close if body scrolls (picker would be orphaned)
+    document.querySelector('.ai-panel__body')?.addEventListener('scroll', closePicker, { once: true, passive: true });
+  }
+
+  // ── Click on check circle → open picker ──────────────────────────────────
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('.ai-cond__review-btn')) return;
+    if (e.target.closest('.ai-cond__status-picker')) return;
+
+    const checkEl = e.target.closest('.ai-cond__check');
+    if (!checkEl) return;
+
+    const item = checkEl.closest('.ai-cond__item');
+    if (!item) return;
+
+    e.stopPropagation();
+    openPicker(item, checkEl);
   });
 
-  // ── Show All / Show Less toggle (CSS grid + chevron transition; reversible mid-flight) ──
+  // ── Show All / Show Less toggle ───────────────────────────────────────────
   let expanded = false;
 
   const setExpanded = (open) => {
@@ -1862,6 +1981,7 @@ function initConditionsInteraction() {
 
   showAll.addEventListener('click', (e) => {
     e.preventDefault();
+    closePicker();
     toggleShowAll();
   });
   showAll.addEventListener('keydown', (e) => {
