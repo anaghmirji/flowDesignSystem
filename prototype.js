@@ -1673,46 +1673,54 @@ function syncProtoCardBoardSeamClass() {
 
 // ─── AI Panel body content ────────────────────────────────────────────────────
 
-// status: 'pending' | 'doc-requested' | 'doc-submitted' | 'cleared'
+// status: 'pending' | 'doc-requested' | 'doc-submitted' | 'doc-rejected' | 'cleared' | 'rejected'
+// assignee: { initials, name, color, photo } | null
+const ASSIGNEES = {
+  JD: { initials: 'JD', name: 'Jane Doe',   color: '#818CF8', photo: 'https://i.pravatar.cc/56?img=47' },
+  MK: { initials: 'MK', name: 'Mike Kim',   color: '#34D399', photo: 'https://i.pravatar.cc/56?img=12' },
+  SR: { initials: 'SR', name: 'Sara Ramos', color: '#F97316', photo: 'https://i.pravatar.cc/56?img=25' },
+  TB: { initials: 'TB', name: 'Tom Baker',  color: '#60A5FA', photo: 'https://i.pravatar.cc/56?img=33' },
+};
+
 const ALL_CONDITIONS_DATA = [
   {
     section: 'Before moving to Underwriting',
     items: [
-      { label: 'Proof of Income',      status: 'doc-submitted' },
-      { label: 'Bank Statements',      status: 'doc-requested' },
-      { label: '12-month rent ledger', status: 'doc-rejected'  },
-      { label: 'Purchase agreement',   status: 'pending'       },
-      { label: 'Upload W2',            status: 'cleared'       },
+      { label: 'Proof of Income',      status: 'doc-submitted', assignee: ASSIGNEES.JD },
+      { label: 'Bank Statements',      status: 'doc-requested', assignee: ASSIGNEES.MK },
+      { label: '12-month rent ledger', status: 'doc-rejected',  assignee: ASSIGNEES.SR },
+      { label: 'Purchase agreement',   status: 'pending',       assignee: ASSIGNEES.JD },
+      { label: 'Upload W2',            status: 'cleared',       assignee: ASSIGNEES.TB },
     ],
   },
   {
     section: 'Before moving to Funded',
     items: [
-      { label: 'Proof of Income',      status: 'doc-submitted' },
-      { label: 'Bank Statements',      status: 'doc-requested' },
-      { label: '12-month rent ledger', status: 'pending'       },
-      { label: 'Purchase agreement',   status: 'pending'       },
-      { label: 'Upload W2',            status: 'cleared'       },
+      { label: 'Proof of Income',      status: 'doc-submitted', assignee: ASSIGNEES.MK },
+      { label: 'Bank Statements',      status: 'doc-requested', assignee: ASSIGNEES.SR },
+      { label: '12-month rent ledger', status: 'pending',       assignee: ASSIGNEES.JD },
+      { label: 'Purchase agreement',   status: 'pending',       assignee: ASSIGNEES.MK },
+      { label: 'Upload W2',            status: 'cleared',       assignee: ASSIGNEES.TB },
     ],
   },
   {
     section: 'Before moving to Closed',
     items: [
-      { label: 'Proof of Income',      status: 'doc-submitted' },
-      { label: 'Bank Statements',      status: 'doc-requested' },
-      { label: '12-month rent ledger', status: 'pending'       },
-      { label: 'Purchase agreement',   status: 'pending'       },
-      { label: 'Upload W2',            status: 'cleared'       },
+      { label: 'Proof of Income',      status: 'doc-submitted', assignee: ASSIGNEES.SR },
+      { label: 'Bank Statements',      status: 'doc-requested', assignee: ASSIGNEES.JD },
+      { label: '12-month rent ledger', status: 'pending',       assignee: ASSIGNEES.TB },
+      { label: 'Purchase agreement',   status: 'pending',       assignee: ASSIGNEES.MK },
+      { label: 'Upload W2',            status: 'cleared',       assignee: ASSIGNEES.SR },
     ],
   },
   {
     section: 'Before moving to Post-Close',
     items: [
-      { label: 'Proof of Income',      status: 'doc-submitted' },
-      { label: 'Bank Statements',      status: 'doc-requested' },
-      { label: '12-month rent ledger', status: 'pending'       },
-      { label: 'Purchase agreement',   status: 'pending'       },
-      { label: 'Upload W2',            status: 'cleared'       },
+      { label: 'Proof of Income',      status: 'doc-submitted', assignee: ASSIGNEES.JD },
+      { label: 'Bank Statements',      status: 'doc-requested', assignee: ASSIGNEES.SR },
+      { label: '12-month rent ledger', status: 'pending',       assignee: ASSIGNEES.TB },
+      { label: 'Purchase agreement',   status: 'pending',       assignee: ASSIGNEES.MK },
+      { label: 'Upload W2',            status: 'cleared',       assignee: ASSIGNEES.JD },
     ],
   },
 ];
@@ -1723,28 +1731,29 @@ const ICON_NEEDS_REVIEW = `<svg width="20" height="20" viewBox="0 0 20 20" fill=
 const ICON_REJECTED     = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" fill="#EF4444"/><path d="M7 7l6 6M13 7l-6 6" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>`;
 
 const COND_STATUSES = [
-  { val: 'open',         label: 'Open',         icon: ICON_CIRCLE_EMPTY },
-  { val: 'needs-review', label: 'Review',         icon: ICON_NEEDS_REVIEW },
-  { val: 'cleared',      label: 'Cleared',       icon: ICON_CHECK_FILLED },
+  { val: 'open',         label: 'Open',     icon: ICON_CIRCLE_EMPTY },
+  { val: 'needs-review', label: 'Review',   icon: ICON_NEEDS_REVIEW },
+  { val: 'cleared',      label: 'Cleared',  icon: ICON_CHECK_FILLED },
+  { val: 'rejected',     label: 'Rejected', icon: ICON_REJECTED },
 ];
 
 function dataToCondStatus(s) {
   if (s === 'cleared')                                              return 'cleared';
+  if (s === 'rejected')                                             return 'rejected';
   if (s === 'doc-submitted' || s === 'doc-requested' ||
       s === 'doc-rejected')                                         return 'needs-review';
   return 'open';
 }
 
 function buildCondItemHtml(item) {
-  const condStatus  = dataToCondStatus(item.status);
-  const isRequested = item.status === 'doc-requested';
-  const isSubmitted = item.status === 'doc-submitted';
-  const isCleared   = item.status === 'cleared';
-  const checkIcon   = COND_STATUSES.find(s => s.val === condStatus)?.icon ?? ICON_CIRCLE_EMPTY;
-  const labelExtra  = condStatus === 'cleared' ? ' ai-cond__label--cleared' : '';
-  const labelClass  = `ai-cond__label${labelExtra}`;
-  const isRejected  = item.status === 'doc-rejected';
-  const checkEl     = `<span class="ai-cond__check" tabindex="0" role="button" aria-label="Set status">${checkIcon}</span>`;
+  const condStatus    = dataToCondStatus(item.status);
+  const isRequested   = item.status === 'doc-requested';
+  const isSubmitted   = item.status === 'doc-submitted';
+  const isDocRejected = item.status === 'doc-rejected';
+  const checkIcon     = COND_STATUSES.find(s => s.val === condStatus)?.icon ?? ICON_CIRCLE_EMPTY;
+  const labelExtra    = condStatus === 'cleared' ? ' ai-cond__label--cleared' : '';
+  const labelClass    = `ai-cond__label${labelExtra}`;
+  const checkEl       = `<span class="ai-cond__check" tabindex="0" role="button" aria-label="Set status">${checkIcon}</span>`;
 
   if (isSubmitted) {
     return `
@@ -1760,7 +1769,7 @@ function buildCondItemHtml(item) {
     </div>`;
   }
 
-  if (isRejected) {
+  if (isDocRejected) {
     return `
     <div class="ai-cond__item ai-cond__item--has-right" data-cond-status="${condStatus}">
       <div class="ai-cond__item-left">
@@ -1795,6 +1804,38 @@ function buildCondItemHtml(item) {
     </div>`;
 }
 
+function buildEveryoneItemHtml(item) {
+  const condStatus    = dataToCondStatus(item.status);
+  const isRequested   = item.status === 'doc-requested';
+  const isDocRejected = item.status === 'doc-rejected';
+  const checkIcon     = COND_STATUSES.find(s => s.val === condStatus)?.icon ?? ICON_CIRCLE_EMPTY;
+  const labelExtra    = condStatus === 'cleared' ? ' ai-cond__label--cleared' : '';
+  const labelClass    = `ai-cond__label${labelExtra}`;
+
+  const a = item.assignee;
+  const avatarHtml = a
+    ? `<img class="ai-cond__everyone-avatar" title="${a.name}" alt="${a.name}" src="${a.photo}" />`
+    : `<span class="ai-cond__everyone-avatar ai-cond__everyone-avatar--none" title="Unassigned"></span>`;
+
+  let leftContent;
+  if (isRequested) {
+    leftContent = `<div class="ai-cond__item-stack"><span class="${labelClass}">${item.label}</span><span class="ai-cond__requested-text">Requested from Borrower</span></div>`;
+  } else if (isDocRejected) {
+    leftContent = `<div class="ai-cond__item-stack"><span class="${labelClass}">${item.label}</span><span class="ai-cond__requested-text">Resubmission requested</span></div>`;
+  } else {
+    leftContent = `<span class="${labelClass}">${item.label}</span>`;
+  }
+
+  return `
+    <div class="ai-cond__everyone-item">
+      <div class="ai-cond__everyone-item-left">
+        <span class="ai-cond__check">${checkIcon}</span>
+        ${leftContent}
+      </div>
+      ${avatarHtml}
+    </div>`;
+}
+
 function buildCondSectionHtml(data) {
   const cleared = data.items.filter(i => dataToCondStatus(i.status) === 'cleared').length;
   const total   = data.items.length;
@@ -1809,31 +1850,57 @@ function buildCondSectionHtml(data) {
     </div>`;
 }
 
-function buildAiConditionsHtml() {
-  const primaryHtml = buildCondSectionHtml(ALL_CONDITIONS_DATA[0]);
-  const extraHtml   = ALL_CONDITIONS_DATA.slice(1).map(buildCondSectionHtml)
-    .map(html => `<div class="ai-cond__divider"></div>${html}`).join('');
+function buildCondCardHtml(sectionData) {
+  const sectionHtml   = buildCondSectionHtml(sectionData);
+  const everyoneItems = sectionData.items.map(buildEveryoneItemHtml).join('');
   return `
-    <div class="ai-cond__wrap">
-      <div class="ai-cond__card">
-        ${primaryHtml}
-        <div class="ai-cond__extra-outer">
-          <div class="ai-cond__extra">${extraHtml}</div>
+    <div class="ai-cond__card">
+      ${sectionHtml}
+      <div class="ai-cond__everyone-wrap">
+        <div class="ai-cond__everyone-box">
+          <div class="ai-cond__everyone-box-hdr" role="button" tabindex="0">
+            <span class="ai-cond__everyone-label">Show everyone's conditions</span>
+            <span class="ai-cond__everyone-box-chev">${iconSvg('chevron-down')}</span>
+          </div>
+          <div class="ai-cond__everyone-items-outer">
+            <div class="ai-cond__everyone-items-inner">
+              <div class="ai-cond__everyone-list">${everyoneItems}</div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="ai-cond__show-all" role="button" tabindex="0" aria-expanded="false">
-        <span class="ai-cond__show-all__label">Show all stage conditions</span>
-        <span class="ai-cond__show-all__chevron">${iconSvg('chevron-down')}</span>
+    </div>`;
+}
+
+function buildAiConditionsHtml() {
+  const primaryCard = buildCondCardHtml(ALL_CONDITIONS_DATA[0]);
+  const extraCards  = ALL_CONDITIONS_DATA.slice(1).map(buildCondCardHtml).join('');
+
+  return `
+    <div class="ai-cond__wrap">
+      <!-- Stage toggle pill — sits above cards -->
+      <div class="ai-cond__stage-bar" role="button" tabindex="0" aria-pressed="false">
+        <span class="ai-cond__stage-bar__label">Show all stages</span>
+        <span class="ai-cond__toggle-sw" aria-hidden="true">
+          <span class="ai-cond__toggle-thumb"></span>
+        </span>
+      </div>
+
+      ${primaryCard}
+
+      <div class="ai-cond__extra-outer">
+        <div class="ai-cond__extra">${extraCards}</div>
       </div>
     </div>`;
 }
 
 function initConditionsInteraction() {
   const card       = document.querySelector('.ai-cond__card');
-  const showAll    = document.querySelector('.ai-cond__show-all');
+  const stageBar   = document.querySelector('.ai-cond__stage-bar');
+  const toggleSw   = stageBar?.querySelector('.ai-cond__toggle-sw');
   const extra      = document.querySelector('.ai-cond__extra');
   const extraOuter = extra?.closest('.ai-cond__extra-outer');
-  if (!card || !showAll || !extra || !extraOuter) return;
+  if (!card || !stageBar || !extra || !extraOuter) return;
 
   extra.style.height = '';
 
@@ -1919,14 +1986,26 @@ function initConditionsInteraction() {
 
     const curStatus = item.dataset.condStatus || 'open';
 
+    // Context-aware picker options
+    let pickerOptions;
+    if (curStatus === 'cleared' || curStatus === 'rejected') {
+      // Only action is Reopen → goes back to needs-review
+      pickerOptions = [{ val: 'needs-review', label: 'Reopen', isReopen: true }];
+    } else {
+      // Show all statuses except current, excluding rejected from 'open' state
+      pickerOptions = COND_STATUSES.filter(s => {
+        if (s.val === curStatus) return false;
+        if (curStatus === 'open' && s.val === 'rejected') return false;
+        return true;
+      });
+    }
+
     const picker = document.createElement('div');
     picker.className = 'ai-cond__status-picker';
-    picker.innerHTML =
-      COND_STATUSES.map(s => `
-        <button class="ai-cond__status-opt${s.val === curStatus ? ' ai-cond__status-opt--active' : ''}" data-status="${s.val}">
+    picker.innerHTML = pickerOptions.map(s => `
+        <button class="ai-cond__status-opt${s.isReopen ? ' ai-cond__status-opt--reopen' : ''}" data-status="${s.val}">
           <span class="ai-cond__status-dot ai-cond__status-dot--${s.val}"></span>
           <span class="ai-cond__status-opt-label">${s.label}</span>
-          ${s.val === curStatus ? '<span class="ai-cond__status-opt-tick">✓</span>' : ''}
         </button>`).join('');
 
     // Append to body so it escapes all stacking contexts
@@ -1935,7 +2014,7 @@ function initConditionsInteraction() {
 
     // Position using viewport coords
     const checkRect  = checkEl.getBoundingClientRect();
-    const pickerEstH = 210;
+    const pickerEstH = pickerOptions.length * 40 + 8;
     const spaceBelow = window.innerHeight - checkRect.bottom;
 
     picker.style.left = checkRect.left + 'px';
@@ -1986,30 +2065,90 @@ function initConditionsInteraction() {
     openPicker(item, checkEl);
   });
 
-  // ── Show all stage conditions / Show current toggle ───────────────────────
+  // ── Show all stages toggle switch (extra cards: fade-up in / fade-down out; no grid “swipe”) ──
   let expanded = false;
+  let stageCollapseCleanup = null;
+
+  const cancelStageCollapse = () => {
+    if (typeof stageCollapseCleanup === 'function') stageCollapseCleanup();
+    stageCollapseCleanup = null;
+  };
+
+  const EXTRA_CARD_COLLAPSE_MS = 450;
+
+  const resetExtraCardAnimations = () => {
+    extra.querySelectorAll(':scope > .ai-cond__card').forEach((c) => {
+      c.classList.remove('ai-cond__extra-card--exit');
+      c.style.animation = 'none';
+      void c.offsetWidth;
+      c.style.removeProperty('animation');
+    });
+  };
 
   const setExpanded = (open) => {
-    expanded = open;
-    const labelEl = showAll.querySelector('.ai-cond__show-all__label');
-    extraOuter.classList.toggle('ai-cond__extra-outer--expanded', open);
-    showAll.classList.toggle('ai-cond__show-all--expanded', open);
-    showAll.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if (labelEl) labelEl.textContent = open ? 'Show current' : 'Show all stage conditions';
+    const extraCards = extra.querySelectorAll(':scope > .ai-cond__card');
+
+    if (open) {
+      cancelStageCollapse();
+      expanded = true;
+      extraOuter.classList.add('ai-cond__extra-outer--expanded');
+      toggleSw?.classList.add('ai-cond__toggle-sw--on');
+      stageBar.setAttribute('aria-pressed', 'true');
+      resetExtraCardAnimations();
+      return;
+    }
+
+    cancelStageCollapse();
+    if (!extraOuter.classList.contains('ai-cond__extra-outer--expanded')) {
+      expanded = false;
+      toggleSw?.classList.remove('ai-cond__toggle-sw--on');
+      stageBar.setAttribute('aria-pressed', 'false');
+      return;
+    }
+
+    expanded = false;
+    toggleSw?.classList.remove('ai-cond__toggle-sw--on');
+    stageBar.setAttribute('aria-pressed', 'false');
+
+    if (extraCards.length === 0) {
+      extraOuter.classList.remove('ai-cond__extra-outer--expanded');
+      return;
+    }
+
+    extraCards.forEach((c) => c.classList.add('ai-cond__extra-card--exit'));
+    const collapseMs = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 50
+      : EXTRA_CARD_COLLAPSE_MS;
+    const tid = setTimeout(() => {
+      extraOuter.classList.remove('ai-cond__extra-outer--expanded');
+      extraCards.forEach((c) => c.classList.remove('ai-cond__extra-card--exit'));
+      stageCollapseCleanup = null;
+    }, collapseMs);
+    stageCollapseCleanup = () => clearTimeout(tid);
   };
 
   const toggleShowAll = () => setExpanded(!expanded);
 
-  showAll.addEventListener('click', (e) => {
+  stageBar.addEventListener('click', (e) => {
     e.preventDefault();
     closePicker();
     toggleShowAll();
   });
-  showAll.addEventListener('keydown', (e) => {
+  stageBar.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       toggleShowAll();
     }
+  });
+
+  // ── "Show everyone's conditions" accordion — event-delegated for all cards ──
+  const wrap = document.querySelector('.ai-cond__wrap');
+  wrap?.addEventListener('click', (e) => {
+    const hdr = e.target.closest('.ai-cond__everyone-box-hdr');
+    if (!hdr) return;
+    e.stopPropagation();
+    const box = hdr.closest('.ai-cond__everyone-box');
+    if (box) box.classList.toggle('ai-cond__everyone-box--expanded');
   });
 }
 

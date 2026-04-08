@@ -872,7 +872,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border-radius: 24px;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 16px;
 }
 
 .ai-cond__section-group {
@@ -882,25 +882,64 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   width: 100%;
 }
 
-/* Grid row 0fr→1fr animates intrinsic height without measuring scrollHeight */
+/* Grid reveal without row transition — extra cards use fade-up / fade-down instead of a height “swipe” */
 .ai-cond__extra-outer {
   display: grid;
   grid-template-rows: 0fr;
-  transition-property: grid-template-rows;
-  transition-duration: 0.46s;
-  transition-timing-function: cubic-bezier(0.4, 0, 1, 0.8);
+  transition: none;
 }
 
 .ai-cond__extra-outer--expanded {
   grid-template-rows: 1fr;
-  transition-duration: 1.1s;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition: none;
+}
+
+@keyframes ai-cond-extra-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ai-cond-extra-card-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.ai-cond__extra-outer--expanded .ai-cond__extra > .ai-cond__card:not(.ai-cond__extra-card--exit) {
+  animation: ai-cond-extra-card-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.ai-cond__extra-outer--expanded .ai-cond__extra > .ai-cond__card:nth-child(2):not(.ai-cond__extra-card--exit) {
+  animation-delay: 0.08s;
+}
+
+.ai-cond__extra > .ai-cond__card.ai-cond__extra-card--exit {
+  animation: ai-cond-extra-card-out 0.38s cubic-bezier(0.4, 0, 1, 0.8) forwards !important;
+}
+
+.ai-cond__extra > .ai-cond__card.ai-cond__extra-card--exit:nth-child(2) {
+  animation-delay: 0.06s;
 }
 
 .ai-cond__extra {
   min-height: 0;
   overflow: hidden;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;  /* gap between primary card and first extra card when expanded */
 }
 
 .ai-cond__divider {
@@ -1252,68 +1291,196 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   opacity: 1;
 }
 
-.ai-cond__show-all {
-  position: relative;
-  z-index: 0;
-  margin: -2px 32px 12px;
-  background: var(--accent-black-8, #ebebeb);
-  border: none;
-  border-radius: 0 0 20px 20px;
-  padding: 12px 20px;
+/* ── "Show everyone's conditions" — always-visible gray box ──────────────── */
+
+/* Wrapper: breaks out of card's 16px padding, adds 8px inner margin */
+.ai-cond__everyone-wrap {
+  margin: 0 -16px -16px;
+  padding: 0 8px 8px;
+}
+
+/* Gray rounded box */
+.ai-cond__everyone-box {
+  background: var(--accent-black-4, #f5f5f5);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+/* Header row (always visible, click to expand) */
+.ai-cond__everyone-box-hdr {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 14px 16px;
   cursor: pointer;
+  border-radius: 20px;
+  transition: background 0.12s ease;
 }
-
-.ai-cond__show-all__label {
-  font-size: 13px;
-  font-family: var(--font-sans);
-  color: var(--accent-black-60);
-  white-space: nowrap;
-}
-
-.ai-cond__show-all__chevron {
-  width: 14px;
-  height: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  line-height: 0;
-  transition: transform 0.32s cubic-bezier(0.4, 0, 1, 0.8);
-  --stroke-0: var(--accent-black-60);
-}
-
-.ai-cond__show-all__chevron svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  color: var(--accent-black-60);
-}
-
-.ai-cond__show-all__chevron svg path {
-  color: var(--accent-black-60);
-}
-
-.ai-cond__show-all--expanded .ai-cond__show-all__chevron {
-  transform: rotate(180deg);
-  transition-duration: 0.48s;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.ai-cond__show-all--expanded {
+.ai-cond__everyone-box-hdr:hover {
   background: var(--accent-black-8, #ebebeb);
 }
 
+.ai-cond__everyone-label {
+  font-size: 12px;
+  font-family: var(--font-sans);
+  color: var(--accent-black-60, #666);
+  white-space: nowrap;
+}
+
+/* Chevron: -90deg = right-pointing (collapsed) */
+.ai-cond__everyone-box-chev {
+  display: flex;
+  align-items: center;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--accent-black-40, #999);
+  transform: rotate(-90deg);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ai-cond__everyone-box-chev svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* Expanded: chevron rotates to point up (180deg) */
+.ai-cond__everyone-box--expanded .ai-cond__everyone-box-chev {
+  transform: rotate(180deg);
+}
+
+/* Items accordion: grid 0fr → 1fr */
+.ai-cond__everyone-items-outer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ai-cond__everyone-box--expanded .ai-cond__everyone-items-outer {
+  grid-template-rows: 1fr;
+}
+
+.ai-cond__everyone-items-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Item list */
+.ai-cond__everyone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+
+/* Individual item row */
+.ai-cond__everyone-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 33px;
+  gap: 8px;
+}
+.ai-cond__everyone-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+/* Check icon is display-only in this list */
+.ai-cond__everyone-item .ai-cond__check {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* 28px avatar circles */
+.ai-cond__everyone-avatar {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.02em;
+  object-fit: cover;
+}
+.ai-cond__everyone-avatar--none {
+  background: var(--accent-black-12, #e0e0e0);
+}
+
+/* Reopen option in picker */
+.ai-cond__status-opt--reopen {
+  color: var(--accent-black-80, #333);
+}
+
+/* Stage toggle pill bar — sits above the cards */
+.ai-cond__stage-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f5f5f5;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 8px 8px 8px 12px;
+  margin: 0 12px 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ai-cond__stage-bar__label {
+  font-size: 12px;
+  font-family: var(--font-sans);
+  color: var(--accent-black-80, #333);
+  line-height: 1;
+}
+
+/* iOS-style toggle switch */
+.ai-cond__toggle-sw {
+  position: relative;
+  flex-shrink: 0;
+  width: 38px;
+  height: 26px;
+  background: #e0e0e0;
+  border-radius: 100px;
+  padding: 4px;
+  box-sizing: border-box;
+  transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ai-cond__toggle-sw--on {
+  background: #33a0ff;
+}
+
+.ai-cond__toggle-thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 100px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ai-cond__toggle-sw--on .ai-cond__toggle-thumb {
+  transform: translateX(12px);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .ai-cond__extra-outer,
-  .ai-cond__extra-outer--expanded {
-    transition-duration: 0.01ms;
+  .ai-cond__extra-outer--expanded .ai-cond__extra > .ai-cond__card:not(.ai-cond__extra-card--exit),
+  .ai-cond__extra > .ai-cond__card.ai-cond__extra-card--exit {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
   }
 
-  .ai-cond__show-all__chevron,
-  .ai-cond__show-all--expanded .ai-cond__show-all__chevron {
+  .ai-cond__toggle-sw,
+  .ai-cond__toggle-thumb {
     transition-duration: 0.01ms;
   }
 }
