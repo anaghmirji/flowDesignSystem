@@ -1680,7 +1680,7 @@ const ALL_CONDITIONS_DATA = [
     items: [
       { label: 'Proof of Income',      status: 'doc-submitted' },
       { label: 'Bank Statements',      status: 'doc-requested' },
-      { label: '12-month rent ledger', status: 'pending'       },
+      { label: '12-month rent ledger', status: 'doc-rejected'  },
       { label: 'Purchase agreement',   status: 'pending'       },
       { label: 'Upload W2',            status: 'cleared'       },
     ],
@@ -1724,13 +1724,14 @@ const ICON_REJECTED     = `<svg width="20" height="20" viewBox="0 0 20 20" fill=
 
 const COND_STATUSES = [
   { val: 'open',         label: 'Open',         icon: ICON_CIRCLE_EMPTY },
-  { val: 'needs-review', label: 'Needs Review',  icon: ICON_NEEDS_REVIEW },
+  { val: 'needs-review', label: 'Review',         icon: ICON_NEEDS_REVIEW },
   { val: 'cleared',      label: 'Cleared',       icon: ICON_CHECK_FILLED },
 ];
 
 function dataToCondStatus(s) {
-  if (s === 'cleared')                                return 'cleared';
-  if (s === 'doc-submitted' || s === 'doc-requested') return 'needs-review';
+  if (s === 'cleared')                                              return 'cleared';
+  if (s === 'doc-submitted' || s === 'doc-requested' ||
+      s === 'doc-rejected')                                         return 'needs-review';
   return 'open';
 }
 
@@ -1738,26 +1739,18 @@ function buildCondItemHtml(item) {
   const condStatus  = dataToCondStatus(item.status);
   const isRequested = item.status === 'doc-requested';
   const isSubmitted = item.status === 'doc-submitted';
+  const isCleared   = item.status === 'cleared';
   const checkIcon   = COND_STATUSES.find(s => s.val === condStatus)?.icon ?? ICON_CIRCLE_EMPTY;
-  const labelExtra  = condStatus === 'cleared' ? ' ai-cond__label--cleared' : condStatus === 'rejected' ? ' ai-cond__label--rejected' : '';
+  const labelExtra  = condStatus === 'cleared' ? ' ai-cond__label--cleared' : '';
   const labelClass  = `ai-cond__label${labelExtra}`;
-
-  if (isRequested) {
-    return `
-    <div class="ai-cond__item" data-cond-status="${condStatus}">
-      <span class="ai-cond__check" tabindex="0" role="button" aria-label="Set status">${checkIcon}</span>
-      <div class="ai-cond__item-stack">
-        <span class="${labelClass}">${item.label}</span>
-        <span class="ai-cond__requested-text">Requested from Borrower</span>
-      </div>
-    </div>`;
-  }
+  const isRejected  = item.status === 'doc-rejected';
+  const checkEl     = `<span class="ai-cond__check" tabindex="0" role="button" aria-label="Set status">${checkIcon}</span>`;
 
   if (isSubmitted) {
     return `
     <div class="ai-cond__item ai-cond__item--has-right" data-cond-status="${condStatus}">
       <div class="ai-cond__item-left">
-        <span class="ai-cond__check" tabindex="0" role="button" aria-label="Set status">${checkIcon}</span>
+        ${checkEl}
         <div class="ai-cond__item-stack">
           <span class="${labelClass}">${item.label}</span>
           <span class="ai-cond__submitted-text">Document submitted by Borrower</span>
@@ -1767,9 +1760,37 @@ function buildCondItemHtml(item) {
     </div>`;
   }
 
+  if (isRejected) {
+    return `
+    <div class="ai-cond__item ai-cond__item--has-right" data-cond-status="${condStatus}">
+      <div class="ai-cond__item-left">
+        ${checkEl}
+        <div class="ai-cond__item-stack">
+          <span class="${labelClass}">${item.label}</span>
+          <span class="ai-cond__rejected-text" data-tooltip="Document was reviewed and rejected by the processor. A resubmission has been requested from the borrower.">Resubmission requested</span>
+        </div>
+      </div>
+      <button class="ai-cond__review-btn ai-cond__review-btn--remind">Remind</button>
+    </div>`;
+  }
+
+  if (isRequested) {
+    return `
+    <div class="ai-cond__item ai-cond__item--has-right" data-cond-status="${condStatus}">
+      <div class="ai-cond__item-left">
+        ${checkEl}
+        <div class="ai-cond__item-stack">
+          <span class="${labelClass}">${item.label}</span>
+          <span class="ai-cond__requested-text">Requested from Borrower</span>
+        </div>
+      </div>
+      <button class="ai-cond__review-btn ai-cond__review-btn--remind">Remind</button>
+    </div>`;
+  }
+
   return `
     <div class="ai-cond__item" data-cond-status="${condStatus}">
-      <span class="ai-cond__check" tabindex="0" role="button" aria-label="Set status">${checkIcon}</span>
+      ${checkEl}
       <span class="${labelClass}">${item.label}</span>
     </div>`;
 }
@@ -1801,7 +1822,7 @@ function buildAiConditionsHtml() {
         </div>
       </div>
       <div class="ai-cond__show-all" role="button" tabindex="0" aria-expanded="false">
-        <span class="ai-cond__show-all__label">Show All</span>
+        <span class="ai-cond__show-all__label">Show all stage conditions</span>
         <span class="ai-cond__show-all__chevron">${iconSvg('chevron-down')}</span>
       </div>
     </div>`;
@@ -1965,7 +1986,7 @@ function initConditionsInteraction() {
     openPicker(item, checkEl);
   });
 
-  // ── Show All / Show Less toggle ───────────────────────────────────────────
+  // ── Show all stage conditions / Show current toggle ───────────────────────
   let expanded = false;
 
   const setExpanded = (open) => {
@@ -1974,7 +1995,7 @@ function initConditionsInteraction() {
     extraOuter.classList.toggle('ai-cond__extra-outer--expanded', open);
     showAll.classList.toggle('ai-cond__show-all--expanded', open);
     showAll.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if (labelEl) labelEl.textContent = open ? 'Show Less' : 'Show All';
+    if (labelEl) labelEl.textContent = open ? 'Show current' : 'Show all stage conditions';
   };
 
   const toggleShowAll = () => setExpanded(!expanded);
