@@ -1548,6 +1548,9 @@ function buildBody() {
               <button type="button" class="ai-panel__tab-btn" data-ai-tab="activity" aria-label="Activity">
                 <span class="ai-panel__tab-icon">${iconSvg('clock')}</span>
               </button>
+              <button type="button" class="ai-panel__tab-btn" data-ai-tab="worklist" aria-label="Worklist">
+                <span class="ai-panel__tab-icon">${iconSvg('clipboard-document-list')}</span>
+              </button>
             </div>
           </div>
           <!-- Main content area -->
@@ -1674,7 +1677,8 @@ const AI_PANEL_TABS = [
   { id: 'summary',    label: 'Summary',    icon: 'sparkle'    },
   { id: 'documents',  label: 'Documents',  icon: 'document'   },
   { id: 'conditions', label: 'Conditions', icon: 'automation' },
-  { id: 'activity',   label: 'Activity',   icon: 'clock'      },
+  { id: 'activity',   label: 'Activity',   icon: 'clock'                  },
+  { id: 'worklist',   label: 'Worklist',   icon: 'clipboard-document-list' },
 ];
 
 let _aiActiveTab = 'summary';

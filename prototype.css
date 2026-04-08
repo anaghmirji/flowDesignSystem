@@ -705,7 +705,6 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   position: relative;
   z-index: 1;
   border-radius: 0 20px 20px 0;
-  border-top: 0.5px solid var(--accent-black-12, #e0e0e0);
   border-right: 0.5px solid var(--accent-black-12, #e0e0e0);
   border-bottom: 0.5px solid var(--accent-black-12, #e0e0e0);
   background: var(--accent-bg-1, #fcfcfd);
@@ -763,12 +762,35 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   flex-shrink: 0;
   background: transparent;
   border-radius: 160px;
-  overflow: hidden;
+  overflow: visible;
   cursor: pointer;
   transition: background 0.14s ease;
 }
 .ai-panel__tab-btn:hover {
   background: var(--accent-black-20, #ccc);
+}
+
+/* Tooltip */
+.ai-panel__tab-btn::after {
+  content: attr(aria-label);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-black-80, #333);
+  color: #fff;
+  font-size: 11px;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  padding: 3px 7px;
+  border-radius: 5px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  z-index: 100;
+}
+.ai-panel__tab-btn:hover::after {
+  opacity: 1;
 }
 
 .ai-panel__tab-icon {
