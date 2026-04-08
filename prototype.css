@@ -850,6 +850,11 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border: 0.5px solid var(--accent-black-12, #e0e0e0);
   border-radius: 100px;
 }
+.ai-panel__notes-btn .ai-panel__tab-icon,
+.ai-panel__notes-btn .ai-panel__tab-icon svg {
+  width: 10px;
+  height: 10px;
+}
 
 /* ── .proto-loan-stats ───────────────────────────────────────────────────────── */
 
