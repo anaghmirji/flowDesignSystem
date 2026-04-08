@@ -1671,6 +1671,141 @@ function syncProtoCardBoardSeamClass() {
   card.classList.toggle('proto-card--board-kanban-full', fullKanban);
 }
 
+// ─── AI Panel body content ────────────────────────────────────────────────────
+
+// status: 'pending' | 'doc-requested' | 'doc-submitted' | 'cleared'
+// Cleared items always sort to the bottom
+const CONDITIONS_DATA = {
+  section: 'Before moving to Underwriting',
+  items: [
+    { label: 'Proof of Income',      status: 'doc-submitted' },
+    { label: 'Bank Statements',      status: 'doc-requested' },
+    { label: '12-month rent ledger', status: 'pending'       },
+    { label: 'Purchase agreement',   status: 'pending'       },
+    { label: 'Upload W2',            status: 'cleared'       },
+  ],
+};
+
+const ICON_CHECK_FILLED = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" fill="#22C55E"/><path d="M6 10.5L8.5 13L14 7.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const ICON_CIRCLE_EMPTY = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="9.4" stroke="#d4d4d4" stroke-width="1.2"/></svg>`;
+
+function buildCondItemHtml(item) {
+  const isCleared   = item.status === 'cleared';
+  const isRequested = item.status === 'doc-requested';
+  const isSubmitted = item.status === 'doc-submitted';
+  const checkIcon   = isCleared ? ICON_CHECK_FILLED : ICON_CIRCLE_EMPTY;
+  const labelClass  = `ai-cond__label${isCleared ? ' ai-cond__label--cleared' : ''}`;
+
+  if (isRequested) {
+    return `
+    <div class="ai-cond__item">
+      <span class="ai-cond__check">${checkIcon}</span>
+      <div class="ai-cond__item-stack">
+        <span class="${labelClass}">${item.label}</span>
+        <span class="ai-cond__requested-text">Requested from Borrower</span>
+      </div>
+    </div>`;
+  }
+
+  if (isSubmitted) {
+    return `
+    <div class="ai-cond__item ai-cond__item--has-right">
+      <div class="ai-cond__item-left">
+        <span class="ai-cond__check">${checkIcon}</span>
+        <div class="ai-cond__item-stack">
+          <span class="${labelClass}">${item.label}</span>
+          <span class="ai-cond__submitted-text">Document submitted by Borrower</span>
+        </div>
+      </div>
+      <button class="ai-cond__review-btn">Review</button>
+    </div>`;
+  }
+
+  return `
+    <div class="ai-cond__item">
+      <span class="ai-cond__check">${checkIcon}</span>
+      <span class="${labelClass}">${item.label}</span>
+    </div>`;
+}
+
+function buildAiConditionsHtml() {
+  const cleared = CONDITIONS_DATA.items.filter(i => i.status === 'cleared').length;
+  const total   = CONDITIONS_DATA.items.length;
+  const items   = CONDITIONS_DATA.items.map(buildCondItemHtml).join('');
+  return `
+    <div class="ai-cond__wrap">
+      <div class="ai-cond__card">
+        <div class="ai-cond__header">
+          <span class="ai-cond__section">${CONDITIONS_DATA.section}</span>
+          <span class="ai-cond__progress"><strong>${cleared} of ${total}</strong> cleared</span>
+        </div>
+        <div class="ai-cond__list">${items}</div>
+      </div>
+      <div class="ai-cond__show-all">
+        <span class="ai-cond__show-all__label">Show All</span>
+        <span class="ai-cond__show-all__chevron">${iconSvg('chevron-down')}</span>
+      </div>
+    </div>`;
+}
+
+function initConditionsInteraction() {
+  const list = document.querySelector('.ai-cond__list');
+  if (!list) return;
+
+  const updateProgress = () => {
+    const clearedCount = list.querySelectorAll('.ai-cond__label--cleared').length;
+    const totalCount   = list.querySelectorAll('.ai-cond__label').length;
+    const progress = document.querySelector('.ai-cond__progress');
+    if (progress) progress.innerHTML = `<strong>${clearedCount} of ${totalCount}</strong> cleared`;
+  };
+
+  list.addEventListener('click', (e) => {
+    if (e.target.closest('.ai-cond__review-btn')) return;
+
+    const item = e.target.closest('.ai-cond__item');
+    if (!item) return;
+
+    const label = item.querySelector('.ai-cond__label');
+    if (!label || label.classList.contains('ai-cond__label--striking') || label.classList.contains('ai-cond__label--unstriking')) return;
+
+    const check = item.querySelector('.ai-cond__check');
+    const isCleared = label.classList.contains('ai-cond__label--cleared');
+
+    if (!isCleared) {
+      // → Check: green icon pop + strikethrough draw
+      check.innerHTML = ICON_CHECK_FILLED;
+      check.classList.add('ai-cond__check--animating');
+      label.classList.add('ai-cond__label--striking');
+
+      setTimeout(() => {
+        check.classList.remove('ai-cond__check--animating');
+        label.classList.remove('ai-cond__label--striking');
+        label.classList.add('ai-cond__label--cleared');
+        updateProgress();
+      }, 560);
+    } else {
+      // → Uncheck: empty circle pop + strikethrough fade out
+      label.classList.remove('ai-cond__label--cleared');
+      label.classList.add('ai-cond__label--unstriking');
+      check.classList.add('ai-cond__check--animating');
+
+      setTimeout(() => {
+        check.innerHTML = ICON_CIRCLE_EMPTY;
+        check.classList.remove('ai-cond__check--animating');
+        label.classList.remove('ai-cond__label--unstriking');
+        updateProgress();
+      }, 280);
+    }
+  });
+}
+
+function renderAiPanelBody(tabId) {
+  const body = document.querySelector('.ai-panel__body');
+  if (!body) return;
+  body.innerHTML = tabId === 'conditions' ? buildAiConditionsHtml() : '';
+  if (tabId === 'conditions') initConditionsInteraction();
+}
+
 // ─── AI Panel Tab Switcher animation ─────────────────────────────────────────
 
 const AI_PANEL_TABS = [
@@ -1786,6 +1921,7 @@ function switchAiTab(newId) {
     btnIconEl.innerHTML = iconSvg(oldTab.icon);
 
     _aiActiveTab = newId;
+    renderAiPanelBody(newId);
     activePill.style.width = '';
 
     // Label enters from right — glides in with slight overshoot
@@ -2943,6 +3079,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindInteractions();
   bindResizeHandle();
   bindAiPanelSwitcher();
+  renderAiPanelBody(_aiActiveTab);
   syncProtoBoardRightInset();
   syncProtoCardBoardSeamClass();
   const protoCardEl = document.querySelector('.proto-card');
