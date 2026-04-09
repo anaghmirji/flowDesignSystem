@@ -695,6 +695,32 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   gap: 8px;
 }
 
+/* Notes icon — source SVG is 20×22; on screen ~23px tall (uniform scale, not stretched) */
+.btn__icon-wrap--figma-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn__figma-img-wrap {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+.btn__figma-img {
+  width: auto;
+  height: 23px;
+  aspect-ratio: 20 / 22;
+  max-width: 24px;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  flex-shrink: 0;
+}
+
 /* ── .proto-ai-panel ────────────────────────────────────────────────────────── */
 
 .proto-ai-panel {

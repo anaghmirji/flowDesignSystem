@@ -554,7 +554,14 @@ function applyMainLoanDetail(key) {
 
 function buildBorrowerHeader(detail = getLoanDetailForKey(DEFAULT_LOAN_DETAIL_KEY)) {
   const profileHtml     = buildProfileHtml({ favorited: true, avatarUrl: detail.avatarUrl });
-  const docBtn          = buildBtnPreviewHtml({ id: 's1', icons: ['document'] });
+  // Button/Primary notes icon — local SVG (20×22 viewBox)
+  const docBtn = `<button class="btn btn--s1" tabindex="-1" aria-label="User notes">
+    <div class="btn__icon-wrap btn__icon-wrap--figma-img">
+      <div class="btn__figma-img-wrap">
+          <img class="btn__figma-img" src="assets/borrower-notes-icon.svg" width="20" height="22" alt="" />
+        </div>
+    </div>
+  </button>`;
   const assigneesHtml   = buildAssigneesHtml({ count: 2 });
   const statusStageHtml = buildLpStatusStageInteractiveHtml({
     status: { dot: detail.status.dot, label: detail.status.label },
