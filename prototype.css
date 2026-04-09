@@ -1958,6 +1958,183 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   line-height: 1.3;
 }
 
+/* ── .proto-form-wrap + floating index (Figma 1028:10657) ───────────────────── */
+
+.proto-form-wrap {
+  position: relative;
+  padding-left: 22px;
+}
+
+/* iOS-style vertical pill + expandable outline — left edge, vertically centered in form */
+.proto-form-index {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.proto-form-index > * {
+  pointer-events: auto;
+}
+
+.proto-form-index__pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  min-height: 40px;
+  padding: 0;
+  margin: 0;
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 100px;
+  background: var(--accent-white-100, #fff);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    box-shadow 0.18s var(--ease-smooth, ease),
+    border-color 0.18s var(--ease-smooth, ease);
+}
+
+.proto-form-index__pill:hover {
+  border-color: var(--accent-black-20, #ccc);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.proto-form-index__pill:focus-visible {
+  outline: 2px solid var(--accent-blue-60, #66b8ff);
+  outline-offset: 2px;
+}
+
+.proto-form-index__pill-visual {
+  display: block;
+  width: 4px;
+  height: 22px;
+  border-radius: 100px;
+  background: var(--accent-black-20, #ccc);
+  opacity: 0.85;
+}
+
+.proto-form-index--open .proto-form-index__pill-visual {
+  background: var(--accent-black-40, #999);
+}
+
+.proto-form-index__panel {
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  box-sizing: border-box;
+  min-width: 165px;
+  max-width: min(220px, 42vw);
+  padding: 12px 12px 16px;
+  border-radius: 16px;
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  background: var(--accent-white-100, #fff);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  text-align: left;
+}
+
+.proto-form-index__panel[hidden] {
+  display: none !important;
+}
+
+.proto-form-index__heading {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-black-50, #808080);
+  line-height: 1.2;
+}
+
+.proto-form-index__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.proto-form-index__group-label {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent-black-60, #666);
+  line-height: 1.3;
+}
+
+.proto-form-index__sub {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.proto-form-index__sub--branch {
+  padding-left: 8px;
+  border-left: 0.5px solid var(--accent-black-12, #e0e0e0);
+}
+
+.proto-form-index__link {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--accent-black-60, #666);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.proto-form-index__link:hover,
+.proto-form-index__link:focus-visible {
+  color: var(--accent-black-80, #333);
+}
+
+.proto-form-index__link:focus-visible {
+  outline: 2px solid var(--accent-blue-60, #66b8ff);
+  outline-offset: 1px;
+}
+
+.proto-form-index__link--active {
+  font-weight: 500;
+  color: var(--accent-blue-80, #33a0ff);
+}
+
+.proto-form-index__link--entity-only {
+  display: none;
+}
+
+.proto-form-wrap[data-proto-borrower-entity="true"] .proto-form-index__link--entity-only {
+  display: block;
+}
+
+.proto-form-index__link--investment-only {
+  display: none;
+}
+
+.proto-form-wrap[data-proto-prop-investment="true"] .proto-form-index__link--investment-only {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proto-form-index__pill {
+    transition: none;
+  }
+}
+
 /* ── .proto-form — accordion list ────────────────────────────────────────────── */
 
 .proto-form {

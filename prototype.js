@@ -545,6 +545,7 @@ function applyMainLoanDetail(key) {
   if (scroll) {
     scroll.innerHTML = buildFormHtml(d);
     initTogglePills();
+    syncProtoFormIndexAttrs();
     if (main.hasAttribute('data-view-mode')) {
       scroll.querySelectorAll('.proto-field--editable [contenteditable]').forEach((s) => { s.contentEditable = 'false'; });
     } else if (main.hasAttribute('data-edit-mode')) {
@@ -642,6 +643,51 @@ function buildPropControlsHtml(activeIdx, props = getActiveLoanProperties()) {
 
 // ─── Loan Form (Collapsible Sections) ────────────────────────────────────────
 
+/** Floating section index — collapsed iOS-style vertical pill expands into outline (Figma 1028:10657). */
+function buildProtoFormIndexNavHtml() {
+  const L = (slug, text, extraClass = '') =>
+    `<button type="button" class="proto-form-index__link${extraClass}" data-proto-index-jump="${slug}">${text}</button>`;
+
+  return `
+    <div class="proto-form-index" data-proto-form-index>
+      <button type="button" class="proto-form-index__pill" data-proto-index-toggle aria-expanded="false" aria-controls="proto-form-index-panel" id="proto-form-index-trigger" title="Section index">
+        <span class="proto-form-index__pill-visual" aria-hidden="true"></span>
+      </button>
+      <div class="proto-form-index__panel" id="proto-form-index-panel" data-proto-index-panel role="region" aria-labelledby="proto-form-index-heading" hidden>
+        <p class="proto-form-index__heading" id="proto-form-index-heading">Index</p>
+        <div class="proto-form-index__body">
+          <div class="proto-form-index__group">
+            <p class="proto-form-index__group-label">Borrower Information</p>
+            <div class="proto-form-index__sub">
+              ${L('identity', 'Identity')}
+              ${L('entity-details', 'Entity Details', ' proto-form-index__link--entity-only')}
+              ${L('contact', 'Contact')}
+              ${L('financial-profile', 'Financial Profile')}
+            </div>
+          </div>
+          <div class="proto-form-index__group">
+            <p class="proto-form-index__group-label">Properties</p>
+            <div class="proto-form-index__sub proto-form-index__sub--branch">
+              ${L('prop-location', 'Location')}
+              ${L('prop-details', 'Property Details')}
+              ${L('prop-valuation', 'Valuation')}
+              ${L('prop-investment', 'Investment Details', ' proto-form-index__link--investment-only')}
+            </div>
+          </div>
+          <div class="proto-form-index__group">
+            <p class="proto-form-index__group-label">Loan Terms</p>
+            <div class="proto-form-index__sub">
+              ${L('loan-core', 'Core Terms')}
+              ${L('loan-metrics', 'Calculated Metrics')}
+              ${L('loan-rate', 'Rate & Structure')}
+              ${L('loan-timeline', 'Timeline')}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
 function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
   const propsList = detail.properties || [];
   const p0 = propsList[0];
@@ -719,8 +765,9 @@ function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
     if (opts.hidden)  cls.push('proto-sub--hidden');
     if (opts.full)    cls.push('proto-sub--full');
     const dataAttr = opts.dataAttr ? ` ${opts.dataAttr}` : '';
+    const anchorId = opts.anchor ? ` id="proto-anchor-${opts.anchor}"` : '';
     return `
-      <div class="${cls.join(' ')}"${dataAttr}>
+      <div class="${cls.join(' ')}"${anchorId}${dataAttr}>
         <span class="proto-sub__label">${label}</span>
         <div class="proto-section__grid">${innerHtml}</div>
       </div>`;
@@ -731,8 +778,9 @@ function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
     if (opts.muted)     cls.push('proto-section--muted');
     if (opts.sidebar)   cls.push('proto-section--sidebar');
     if (opts.bodyGrid)  cls.push('proto-section--body-grid');
+    const anchorId = opts.anchor ? ` id="proto-anchor-${opts.anchor}"` : '';
     return `
-      <div class="${cls.join(' ')}" aria-expanded="true">
+      <div class="${cls.join(' ')}" aria-expanded="true"${anchorId}>
         <div class="proto-section__head" data-collapse-head>
           <div class="proto-section__head-left">
             <span class="proto-section__title">${title}</span>
@@ -766,6 +814,8 @@ function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
     </div>`;
 
   // ── Borrower section ─────────────────────────────────────────────────────────
+  const isInvestment0 = p0 && p0.occupancy === 'Investment';
+
   const borrowerHtml = `
     ${sub('Identity', `
       <div class="proto-field proto-field--span-2">
@@ -775,25 +825,24 @@ function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
       ${f('Full legal name', b.fullName, { span: 2, placeholder: "Enter borrower's full legal name" })}
       ${f('Date of birth', b.dob, { type: 'date', individualOnly: true, entityHide: isEntityBorrower })}
       ${f('SSN', b.ssnMasked, { masked: true, individualOnly: true, entityHide: isEntityBorrower })}
-    `)}
+    `, { anchor: 'identity' })}
     ${sub('Entity Details', `
       ${f('Entity legal name',  b.entityLegalName, { span: 2, placeholder: 'Enter entity legal name' })}
       ${f('EIN',                b.einMasked,     { masked: true })}
       ${f('Formation state',    b.formationState,               { type: 'select', options: US_STATES })}
       ${f('Authorized signers', b.signers,        { span: 2, placeholder: 'Add authorized signer name' })}
-    `, { hidden: !isEntityBorrower, dataAttr: 'data-entity-sub' })}
+    `, { hidden: !isEntityBorrower, dataAttr: 'data-entity-sub', anchor: 'entity-details' })}
     ${sub('Contact', `
       ${f('Email address', b.email, { placeholder: 'email@example.com' })}
       ${f('Phone number',  b.phone,      { placeholder: '(555) 123-4567'   })}
-    `)}
+    `, { anchor: 'contact' })}
     ${sub('Financial Profile', `
       ${f('FICO / Credit score', b.fico,   { type: 'number', meta: 'reported',  infoKey: 'fico', placeholder: '300–850' })}
       ${f('DTI',                 b.dti,  { type: 'number', meta: 'reported',  infoKey: 'dti',  placeholder: '0–100'   })}
       ${f('Experience summary',  b.experience, { type: 'textarea', span: 2, placeholder: "Describe borrower's relevant experience" })}
-    `)}`;
+    `, { anchor: 'financial-profile' })}`;
 
   // ── Properties section ───────────────────────────────────────────────────────
-  const isInvestment0 = p0 && p0.occupancy === 'Investment';
   const propertiesHtml = `
     <div class="proto-prop-layout">
       <div class="proto-prop-sidebar" data-prop-sidebar>
@@ -808,7 +857,7 @@ function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
           ${f('State',                 p0.state,   { propKey: 'state',   type: 'select', options: US_STATES })}
           ${f('Zip Code',              p0.zip,     { propKey: 'zip',     placeholder: '00000' })}
           <div class="proto-field proto-field--location-spacer" aria-hidden="true"></div>
-        `)}
+        `, { anchor: 'prop-location' })}
         ${sub('Property Details', `
           ${f('Property Type', p0.typeLabel, { propKey: 'typeLabel', type: 'select', options: ['SFR (Single Family)', 'Condo', 'Multi-Family (4)', 'Commercial', 'Mixed-Use', 'Land'] })}
           ${f('Units',         p0.units,     { propKey: 'units',     type: 'number', placeholder: 'Number of units' })}
@@ -816,16 +865,16 @@ function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
           ${f('Intended use',  p0.use,       { propKey: 'use',       type: 'select', options: ['Primary Residence', 'Investment', 'Fix & Flip', 'Rental', 'Other'] })}
           ${f('Square Footage', p0.sqft,     { propKey: 'sqft',      type: 'number', placeholder: 'Square footage' })}
           ${f('Year Built',    p0.yearBuilt, { propKey: 'yearBuilt', type: 'number', placeholder: 'YYYY' })}
-        `)}
+        `, { anchor: 'prop-details' })}
         ${sub('Valuation', `
           ${f('Purchase Price',  p0.purchase,  { propKey: 'purchase',  calcKey: 'purchasePrice', type: 'currency', infoKey: 'purchasePrice' })}
           ${f('Appraised Value', p0.appraised, { propKey: 'appraised',                           type: 'currency', infoKey: 'appraised'     })}
           ${f('ARV',             p0.arv,       { propKey: 'arv',        meta: 'estimated',        type: 'currency', infoKey: 'arv'           })}
-        `)}
+        `, { anchor: 'prop-valuation' })}
         ${sub('Investment Details', `
           ${f('Projected rent / mo', p0.rent, { propKey: 'rent', type: 'currency', infoKey: 'rent'                                    })}
           ${f('DSCR',                p0.dscr, { propKey: 'dscr', type: 'number',   meta: 'calculated', infoKey: 'dscr', placeholder: '0.00' })}
-        `, { hidden: !isInvestment0, dataAttr: 'data-investment-sub' })}
+        `, { hidden: !isInvestment0, dataAttr: 'data-investment-sub', anchor: 'prop-investment' })}
       </div>
     </div>`;
 
@@ -836,25 +885,32 @@ function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
       ${f('Loan amount',  lt.loanAmount,          { type: 'currency', calcKey: 'loanAmount', infoKey: 'loanAmount' })}
       ${f('Loan purpose', lt.loanPurpose,           { type: 'select',  options: purposeOptions })}
       ${f('Product',      lt.productDisplay, { link: true })}
-    `)}
+    `, { anchor: 'loan-core' })}
     ${sub('Calculated Metrics', `
       ${f('LTV', lt.ltv, { readonly: true, calcKey: 'ltv', infoKey: 'ltv' })}
       ${f('LTC', lt.ltc, { readonly: true, infoKey: 'ltc' })}
-    `)}
+    `, { anchor: 'loan-metrics' })}
     ${sub('Rate & Structure', `
       ${f('Rate',        lt.rate,        { type: 'number', placeholder: '0.000'    })}
       ${f('Term',        lt.term,    { placeholder: 'e.g. 12'                  })}
       ${f('Amortization', lt.amortization, { type: 'select', options: ['30-Year Fixed', '15-Year Fixed', 'Interest Only', 'ARM', 'Balloon'] })}
-    `)}
+    `, { anchor: 'loan-rate' })}
     ${sub('Timeline', `
       ${f('Est. closing date', lt.closingDate || '', { type: 'date', span: 2 })}
-    `)}`;
+    `, { anchor: 'loan-timeline' })}`;
+
+  const wrapAttrs =
+    ` data-proto-borrower-entity="${isEntityBorrower ? 'true' : 'false'}"` +
+    ` data-proto-prop-investment="${isInvestment0 ? 'true' : 'false'}"`;
 
   return `
-    <div class="proto-form">
-      ${section('Borrower Information', borrowerHtml)}
-      ${section('Properties', propertiesHtml, { count: propsList.length, sidebar: true })}
-      ${section('Loan Terms', loanTermsHtml)}
+    <div class="proto-form-wrap"${wrapAttrs}>
+      ${buildProtoFormIndexNavHtml()}
+      <div class="proto-form">
+      ${section('Borrower Information', borrowerHtml, { anchor: 'borrower' })}
+      ${section('Properties', propertiesHtml, { count: propsList.length, sidebar: true, anchor: 'properties' })}
+      ${section('Loan Terms', loanTermsHtml, { anchor: 'loan-terms' })}
+      </div>
     </div>`;
 }
 
@@ -3153,6 +3209,7 @@ function bindFormInteractions() {
     document.querySelectorAll('[data-individual-only]').forEach(el => {
       el.classList.toggle('proto-field--hidden', isEntity);
     });
+    syncProtoFormIndexAttrs();
   });
 
   // Click-to-edit — commit helper
@@ -3350,6 +3407,7 @@ function bindPropertyTabs() {
     if (investSub) investSub.classList.toggle('proto-sub--hidden', prop.occupancy !== 'Investment');
 
     recalcLTV();
+    syncProtoFormIndexAttrs();
   }
 
   // Sidebar item click
@@ -3558,6 +3616,7 @@ function bindEditMode() {
       if (span.dataset.prop === 'occupancy') {
         const investSub = document.querySelector('[data-investment-sub]');
         if (investSub) investSub.classList.toggle('proto-sub--hidden', select.value !== 'Investment');
+        syncProtoFormIndexAttrs();
       }
     }
   });
@@ -3616,6 +3675,89 @@ function bindInfoTooltips() {
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') { wrap.style.display = 'none'; activeBtn = null; }
+  });
+}
+
+function syncProtoFormIndexAttrs() {
+  const wrap = document.querySelector('.proto-form-wrap');
+  if (!wrap) return;
+  const activeToggle = document.querySelector('[data-toggle] .proto-toggle__btn--active');
+  const isEntity = activeToggle?.dataset?.toggleVal === 'entity';
+  wrap.dataset.protoBorrowerEntity = isEntity ? 'true' : 'false';
+  const invSub = document.querySelector('[data-investment-sub]');
+  const showInv = invSub && !invSub.classList.contains('proto-sub--hidden');
+  wrap.dataset.protoPropInvestment = showInv ? 'true' : 'false';
+}
+
+function setProtoFormIndexOpen(open) {
+  const root = document.querySelector('[data-proto-form-index]');
+  const panel = document.getElementById('proto-form-index-panel');
+  const btn = document.getElementById('proto-form-index-trigger');
+  if (!root || !panel || !btn) return;
+  root.classList.toggle('proto-form-index--open', open);
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  panel.hidden = !open;
+}
+
+function protoFormIndexScrollToSlug(slug) {
+  const el = document.getElementById(`proto-anchor-${slug}`);
+  if (!el) return;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const section = el.closest('.proto-section');
+  const scrollTo = () => {
+    el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
+  };
+  if (section && section.getAttribute('aria-expanded') === 'false') {
+    const head = section.querySelector('[data-collapse-head]');
+    if (head) {
+      head.click();
+      setTimeout(scrollTo, reduceMotion ? 0 : 620);
+      return;
+    }
+  }
+  scrollTo();
+}
+
+function updateProtoFormIndexActiveFromSlug(slug) {
+  document.querySelectorAll('.proto-form-index__link--active').forEach(l => {
+    l.classList.remove('proto-form-index__link--active');
+  });
+  document.querySelector(`[data-proto-index-jump="${slug}"]`)?.classList.add('proto-form-index__link--active');
+}
+
+let protoFormIndexListenersBound = false;
+function bindProtoFormIndex() {
+  if (protoFormIndexListenersBound) return;
+  protoFormIndexListenersBound = true;
+
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-proto-index-toggle]')) {
+      e.preventDefault();
+      const root = e.target.closest('[data-proto-form-index]');
+      const open = !root?.classList.contains('proto-form-index--open');
+      setProtoFormIndexOpen(open);
+      return;
+    }
+
+    const jump = e.target.closest('[data-proto-index-jump]');
+    if (jump) {
+      e.preventDefault();
+      const slug = jump.dataset.protoIndexJump;
+      if (slug) {
+        protoFormIndexScrollToSlug(slug);
+        updateProtoFormIndexActiveFromSlug(slug);
+      }
+      return;
+    }
+
+    if (!document.querySelector('.proto-form-index--open')) return;
+    if (e.target.closest('.proto-form-index')) return;
+    setProtoFormIndexOpen(false);
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (document.querySelector('.proto-form-index--open')) setProtoFormIndexOpen(false);
   });
 }
 
@@ -3834,6 +3976,8 @@ document.addEventListener('DOMContentLoaded', () => {
   bindPropertyTabs();
   bindSectionCollapse();
   bindInfoTooltips();
+  bindProtoFormIndex();
+  syncProtoFormIndexAttrs();
 
   // Show edit bar fade only when content is scrolled
   const scrollEl = document.querySelector('.proto-main__scroll');
