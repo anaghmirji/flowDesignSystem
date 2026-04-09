@@ -650,40 +650,46 @@ function buildProtoFormIndexNavHtml() {
 
   return `
     <div class="proto-form-index" data-proto-form-index>
+      <div class="proto-form-index__cluster">
+      <div class="proto-form-index__morph" data-proto-index-morph>
       <button type="button" class="proto-form-index__pill" data-proto-index-toggle aria-expanded="false" aria-controls="proto-form-index-panel" id="proto-form-index-trigger" title="Section index">
         <span class="proto-form-index__pill-visual" aria-hidden="true"></span>
       </button>
-      <div class="proto-form-index__panel" id="proto-form-index-panel" data-proto-index-panel role="region" aria-labelledby="proto-form-index-heading" hidden>
-        <p class="proto-form-index__heading" id="proto-form-index-heading">Index</p>
-        <div class="proto-form-index__body">
-          <div class="proto-form-index__group">
-            <p class="proto-form-index__group-label">Borrower Information</p>
+      <div class="proto-form-index__panel" id="proto-form-index-panel" data-proto-index-panel role="region" aria-labelledby="proto-form-index-heading" aria-hidden="true">
+        <header class="proto-form-index__head">
+          <h2 class="proto-form-index__heading" id="proto-form-index-heading">Index</h2>
+        </header>
+        <nav class="proto-form-index__nav" aria-label="Form sections">
+          <section class="proto-form-index__group">
+            <h3 class="proto-form-index__group-label">Borrower Information</h3>
             <div class="proto-form-index__sub">
               ${L('identity', 'Identity')}
               ${L('entity-details', 'Entity Details', ' proto-form-index__link--entity-only')}
               ${L('contact', 'Contact')}
               ${L('financial-profile', 'Financial Profile')}
             </div>
-          </div>
-          <div class="proto-form-index__group">
-            <p class="proto-form-index__group-label">Properties</p>
-            <div class="proto-form-index__sub proto-form-index__sub--branch">
+          </section>
+          <section class="proto-form-index__group">
+            <h3 class="proto-form-index__group-label">Properties</h3>
+            <div class="proto-form-index__sub">
               ${L('prop-location', 'Location')}
               ${L('prop-details', 'Property Details')}
               ${L('prop-valuation', 'Valuation')}
               ${L('prop-investment', 'Investment Details', ' proto-form-index__link--investment-only')}
             </div>
-          </div>
-          <div class="proto-form-index__group">
-            <p class="proto-form-index__group-label">Loan Terms</p>
+          </section>
+          <section class="proto-form-index__group">
+            <h3 class="proto-form-index__group-label">Loan Terms</h3>
             <div class="proto-form-index__sub">
               ${L('loan-core', 'Core Terms')}
               ${L('loan-metrics', 'Calculated Metrics')}
               ${L('loan-rate', 'Rate & Structure')}
               ${L('loan-timeline', 'Timeline')}
             </div>
-          </div>
-        </div>
+          </section>
+        </nav>
+      </div>
+      </div>
       </div>
     </div>`;
 }
@@ -905,7 +911,6 @@ function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
 
   return `
     <div class="proto-form-wrap"${wrapAttrs}>
-      ${buildProtoFormIndexNavHtml()}
       <div class="proto-form">
       ${section('Borrower Information', borrowerHtml, { anchor: 'borrower' })}
       ${section('Properties', propertiesHtml, { count: propsList.length, sidebar: true, anchor: 'properties' })}
@@ -1599,8 +1604,11 @@ function buildBody() {
               ${buildProtoModeDropdownHtml('view')}
             </div>
           </div>
-          <div class="proto-main__scroll">
-            ${buildFormHtml()}
+          <div class="proto-main__scroll-host">
+            <div class="proto-main__scroll">
+              ${buildFormHtml()}
+            </div>
+            ${buildProtoFormIndexNavHtml()}
           </div>
           ${buildProtoNotesDrawerHtml(loanDetail)}
         </div>
@@ -3696,7 +3704,8 @@ function setProtoFormIndexOpen(open) {
   if (!root || !panel || !btn) return;
   root.classList.toggle('proto-form-index--open', open);
   btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-  panel.hidden = !open;
+  panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+  if ('inert' in panel) panel.inert = !open;
 }
 
 function protoFormIndexScrollToSlug(slug) {
@@ -3746,6 +3755,7 @@ function bindProtoFormIndex() {
       if (slug) {
         protoFormIndexScrollToSlug(slug);
         updateProtoFormIndexActiveFromSlug(slug);
+        setProtoFormIndexOpen(false);
       }
       return;
     }

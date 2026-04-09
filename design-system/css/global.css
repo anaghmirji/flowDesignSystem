@@ -1874,3 +1874,148 @@
   opacity: 1;
   margin-left: 8px;
 }
+
+
+/* ========== next file ========== */
+
+/* ============================================================
+   AI PANEL SWITCHER — Current Design System
+   Source of truth: Figma › Lender Exploration · node 1028:10657
+   Usage: <div class="ai-panel__switcher">…</div>
+   Tabs: summary · documents · conditions · activity · worklist
+   ============================================================
+
+   STRUCTURE
+   .ai-panel__switcher          Row wrapper (space-between)
+     .ai-panel__tab-active      Active pill — icon + label (left)
+     .ai-panel__tab-others      Icon button group (right)
+       .ai-panel__tab-btn       Individual icon button
+
+   ANIMATION
+   Tab switching uses Web Animations API ghost-icon technique:
+   — ghost icons fly between pill and button positions
+   — label slides in/out with spring overshoot
+   — body content fades/slides up on each switch
+   See: mountAiPanelSwitcher() / switchAiTab() in JS layer
+   ============================================================ */
+
+/* ── Switcher row ─────────────────────────────────────────────────────────── */
+
+.ai-panel__switcher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  flex-shrink: 0;
+}
+
+/* ── Active pill (left side) ─────────────────────────────────────────────── */
+
+.ai-panel__tab-active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px 8px 8px;
+  background: var(--accent-white-100, #fff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 100px;
+  overflow: hidden;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.ai-panel__tab-label {
+  font-size: 12px;
+  font-family: var(--font-sans);
+  font-weight: var(--font-book, 400);
+  color: var(--accent-black-80, #333);
+  white-space: nowrap;
+}
+
+/* ── Icon button group (right side) ─────────────────────────────────────── */
+
+.ai-panel__tab-others {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  background: var(--accent-black-8, #ebebeb);
+  border-radius: 100px;
+  gap: 0;
+}
+
+.ai-panel__tab-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  border-radius: 160px;
+  overflow: visible;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.14s ease;
+}
+.ai-panel__tab-btn:hover {
+  background: var(--accent-black-20, #ccc);
+}
+
+/* Tooltip on hover */
+.ai-panel__tab-btn::after {
+  content: attr(aria-label);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-black-80, #333);
+  color: #fff;
+  font-size: 11px;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  padding: 3px 7px;
+  border-radius: 5px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  z-index: 100;
+}
+.ai-panel__tab-btn:hover::after {
+  opacity: 1;
+}
+
+/* ── Shared icon slot ─────────────────────────────────────────────────────── */
+
+.ai-panel__tab-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: block;
+  pointer-events: none;
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+.ai-panel__tab-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* ── Animation keyframes ──────────────────────────────────────────────────── */
+
+/* Body content: fades + rises when tab switches */
+@keyframes ai-switcher-body-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.ai-panel__body-inner--enter {
+  animation: ai-switcher-body-enter 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-panel__body-inner--enter { animation: none; }
+}

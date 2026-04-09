@@ -147,6 +147,11 @@ window.SYSTEM = {
           label: 'Loans Panel',
           icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="6" height="13" rx="1.5" stroke="currentColor" stroke-width="1.25"/><path d="M4.5 4.5h-1M4.5 7h-1M4.5 9.5h-1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><circle cx="11" cy="5" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M13.5 7.5l1.5 1.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>',
         },
+        {
+          id: 'lender-ai-panel-switcher',
+          label: 'AI Panel Switcher',
+          icon: '<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 3c.11 0 .214.035.301.101.087.065.15.157.18.262L6.98 5.26a2.12 2.12 0 0 0 1.5 1.5l1.897.542a.5.5 0 0 1 0 .956L8.48 8.8a2.12 2.12 0 0 0-1.5 1.5l-.543 1.897a.5.5 0 0 1-.956 0L4.977 10.3a2.12 2.12 0 0 0-1.5-1.5l-1.897-.542a.5.5 0 0 1 0-.956L3.477 6.76a2.12 2.12 0 0 0 1.5-1.5L5.52 3.363A.5.5 0 0 1 6 3Z" fill="currentColor"/><rect x="1.5" y="1.5" width="13" height="13" rx="3" stroke="currentColor" stroke-width="1.25" fill="none"/></svg>',
+        },
       ],
     },
     {
@@ -771,6 +776,39 @@ window.SYSTEM = {
         ],
         variants: [
           { id: 'loans-panel-default', label: 'Default' },
+        ],
+      },
+
+      // ── AI Panel Switcher (1028:10657) — tab switcher bar with animated pill ──
+      aiPanelSwitcher: {
+        title: 'AI Panel Switcher',
+        subtitle: 'Source: Figma › Lender Exploration · node 1028:10657 · animated tab pill with ghost-icon fly animation',
+        figmaUrl: 'https://www.figma.com/design/PYHG9Pu8YLs4ACMPljBiSG/Lender-Exploration?node-id=1028-10657',
+        cssFile: 'global.css',
+        relations: {
+          uses: [
+            { name: 'sparkle icon',                 pageId: 'icons' },
+            { name: 'document icon',                pageId: 'icons' },
+            { name: 'automation icon',              pageId: 'icons' },
+            { name: 'clock icon',                   pageId: 'icons' },
+            { name: 'clipboard-document-list icon', pageId: 'icons' },
+          ],
+        },
+        // Tab definitions — same order as prototype
+        tabs: [
+          { id: 'summary',    label: 'Summary',    icon: 'sparkle'                 },
+          { id: 'documents',  label: 'Documents',  icon: 'document'                },
+          { id: 'conditions', label: 'Conditions', icon: 'automation'              },
+          { id: 'activity',   label: 'Activity',   icon: 'clock'                   },
+          { id: 'worklist',   label: 'Worklist',   icon: 'clipboard-document-list' },
+        ],
+        variants: [
+          { id: 'ai-switcher-summary',    label: 'Summary active',    activeTab: 'summary'    },
+          { id: 'ai-switcher-documents',  label: 'Documents active',  activeTab: 'documents'  },
+          { id: 'ai-switcher-conditions', label: 'Conditions active', activeTab: 'conditions' },
+          { id: 'ai-switcher-activity',   label: 'Activity active',   activeTab: 'activity'   },
+          { id: 'ai-switcher-worklist',   label: 'Worklist active',   activeTab: 'worklist'   },
+          { id: 'ai-switcher-live',       label: 'Live (interactive)', activeTab: 'summary', live: true },
         ],
       },
     },

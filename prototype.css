@@ -410,7 +410,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .proto-main--content-hidden .proto-borrower-header,
 .proto-main--content-hidden .proto-loan-stats,
 .proto-main--content-hidden .proto-edit-bar,
-.proto-main--content-hidden .proto-main__scroll {
+.proto-main--content-hidden .proto-main__scroll,
+.proto-main--content-hidden .proto-main__scroll-host > .proto-form-index {
   opacity: 0;
   transition: none;
 }
@@ -425,7 +426,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .proto-main--entering .proto-edit-bar {
   animation: detailFadeIn 360ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
 }
-.proto-main--entering .proto-main__scroll {
+.proto-main--entering .proto-main__scroll,
+.proto-main--entering .proto-main__scroll-host > .proto-form-index {
   animation: detailFadeIn 380ms cubic-bezier(0.22, 1, 0.36, 1) 190ms both;
 }
 
@@ -610,6 +612,16 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   box-shadow: none;
 }
 
+/* Fills .proto-main flex column; index is a non-scrolling sibling (see .proto-form-index). */
+.proto-main__scroll-host {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0 0 20px 0;
+}
+
 .proto-main__scroll {
   flex: 1;
   min-height: 0;
@@ -617,8 +629,6 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   overflow-x: hidden;
   scrollbar-width: none;
   position: relative;
-  /* match .proto-main bottom-right radius; main is overflow:visible for dropdowns */
-  border-radius: 0 0 20px 0;
 }
 .proto-main__scroll::-webkit-scrollbar { display: none; }
 
@@ -1962,49 +1972,154 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .proto-form-wrap {
   position: relative;
-  padding-left: 22px;
 }
 
-/* iOS-style vertical pill + expandable outline — left edge, vertically centered in form */
-.proto-form-index {
+/*
+ * Sibling of .proto-main__scroll — does not scroll. Pinned to the main column’s *right* (just past the form),
+ * vertically centered; the bar sits on that edge and the panel opens *left* over the form.
+ */
+.proto-main__scroll-host > .proto-form-index {
   position: absolute;
-  left: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 6;
+  right: 6px;
+  left: auto;
+  top: 0;
+  bottom: 0;
+  width: max-content;
   display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  z-index: 12;
   pointer-events: none;
 }
 
-.proto-form-index > * {
-  pointer-events: auto;
+/*
+ * Fixed track width so the morph stays right-aligned: as width animates 4px → 165px,
+ * growth extends left (toward the form), not off the right edge of the column.
+ */
+.proto-form-index__cluster {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  width: min(165px, calc(100vw - 24px));
+  max-width: min(165px, calc(100vw - 24px));
+  min-height: 24px;
+  overflow: visible;
+  pointer-events: none;
+  flex-shrink: 0;
 }
 
+/*
+ * Collapsed: 4×22 bar on the inner-right edge. Open: grows left across the track above.
+ */
+.proto-form-index__morph {
+  --index-ease: cubic-bezier(0.33, 1, 0.32, 1);
+  position: relative;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 4px;
+  max-height: 22px;
+  /* Visible when collapsed so the pill bar can scale past the 4×22 box (hidden would clip hover). */
+  overflow: visible;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 100px;
+  transform: none;
+  transform-origin: right center;
+  backface-visibility: hidden;
+  pointer-events: auto;
+  transition:
+    width 0.4s var(--index-ease),
+    max-height 0.44s var(--index-ease),
+    border-radius 0.38s var(--index-ease),
+    background-color 0.32s var(--index-ease),
+    box-shadow 0.34s var(--index-ease),
+    border-color 0.28s ease;
+}
+
+.proto-form-index--open .proto-form-index__morph {
+  width: 165px;
+  max-height: min(70vh, 420px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Hide native scrollbar (dark track was visible on the right while expanding) */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-radius: 16px;
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  background: var(--accent-white-100, #fff);
+  box-shadow:
+    0 10px 36px rgba(0, 0, 0, 0.1),
+    0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.proto-form-index__morph::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/*
+ * Collapsing: chrome must stay in sync with width/height — if the white “card” fades in ~100ms
+ * while the box is still large, it reads as “fade out” instead of morphing into the pill.
+ * Same easing/duration as size so the shell visibly shrinks as one shape into the bar.
+ */
+.proto-form-index:not(.proto-form-index--open) .proto-form-index__morph {
+  transition:
+    width 0.4s cubic-bezier(0.33, 1, 0.32, 1),
+    max-height 0.44s cubic-bezier(0.33, 1, 0.32, 1),
+    border-radius 0.38s cubic-bezier(0.33, 1, 0.32, 1),
+    background-color 0.4s cubic-bezier(0.33, 1, 0.32, 1),
+    box-shadow 0.4s cubic-bezier(0.33, 1, 0.32, 1),
+    border-color 0.36s cubic-bezier(0.33, 1, 0.32, 1);
+}
+
+/* Hit target extends left from the bar; bar flush to the morph’s right (column) edge */
 .proto-form-index__pill {
+  position: absolute;
+  right: 0;
+  left: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 12px;
-  min-height: 40px;
+  justify-content: flex-end;
+  width: 36px;
+  height: 48px;
   padding: 0;
   margin: 0;
-  border: 0.5px solid var(--accent-black-12, #e0e0e0);
-  border-radius: 100px;
-  background: var(--accent-white-100, #fff);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
   cursor: pointer;
   flex-shrink: 0;
-  transition:
-    box-shadow 0.18s var(--ease-smooth, ease),
-    border-color 0.18s var(--ease-smooth, ease);
+  /* No opacity/visibility transition: pill must appear the instant --open drops so collapse
+     stays one continuous motion (no late fade-in on top of the shrinking morph). */
+  transition: none;
 }
 
-.proto-form-index__pill:hover {
-  border-color: var(--accent-black-20, #ccc);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+.proto-form-index--open .proto-form-index__pill {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.proto-form-index:not(.proto-form-index--open) .proto-form-index__pill:hover .proto-form-index__pill-visual,
+.proto-form-index:not(.proto-form-index--open) .proto-form-index__pill .proto-form-index__pill-visual:hover {
+  background: var(--accent-black-30, #b8b8b8);
+  opacity: 1;
+  transform: scale(1.5);
+}
+
+.proto-form-index:not(.proto-form-index--open) .proto-form-index__pill:active .proto-form-index__pill-visual,
+.proto-form-index:not(.proto-form-index--open) .proto-form-index__pill .proto-form-index__pill-visual:active {
+  background: var(--accent-black-40, #999);
+  transform: scale(1.35);
 }
 
 .proto-form-index__pill:focus-visible {
@@ -2018,7 +2133,17 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   height: 22px;
   border-radius: 100px;
   background: var(--accent-black-20, #ccc);
-  opacity: 0.85;
+  opacity: 0.92;
+  transform: scale(1);
+  /* Bar sits on the morph’s right edge — scale from the right so growth reads toward the form. */
+  transform-origin: right center;
+  transition:
+    background 0.2s var(--index-ease),
+    opacity 0.2s ease,
+    transform 0.22s var(--index-ease);
+  /* Receive hover so :hover / parent :hover apply reliably (was none; events could miss the bar). */
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .proto-form-index--open .proto-form-index__pill-visual {
@@ -2026,66 +2151,100 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-form-index__panel {
-  position: absolute;
-  left: calc(100% + 6px);
-  top: 50%;
-  transform: translateY(-50%);
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: translateZ(0);
   box-sizing: border-box;
-  min-width: 165px;
-  max-width: min(220px, 42vw);
-  padding: 12px 12px 16px;
-  border-radius: 16px;
-  border: 0.5px solid var(--accent-black-12, #e0e0e0);
-  background: var(--accent-white-100, #fff);
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
   text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* Close = instant hide so collapse reads as the shell shrinking into the pill, not a content fade. */
+  transition: none;
 }
 
-.proto-form-index__panel[hidden] {
-  display: none !important;
+.proto-form-index--open .proto-form-index__panel {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  padding: 0;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  transition: opacity 0.28s cubic-bezier(0.33, 1, 0.32, 1) 0.08s;
+}
+
+/* With morph overflow visible (for pill hover scale), crush the hidden panel so index text cannot paint outside the bar. */
+.proto-form-index:not(.proto-form-index--open) .proto-form-index__panel {
+  max-width: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+.proto-form-index__head {
+  flex-shrink: 0;
+  padding: 10px 12px 8px;
 }
 
 .proto-form-index__heading {
-  margin: 0 0 10px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--accent-black-50, #808080);
-  line-height: 1.2;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--accent-black-80, #333);
+  line-height: 1.25;
 }
 
-.proto-form-index__body {
+.proto-form-index__nav {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
+  padding: 10px 0 12px;
+}
+
+.proto-form-index__group {
+  margin: 0;
+  padding: 0 12px;
+}
+
+.proto-form-index__group + .proto-form-index__group {
+  margin-top: 14px;
 }
 
 .proto-form-index__group-label {
   margin: 0 0 6px;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--accent-black-60, #666);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-black-50, #808080);
   line-height: 1.3;
 }
 
 .proto-form-index__sub {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.proto-form-index__sub--branch {
-  padding-left: 8px;
-  border-left: 0.5px solid var(--accent-black-12, #e0e0e0);
+  align-items: stretch;
+  gap: 6px;
+  margin: 0;
+  padding: 0 0 0 10px;
+  border-left: 2px solid var(--accent-black-8, #ebebeb);
 }
 
 .proto-form-index__link {
   display: block;
   width: 100%;
   margin: 0;
-  padding: 0;
+  padding: 3px 0;
   border: none;
   background: none;
   font: inherit;
@@ -2130,14 +2289,27 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .proto-form-index__morph,
+  .proto-form-index__panel,
   .proto-form-index__pill {
-    transition: none;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+
+  /* Do not use transform: none !important here — it overrides hover scale. Keep motion minimal via instant transform steps. */
+  .proto-form-index__pill-visual {
+    transition:
+      background 0.01ms linear,
+      opacity 0.01ms linear,
+      transform 0.01ms linear !important;
   }
 }
 
 /* ── .proto-form — accordion list ────────────────────────────────────────────── */
 
 .proto-form {
+  position: relative;
+  z-index: 0;
   padding: 0 16px 32px;
   display: flex;
   flex-direction: column;
@@ -2750,7 +2922,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   transition: opacity 0.2s var(--ease-smooth, ease);
 }
 
-.proto-edit-bar--scrolled ~ .proto-main__scroll::before {
+.proto-edit-bar--scrolled ~ .proto-main__scroll-host .proto-main__scroll::before {
   opacity: 1;
 }
 
