@@ -1879,7 +1879,8 @@
 /* ========== next file ========== */
 
 /* ============================================================
-   AI PANEL SWITCHER — Current Design System
+   AI PANEL (switcher + column chrome) — single source of truth
+   Loaded by prototype.html and design-system/index — do not duplicate in prototype.css
    Source of truth: Figma › Lender Exploration · node 1028:10657
    Usage: <div class="ai-panel__switcher">…</div>
    Tabs: summary · documents · conditions · activity · worklist
@@ -2004,18 +2005,281 @@
   display: block;
 }
 
+/* ── AI panel column: scroll, masks, stage footer, top fade (single source; prototype + DS previews) ─ */
+
+.ai-panel__body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  background: transparent;
+  transition: -webkit-mask-image 0.2s var(--ease-smooth, ease), mask-image 0.2s var(--ease-smooth, ease);
+}
+
+.ai-panel__body::-webkit-scrollbar {
+  display: none;
+}
+
+.ai-panel__body--scrolled {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 24px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 24px, black 100%);
+}
+
+.ai-panel__body-inner {
+  min-height: 0;
+}
+
+.ai-panel__body-inner:has(.ai-cond__wrap) {
+  padding-bottom: calc(12px + var(--ai-panel-stage-footer-fade-height, 32px));
+}
+
 /* ── Animation keyframes ──────────────────────────────────────────────────── */
 
 /* Body content: fades + rises when tab switches */
 @keyframes ai-switcher-body-enter {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .ai-panel__body-inner--enter {
   animation: ai-switcher-body-enter 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Conditions tab: “Show all stages” — below scroll */
+.ai-panel__stage-footer {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--accent-bg-1, #fcfcfd);
+  border: none;
+  border-radius: 0 0 20px 0;
+}
+
+.ai-panel__stage-footer::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: var(--ai-panel-stage-footer-fade-height, 32px);
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(252, 252, 253, 0.22) 48%,
+    var(--accent-bg-1, #fcfcfd) 100%
+  );
+  pointer-events: none;
+}
+
+.ai-panel__stage-footer .ai-cond__stage-bar {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 12px 16px;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+@keyframes ai-panel-stage-footer-enter {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-panel__stage-footer.ai-panel__stage-footer--enter {
+  animation: ai-panel-stage-footer-enter 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.ai-panel__scroll-fade {
+  position: sticky;
+  top: 0;
+  height: 40px;
+  margin-bottom: -40px;
+  flex-shrink: 0;
+  pointer-events: none;
+  z-index: 10;
+  background: linear-gradient(to bottom, var(--background-1, #fcfcfd), transparent);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.ai-panel__scroll-fade--visible {
+  opacity: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .ai-panel__body-inner--enter { animation: none; }
+  .ai-panel__body-inner--enter {
+    animation: none;
+  }
+
+  .ai-panel__stage-footer.ai-panel__stage-footer--enter {
+    animation: none;
+  }
+
+  .ai-panel__tab-icon {
+    will-change: auto;
+  }
+}
+
+/* ── AI panel tab content (Summary / Documents / Activity / Worklist stubs) ─── */
+
+.ai-panel__stub {
+  padding: 16px 16px 28px;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.ai-panel__stub-kicker {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-black-50, #808080);
+}
+
+.ai-panel__stub-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--accent-black-80, #333);
+  line-height: 1.3;
+}
+
+.ai-panel__stub-meta {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--accent-black-50, #808080);
+}
+
+.ai-panel__stub-lead {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--accent-black-70, #4d4d4d);
+}
+
+.ai-panel__stub-list {
+  margin: 0 0 16px;
+  padding: 0 0 0 18px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--accent-black-70, #4d4d4d);
+}
+
+.ai-panel__stub-list li {
+  margin-bottom: 8px;
+}
+
+.ai-panel__stub-list li:last-child {
+  margin-bottom: 0;
+}
+
+.ai-panel__stub-note {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--accent-black-60, #666);
+  background: var(--accent-black-4, #f7f7f7);
+  border-radius: 10px;
+  border: 0.5px solid var(--accent-black-8, #ebebeb);
+}
+
+.ai-panel__stub-docs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ai-panel__stub-docs li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--accent-black-8, #ebebeb);
+}
+
+.ai-panel__stub-docs li:last-child {
+  border-bottom: none;
+}
+
+.ai-panel__stub-docs-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent-black-80, #333);
+}
+
+.ai-panel__stub-docs-meta {
+  font-size: 11px;
+  color: var(--accent-black-50, #808080);
+}
+
+.ai-panel__stub-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-panel__stub-feed li {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 10px;
+  align-items: start;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--accent-black-70, #4d4d4d);
+}
+
+.ai-panel__stub-feed time {
+  font-size: 11px;
+  color: var(--accent-black-50, #808080);
+  white-space: nowrap;
+}
+
+.ai-panel__stub-check {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-panel__stub-check li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--accent-black-70, #4d4d4d);
+}
+
+.ai-panel__stub-check input {
+  margin-top: 2px;
+  accent-color: var(--accent-blue-60, #66b8ff);
 }

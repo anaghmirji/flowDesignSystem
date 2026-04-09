@@ -3948,6 +3948,7 @@ const PAGE_RENDERERS = {
   'lender-search-bar':        renderLenderSearchBarPage,
   'lender-search-section':    renderLenderSearchSectionPage,
   'lender-loans-panel':       renderLenderLoansPanelPage,
+  'lender-ai-panel-switcher': renderLenderAiPanelSwitcherPage,
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -3991,6 +3992,7 @@ function init() {
   bindSearchBarRows();
   bindSearchSectionRows();
   bindLoansPanelRows();
+  bindAiPanelSwitcherRows();
   // Mount interactive inputs on the page-level ds-table so typed states are live
   document.querySelectorAll('[data-search-bar-variant]').forEach(row => mountSearchBarInteractive(row));
   document.querySelectorAll('[data-search-section-variant]').forEach(row => mountSearchBarInteractive(row));
@@ -4597,6 +4599,218 @@ function bindLoansPanelRows() {
         defaultLang: 'HTML',
         relations: comp.relations || null,
         onPreviewMount: mountLoansPanelInteractive,
+      });
+    });
+  });
+}
+
+// ─── Lender Portal — AI Panel Switcher ───────────────────────────────────────
+
+function buildAiPanelSwitcherHtml(activeTabId) {
+  const tabs = SYSTEM.products.lenderPortal.aiPanelSwitcher.tabs;
+  const active = tabs.find(t => t.id === activeTabId) || tabs[0];
+  const others = tabs.filter(t => t.id !== active.id);
+  const otherBtns = others.map(t =>
+    `<button type="button" class="ai-panel__tab-btn" data-ai-tab="${t.id}" aria-label="${escAttr(t.label)}">
+      <span class="ai-panel__tab-icon">${iconSvg(t.icon)}</span>
+    </button>`
+  ).join('');
+  return `<div class="ai-panel__switcher">
+  <div class="ai-panel__tab-active" data-ai-tab="${active.id}">
+    <span class="ai-panel__tab-icon">${iconSvg(active.icon)}</span>
+    <span class="ai-panel__tab-label">${escHtml(active.label)}</span>
+  </div>
+  <div class="ai-panel__tab-others">${otherBtns}</div>
+</div>`;
+}
+
+function renderLenderAiPanelSwitcherPage() {
+  const comp = SYSTEM.products.lenderPortal.aiPanelSwitcher;
+  let html = `
+    <div class="section-header">
+      <div class="section-title">${escHtml(comp.title)}</div>
+      <div class="section-subtitle">${escHtml(comp.subtitle)} · <a href="${escAttr(comp.figmaUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent-black-50);text-decoration:none">Open in Figma ↗</a></div>
+    </div>
+    <div class="ds-table">`;
+  comp.variants.forEach(v => {
+    html += `
+      <div class="ds-row" data-ai-panel-switcher-variant="${escAttr(v.id)}" style="padding:12px 20px;align-items:center">
+        <span class="ds-row-name" style="min-width:130px">${escHtml(v.label)}</span>
+        <div style="background:var(--accent-bg-0,#f3f3f4);border-radius:12px;overflow:hidden;min-width:360px">
+          ${buildAiPanelSwitcherHtml(v.activeTab)}
+        </div>
+      </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function aiPanelSwitcherTabs(variantId) {
+  const comp = SYSTEM.products.lenderPortal.aiPanelSwitcher;
+  const v = comp.variants.find(x => x.id === variantId) || comp.variants[0];
+  const html = buildAiPanelSwitcherHtml(v.activeTab);
+  const css = `/* Styles: design-system/css/global.css — section "AI PANEL (switcher + column chrome)" */`;
+
+  const js = `// Tab animation: switchAiTab() in prototype.js (Web Animations API + ghost icons)`;
+
+  const react = `import 'flow-design-system/styles.css';
+// If exported: import { AiPanelSwitcher } from 'flow-design-system/react';
+// <AiPanelSwitcher initialTab="${v.activeTab}" onTabChange={(id) => {}} />`;
+
+  return {
+    HTML: `<!-- Requires global.css -->\n${html}`,
+    CSS: css,
+    JS: js,
+    React: react,
+  };
+}
+
+function mountAiPanelSwitcherInteractive(container) {
+  const comp = SYSTEM.products.lenderPortal.aiPanelSwitcher;
+  const allTabs = comp.tabs;
+  const EXIT = 'cubic-bezier(0.4, 0, 1, 0.8)';
+  const ENTER = 'cubic-bezier(0.16, 1, 0.3, 1)';
+  const SPRING = 'cubic-bezier(0.34, 1.48, 0.64, 1)';
+
+  const root = (container instanceof Element ? container : document).querySelector('.ai-panel__switcher');
+  if (!root || root._aiSwitcherBound) return;
+  root._aiSwitcherBound = true;
+
+  let _active = root.querySelector('.ai-panel__tab-active')?.getAttribute('data-ai-tab') || 'summary';
+  let _animating = false;
+
+  root.addEventListener('click', e => {
+    const btn = e.target.closest('.ai-panel__tab-btn[data-ai-tab]');
+    if (!btn) return;
+    const newId = btn.getAttribute('data-ai-tab');
+    if (newId === _active || _animating) return;
+
+    const newTab = allTabs.find(t => t.id === newId);
+    const oldTab = allTabs.find(t => t.id === _active);
+    if (!newTab || !oldTab) return;
+
+    const pill = root.querySelector('.ai-panel__tab-active');
+    const pillIconEl = pill.querySelector('.ai-panel__tab-icon');
+    const pillLabelEl = pill.querySelector('.ai-panel__tab-label');
+    const btnIconEl = btn.querySelector('.ai-panel__tab-icon');
+    if (!pillIconEl || !pillLabelEl || !btnIconEl) return;
+
+    _animating = true;
+    pill.style.width = `${pill.offsetWidth}px`;
+
+    const pillR = pillIconEl.getBoundingClientRect();
+    const btnR = btnIconEl.getBoundingClientRect();
+    const dx = btnR.left - pillR.left;
+    const dy = btnR.top - pillR.top;
+    const os = dx * 0.025;
+
+    const makeGhost = (r, svg) => {
+      const el = document.createElement('span');
+      Object.assign(el.style, {
+        position: 'fixed',
+        top: `${r.top}px`,
+        left: `${r.left}px`,
+        width: '16px',
+        height: '16px',
+        display: 'block',
+        overflow: 'hidden',
+        pointerEvents: 'none',
+        zIndex: '9999',
+        willChange: 'transform,opacity',
+      });
+      el.innerHTML = svg;
+      document.body.appendChild(el);
+      return el;
+    };
+
+    const g1 = makeGhost(pillR, pillIconEl.innerHTML);
+    const g2 = makeGhost(btnR, btnIconEl.innerHTML);
+    pillIconEl.style.opacity = '0';
+    btnIconEl.style.opacity = '0';
+
+    pillLabelEl.animate(
+      [{ transform: 'translateX(0)', opacity: 1, offset: 0, easing: EXIT },
+        { transform: 'translateX(14px)', opacity: 0, offset: 1 }],
+      { duration: 180, easing: 'linear', fill: 'none' }
+    ).onfinish = () => { pillLabelEl.style.opacity = '0'; };
+
+    g1.animate(
+      [{ transform: 'translate(0,0) scale(1)', opacity: 1, offset: 0, easing: EXIT },
+        { transform: `translate(${dx}px,${dy}px) scale(0.5)`, opacity: 0, offset: 1 }],
+      { duration: 260, easing: 'linear', fill: 'none' }
+    ).onfinish = () => g1.remove();
+
+    g2.animate(
+      [{ transform: 'translate(0,0) scale(0.5)', opacity: 0, offset: 0, easing: ENTER },
+        { transform: `translate(${-dx - os}px,${-dy}px) scale(1.08)`, opacity: 1, offset: 0.65, easing: EXIT },
+        { transform: `translate(${-dx}px,${-dy}px) scale(1)`, opacity: 1, offset: 1 }],
+      { duration: 500, easing: 'linear', fill: 'none' }
+    ).onfinish = () => {
+      g2.remove();
+      pillIconEl.style.opacity = '';
+      pillIconEl.style.transform = '';
+    };
+
+    setTimeout(() => {
+      const newSvg = btnIconEl.innerHTML;
+      const oldSvg = pillIconEl.innerHTML;
+      const newLabel = newTab.label;
+      const oldLabel = oldTab.label;
+      pillIconEl.style.opacity = '0';
+      pillLabelEl.style.opacity = '0';
+      btnIconEl.style.opacity = '0';
+
+      pillIconEl.innerHTML = newSvg;
+      pillLabelEl.textContent = newLabel;
+      btnIconEl.innerHTML = oldSvg;
+      btn.setAttribute('aria-label', oldLabel);
+      btn.setAttribute('data-ai-tab', oldTab.id);
+      pill.setAttribute('data-ai-tab', newId);
+      _active = newId;
+      pill.style.width = '';
+
+      pillLabelEl.animate(
+        [{ transform: 'translateX(14px)', opacity: 0, offset: 0, easing: ENTER },
+          { transform: 'translateX(-2px)', opacity: 1, offset: 0.7, easing: ENTER },
+          { transform: 'translateX(0)', opacity: 1, offset: 1 }],
+        { duration: 440, easing: 'linear', fill: 'none' }
+      ).onfinish = () => {
+        pillLabelEl.style.opacity = '';
+        pillLabelEl.style.transform = '';
+      };
+
+      btnIconEl.animate(
+        [{ transform: 'scale(0.35)', opacity: 0, offset: 0, easing: SPRING },
+          { transform: 'scale(1.15)', opacity: 1, offset: 0.6, easing: SPRING },
+          { transform: 'scale(1)', opacity: 1, offset: 1 }],
+        { duration: 420, easing: 'linear', fill: 'none' }
+      ).onfinish = () => {
+        btnIconEl.style.opacity = '';
+        btnIconEl.style.transform = '';
+      };
+
+      setTimeout(() => { _animating = false; }, 520);
+    }, 270);
+  });
+}
+
+function bindAiPanelSwitcherRows() {
+  const comp = SYSTEM.products.lenderPortal.aiPanelSwitcher;
+  document.querySelectorAll('[data-ai-panel-switcher-variant]').forEach(row => {
+    const variantId = row.dataset.aiPanelSwitcherVariant;
+    const v = comp.variants.find(x => x.id === variantId) || comp.variants[0];
+    if (v?.live) mountAiPanelSwitcherInteractive(row);
+    row.addEventListener('click', () => {
+      if (activeRow === row && document.getElementById('panel-content').style.display !== 'none') { closePanel(); return; }
+      setActive(row);
+      openPanel({
+        type: 'Lender Portal · AI Panel',
+        name: v?.label || variantId,
+        preview: `<div style="min-width:360px">${buildAiPanelSwitcherHtml(v.activeTab)}</div>`,
+        onPreviewMount: mountAiPanelSwitcherInteractive,
+        tabs: aiPanelSwitcherTabs(variantId),
+        defaultLang: 'HTML',
+        relations: comp.relations || null,
       });
     });
   });

@@ -552,6 +552,8 @@ function applyMainLoanDetail(key) {
       scroll.querySelectorAll('.proto-field--editable .proto-field__value').forEach((s) => { s.contentEditable = 'true'; });
     }
   }
+
+  syncAiPanelBodyToActiveLoan();
 }
 
 // ─── Borrower Header ──────────────────────────────────────────────────────────
@@ -1974,6 +1976,13 @@ function buildAiConditionsHtml() {
     </div>`;
 }
 
+function buildAiPanelTabInnerHtml(tabId) {
+  if (tabId === 'conditions') {
+    return buildAiConditionsHtml();
+  }
+  return '';
+}
+
 function initConditionsInteraction() {
   const card       = document.querySelector('.ai-cond__card');
   const stageBar   = document.querySelector('.ai-cond__stage-bar');
@@ -2313,7 +2322,7 @@ function renderAiPanelBody(tabId, { animate = false } = {}) {
   }
 
   const fadeHtml = '<div class="ai-panel__scroll-fade" aria-hidden="true"></div>';
-  const content = tabId === 'conditions' ? buildAiConditionsHtml() : '';
+  const content = buildAiPanelTabInnerHtml(tabId);
   const innerClass =
     'ai-panel__body-inner' + (animate ? ' ai-panel__body-inner--enter' : '');
   if (animate) body.scrollTop = 0;
@@ -2334,6 +2343,11 @@ const AI_PANEL_TABS = [
 
 let _aiActiveTab = 'summary';
 let _aiAnimating  = false;
+
+/** Rebuild AI panel body when loan row changes (summary + meta stay in sync). */
+function syncAiPanelBodyToActiveLoan() {
+  renderAiPanelBody(_aiActiveTab, { animate: false });
+}
 
 function switchAiTab(newId) {
   if (newId === _aiActiveTab || _aiAnimating) return;
