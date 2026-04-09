@@ -599,7 +599,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   display: flex;
   flex-direction: column;
   position: relative;
-  z-index: 2;
+  /* Above .proto-ai-panel so right-side box-shadow falls on the AI column (depth reads correctly) */
+  z-index: 3;
   border-radius: 0 20px 20px 0;
   border-right: 0.5px solid var(--accent-black-12, #E0E0E0);
   background: var(--accent-bg-1, #FCFCFD);
@@ -895,7 +896,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   width: 4px;
   flex-shrink: 0;
   position: relative;
-  z-index: 3;
+  /* Above .proto-main so the drag seam stays interactive */
+  z-index: 4;
   cursor: col-resize;
   margin-left: -2px;
   margin-right: -2px;
@@ -997,8 +999,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   display: flex;
   flex-direction: column;
   position: relative;
-  /* Above .proto-main (z-index 2) so the switcher never sits under the main column / form index */
-  z-index: 3;
+  /* Below .proto-main so main’s right-edge shadow stacks on top of this column’s fill */
+  z-index: 1;
   border-radius: 0 20px 20px 0;
   border-right: 0.5px solid var(--accent-black-12, #e0e0e0);
   border-bottom: 0.5px solid var(--accent-black-12, #e0e0e0);
