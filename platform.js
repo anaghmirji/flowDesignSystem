@@ -1735,7 +1735,7 @@ ${buildLpStatusInteractiveHtml(v)}`,
 
 .lp-status-dropdown-wrap { position: relative; display: inline-block; }
 .lp-status--clickable { cursor: pointer; }
-.loans-dropdown--status-menu { width: auto; min-width: 168px; }`,
+.loans-dropdown--status-menu { width: auto; min-width: 144px; }`,
 
     'React': `import 'flow-design-system/styles.css'; /* global: tokens + icons + buttons + lender */
 import { LpStatusWithMenu, LP_STATUS_MENU_DEFAULT } from 'flow-design-system-react';

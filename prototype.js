@@ -514,6 +514,9 @@ function applyMainLoanDetail(key) {
   if (nameEl) nameEl.textContent = d.name;
   if (addrEl) addrEl.textContent = d.addressLine;
 
+  const notesNameEl = main.querySelector('.proto-notes-drawer__title-name');
+  if (notesNameEl) notesNameEl.textContent = d.name;
+
   const avatarImg = main.querySelector('.proto-borrower-header .profile__avatar img');
   if (avatarImg && d.avatarUrl) avatarImg.src = d.avatarUrl;
 
@@ -555,7 +558,7 @@ function applyMainLoanDetail(key) {
 function buildBorrowerHeader(detail = getLoanDetailForKey(DEFAULT_LOAN_DETAIL_KEY)) {
   const profileHtml     = buildProfileHtml({ favorited: true, avatarUrl: detail.avatarUrl });
   // Button/Primary notes icon — local SVG (20×22 viewBox)
-  const docBtn = `<button class="btn btn--s1" tabindex="-1" aria-label="User notes">
+  const docBtn = `<button type="button" class="btn btn--s1 proto-notes-trigger" aria-label="User notes" aria-expanded="false" aria-controls="proto-notes-drawer">
     <div class="btn__icon-wrap btn__icon-wrap--figma-img">
       <div class="btn__figma-img-wrap">
           <img class="btn__figma-img" src="assets/borrower-notes-icon.svg" width="20" height="22" alt="" />
@@ -644,7 +647,6 @@ function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
   const p0 = propsList[0];
   const b = detail.borrower;
   const lt = detail.loanTerms;
-  const n = detail.notes;
   const isEntityBorrower = b.entityMode === 'entity';
   const toggleEntityIdx = isEntityBorrower ? 1 : 0;
 
@@ -848,24 +850,11 @@ function buildFormHtml(detail = getLoanDetailForKey(activeLoanDetailKey)) {
       ${f('Est. closing date', lt.closingDate || '', { type: 'date', span: 2 })}
     `)}`;
 
-  const notesHtml = `
-    <div class="proto-section__grid">
-      <div class="proto-notes proto-field--span-2">
-        <div class="proto-notes__view" data-notes-view>${n.viewText}</div>
-        <textarea class="proto-notes__textarea proto-field__textarea" placeholder="Add internal notes for your team..." rows="4"></textarea>
-        <div class="proto-notes__footer">
-          <span class="proto-notes__staff">Visible to lender staff only — never shared with borrower</span>
-          <span class="proto-notes__edited">${n.editedLine}</span>
-        </div>
-      </div>
-    </div>`;
-
   return `
     <div class="proto-form">
       ${section('Borrower Information', borrowerHtml)}
       ${section('Properties', propertiesHtml, { count: propsList.length, sidebar: true })}
       ${section('Loan Terms', loanTermsHtml)}
-      ${section('Internal Notes', notesHtml)}
     </div>`;
 }
 
@@ -1517,7 +1506,28 @@ function initBoardView() {
   });
 }
 
+function buildProtoNotesDrawerHtml(detail = getLoanDetailForKey(DEFAULT_LOAN_DETAIL_KEY)) {
+  const closeIcon = `${iconSvg('checkmark')}`;
+  return `
+    <div class="proto-notes-drawer" id="proto-notes-drawer" aria-hidden="true">
+      <div class="proto-notes-drawer__panel" role="dialog" aria-modal="false" aria-labelledby="proto-notes-drawer-title">
+        <div class="proto-notes-drawer__resize-bar" role="separator" aria-orientation="horizontal" aria-label="Drag to resize notes height" tabindex="0"></div>
+        <div class="proto-notes-drawer__head">
+          <p class="proto-notes-drawer__title" id="proto-notes-drawer-title">
+            <span class="proto-notes-drawer__title-muted">Internal Notes for </span><span class="proto-notes-drawer__title-name">${detail.name}</span>
+          </p>
+          <button type="button" class="btn btn--s1 proto-notes-drawer__close" aria-label="Close internal notes">
+            <div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${closeIcon}</div></div></div>
+          </button>
+        </div>
+        <label class="proto-notes-drawer__label" for="proto-notes-input">Notes</label>
+        <textarea id="proto-notes-input" class="proto-notes-drawer__textarea" rows="10" placeholder="Type internal notes here…" spellcheck="true"></textarea>
+      </div>
+    </div>`;
+}
+
 function buildBody() {
+  const loanDetail = getLoanDetailForKey(DEFAULT_LOAN_DETAIL_KEY);
   return `
     <div class="proto-body">
       <div class="proto-card">
@@ -1536,6 +1546,7 @@ function buildBody() {
           <div class="proto-main__scroll">
             ${buildFormHtml()}
           </div>
+          ${buildProtoNotesDrawerHtml(loanDetail)}
         </div>
         <div class="proto-resize-handle" id="ai-resize-handle"></div>
         <div class="proto-ai-panel" id="ai-panel">
@@ -1560,15 +1571,10 @@ function buildBody() {
               </button>
             </div>
           </div>
-          <!-- Main content area -->
+          <!-- Main content area (scrolls) -->
           <div class="ai-panel__body"></div>
-          <!-- Internal Notes footer -->
-          <button type="button" class="ai-panel__notes-footer">
-            <span class="ai-panel__notes-label">Internal Notes</span>
-            <div class="ai-panel__notes-btn">
-              <span class="ai-panel__tab-icon">${iconSvg('chevron-down')}</span>
-            </div>
-          </button>
+          <!-- Conditions only: “Show all stages” bar — pinned below scroll (Figma 1015:6988 / 1021:9401) -->
+          <div class="ai-panel__stage-footer" id="ai-panel-stage-footer" hidden aria-hidden="true"></div>
         </div>
       </div>
     </div>`;
@@ -1738,10 +1744,11 @@ const ICON_NEEDS_REVIEW = `<svg width="20" height="20" viewBox="0 0 20 20" fill=
 const ICON_REJECTED     = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" fill="#EF4444"/><path d="M7 7l6 6M13 7l-6 6" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>`;
 
 const COND_STATUSES = [
-  { val: 'open',         label: 'Open',     icon: ICON_CIRCLE_EMPTY },
-  { val: 'needs-review', label: 'Review',   icon: ICON_NEEDS_REVIEW },
-  { val: 'cleared',      label: 'Cleared',  icon: ICON_CHECK_FILLED },
-  { val: 'rejected',     label: 'Rejected', icon: ICON_REJECTED },
+  { val: 'open',         label: 'Open',      icon: ICON_CIRCLE_EMPTY },
+  { val: 'needs-review', label: 'In review', icon: ICON_NEEDS_REVIEW },
+  { val: 'cleared',      label: 'Cleared',   icon: ICON_CHECK_FILLED },
+  /** Not a workflow stage — condition ignored (distinct from doc review states). */
+  { val: 'rejected',     label: 'Ignore',    icon: ICON_REJECTED },
 ];
 
 function dataToCondStatus(s) {
@@ -1866,7 +1873,7 @@ function buildCondCardHtml(sectionData) {
       <div class="ai-cond__everyone-wrap">
         <div class="ai-cond__everyone-box">
           <div class="ai-cond__everyone-box-hdr" role="button" tabindex="0">
-            <span class="ai-cond__everyone-label">Show everyone's conditions</span>
+            <span class="ai-cond__everyone-label">Show all team conditions</span>
             <span class="ai-cond__everyone-box-chev">${iconSvg('chevron-down')}</span>
           </div>
           <div class="ai-cond__everyone-items-outer">
@@ -1879,20 +1886,22 @@ function buildCondCardHtml(sectionData) {
     </div>`;
 }
 
+function buildAiConditionsStageBarHtml() {
+  return `
+    <div class="ai-cond__stage-bar" role="button" tabindex="0" aria-pressed="false">
+      <span class="ai-cond__stage-bar__label">Show all stages</span>
+      <span class="ai-cond__toggle-sw" aria-hidden="true">
+        <span class="ai-cond__toggle-thumb"></span>
+      </span>
+    </div>`;
+}
+
 function buildAiConditionsHtml() {
   const primaryCard = buildCondCardHtml(ALL_CONDITIONS_DATA[0]);
   const extraCards  = ALL_CONDITIONS_DATA.slice(1).map(buildCondCardHtml).join('');
 
   return `
     <div class="ai-cond__wrap">
-      <!-- Stage toggle pill — sits above cards -->
-      <div class="ai-cond__stage-bar" role="button" tabindex="0" aria-pressed="false">
-        <span class="ai-cond__stage-bar__label">Show all stages</span>
-        <span class="ai-cond__toggle-sw" aria-hidden="true">
-          <span class="ai-cond__toggle-thumb"></span>
-        </span>
-      </div>
-
       ${primaryCard}
 
       <div class="ai-cond__extra-outer">
@@ -1913,6 +1922,8 @@ function initConditionsInteraction() {
 
   // ── Status picker ─────────────────────────────────────────────────────────
   let activePicker = null;
+  /** The `.ai-cond__check` that opened the current picker (for toggle-close). */
+  let activePickerCheckEl = null;
 
   function updateCondProgress(group) {
     const progress = group?.querySelector('.ai-cond__progress');
@@ -1979,66 +1990,96 @@ function initConditionsInteraction() {
   function closePicker() {
     if (!activePicker) return;
     const p = activePicker;
+    const trigEl = activePickerCheckEl;
     activePicker = null;
-    const anim = p.animate(
-      [{ opacity: 1, transform: 'scale(1) translateY(0)' },
-       { opacity: 0, transform: 'scale(0.94) translateY(-5px)' }],
-      { duration: 140, easing: 'cubic-bezier(0.4, 0, 1, 0.8)', fill: 'none' }
-    );
+    activePickerCheckEl = null;
+
+    // Trigger merge squeeze (material flowing back in)
+    if (trigEl) {
+      trigEl.animate([
+        { transform: 'scaleX(1)     scaleY(1)',    offset: 0,    easing: 'cubic-bezier(0.34, 1.48, 0.64, 1)' },
+        { transform: 'scaleX(1.08)  scaleY(0.88)', offset: 0.35, easing: 'cubic-bezier(0.34, 1.48, 0.64, 1)' },
+        { transform: 'scaleX(1)     scaleY(1)',    offset: 1                                                   },
+      ], { duration: 210, easing: 'linear', fill: 'none' });
+    }
+
+    // Amoeba collapse back to pill
+    const anim = p.animate([
+      { transform: 'scaleX(1)    scaleY(1)     translateY(0px)',  borderRadius: '16px',  offset: 0,    easing: 'cubic-bezier(0.4, 0, 1, 0.8)' },
+      { transform: 'scaleX(0.60) scaleY(0.08)  translateY(-3px)', borderRadius: '100px', offset: 0.75, easing: 'cubic-bezier(0.4, 0, 1, 0.8)' },
+      { transform: 'scaleX(0.44) scaleY(0.02)  translateY(-4px)', borderRadius: '100px', offset: 1                                              },
+    ], { duration: 180, easing: 'linear', fill: 'none' });
     anim.onfinish = () => p.remove();
   }
 
   function openPicker(item, checkEl) {
+    // Same check clicked again while open → close (do not reopen).
+    if (activePicker && activePickerCheckEl === checkEl) {
+      closePicker();
+      return;
+    }
+
     closePicker();
 
     const curStatus = item.dataset.condStatus || 'open';
 
-    // Context-aware picker options
-    let pickerOptions;
-    if (curStatus === 'cleared' || curStatus === 'rejected') {
-      // Only action is Reopen → goes back to needs-review
-      pickerOptions = [{ val: 'needs-review', label: 'Reopen', isReopen: true }];
-    } else {
-      // Show all statuses except current, excluding rejected from 'open' state
-      pickerOptions = COND_STATUSES.filter(s => {
-        if (s.val === curStatus) return false;
-        if (curStatus === 'open' && s.val === 'rejected') return false;
-        return true;
-      });
-    }
+    /** Stages first, then divider, then Ignore (stored as val rejected — not a stage). */
+    const stageStatuses = COND_STATUSES.filter(s =>
+      s.val === 'open' || s.val === 'needs-review' || s.val === 'cleared'
+    );
+    const ignoreStatus = COND_STATUSES.find(s => s.val === 'rejected');
+    const row = (s, extraClass = '') => {
+      const active = curStatus === s.val ? ' ai-cond__status-opt--active' : '';
+      return `
+        <button type="button" class="ai-cond__status-opt${active}${extraClass}" data-status="${s.val}">
+          <span class="ai-cond__status-dot ai-cond__status-dot--${s.val}"></span>
+          <span class="ai-cond__status-opt-label">${s.label}</span>
+        </button>`;
+    };
+    const pickerRows =
+      stageStatuses.map(s => row(s)).join('') +
+      '<div class="ai-cond__status-sep" role="separator" aria-hidden="true"></div>' +
+      row(ignoreStatus, ' ai-cond__status-opt--remove');
 
     const picker = document.createElement('div');
     picker.className = 'ai-cond__status-picker';
-    picker.innerHTML = pickerOptions.map(s => `
-        <button class="ai-cond__status-opt${s.isReopen ? ' ai-cond__status-opt--reopen' : ''}" data-status="${s.val}">
-          <span class="ai-cond__status-dot ai-cond__status-dot--${s.val}"></span>
-          <span class="ai-cond__status-opt-label">${s.label}</span>
-        </button>`).join('');
+    picker.innerHTML = pickerRows;
 
     // Append to body so it escapes all stacking contexts
     document.body.appendChild(picker);
     activePicker = picker;
+    activePickerCheckEl = checkEl;
 
     // Position using viewport coords
     const checkRect  = checkEl.getBoundingClientRect();
-    const pickerEstH = pickerOptions.length * 40 + 8;
+    const pickerEstH = (stageStatuses.length + 1) * 40 + 24;
     const spaceBelow = window.innerHeight - checkRect.bottom;
 
+    const trigCenterX = checkRect.width / 2;
     picker.style.left = checkRect.left + 'px';
     if (spaceBelow < pickerEstH) {
       picker.style.top  = 'auto';
       picker.style.bottom = (window.innerHeight - checkRect.top + 6) + 'px';
-      picker.style.transformOrigin = 'bottom left';
+      picker.style.transformOrigin = `${trigCenterX}px 100%`;
     } else {
       picker.style.top = (checkRect.bottom + 6) + 'px';
-      picker.style.transformOrigin = 'top left';
+      picker.style.transformOrigin = `${trigCenterX}px 0`;
     }
 
-    picker.animate(
-      [{ opacity: 0, transform: 'scale(0.9) translateY(-6px)' },
-       { opacity: 1, transform: 'scale(1) translateY(0)' }],
-      { duration: 200, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'none' }
-    );
+    // Trigger split squeeze (material leaving the icon)
+    checkEl.animate([
+      { transform: 'scaleX(1)     scaleY(1)',    offset: 0,    easing: 'cubic-bezier(0.4, 0, 1, 0.8)'   },
+      { transform: 'scaleX(0.86)  scaleY(1.14)', offset: 0.18, easing: 'cubic-bezier(0.16, 1, 0.3, 1)'  },
+      { transform: 'scaleX(1)     scaleY(1)',    offset: 1                                                },
+    ], { duration: 360, easing: 'linear', fill: 'none' });
+
+    // Amoeba split open
+    picker.animate([
+      { transform: 'scaleX(0.44) scaleY(0.02)  translateY(-4px)', borderRadius: '100px', offset: 0,    easing: 'cubic-bezier(0.12, 0, 0.36, 0)'  },
+      { transform: 'scaleX(0.72) scaleY(0.28)  translateY(-2px)', borderRadius: '80px',  offset: 0.22, easing: 'cubic-bezier(0.16, 1, 0.3, 1)'   },
+      { transform: 'scaleX(1.01) scaleY(1.03)  translateY(0px)',  borderRadius: '16px',  offset: 0.72, easing: 'cubic-bezier(0.16, 1, 0.3, 1)'   },
+      { transform: 'scaleX(1)    scaleY(1)      translateY(0px)',  borderRadius: '16px',  offset: 1                                                },
+    ], { duration: 390, easing: 'linear', fill: 'none' });
 
     picker.addEventListener('mousedown', (e) => {
       const btn = e.target.closest('[data-status]');
@@ -2050,7 +2091,16 @@ function initConditionsInteraction() {
     });
 
     setTimeout(() => {
-      document.addEventListener('click', closePicker, { once: true, capture: true });
+      document.addEventListener(
+        'click',
+        (ev) => {
+          const t = ev.target.closest('.ai-cond__check');
+          if (t && t === activePickerCheckEl) return;
+          if (ev.target.closest('.ai-cond__status-picker')) return;
+          closePicker();
+        },
+        { once: true, capture: true }
+      );
     }, 0);
 
     // Close if body scrolls (picker would be orphaned)
@@ -2148,7 +2198,7 @@ function initConditionsInteraction() {
     }
   });
 
-  // ── "Show everyone's conditions" accordion — event-delegated for all cards ──
+  // ── "Show all team conditions" accordion — event-delegated for all cards ──
   const wrap = document.querySelector('.ai-cond__wrap');
   wrap?.addEventListener('click', (e) => {
     const hdr = e.target.closest('.ai-cond__everyone-box-hdr');
@@ -2165,7 +2215,9 @@ function initBodyScrollFade() {
   if (!body || !fade) return;
 
   const update = () => {
-    fade.classList.toggle('ai-panel__scroll-fade--visible', body.scrollTop > 4);
+    const scrolled = body.scrollTop > 4;
+    fade.classList.toggle('ai-panel__scroll-fade--visible', scrolled);
+    body.classList.toggle('ai-panel__body--scrolled', scrolled);
   };
 
   body.removeEventListener('scroll', body._fadeHandler);
@@ -2176,7 +2228,26 @@ function initBodyScrollFade() {
 
 function renderAiPanelBody(tabId, { animate = false } = {}) {
   const body = document.querySelector('.ai-panel__body');
+  const stageFooter = document.getElementById('ai-panel-stage-footer');
   if (!body) return;
+
+  if (stageFooter) {
+    stageFooter.classList.remove('ai-panel__stage-footer--enter');
+    if (tabId === 'conditions') {
+      stageFooter.innerHTML = buildAiConditionsStageBarHtml();
+      stageFooter.hidden = false;
+      stageFooter.setAttribute('aria-hidden', 'false');
+      if (animate) {
+        void stageFooter.offsetWidth;
+        stageFooter.classList.add('ai-panel__stage-footer--enter');
+      }
+    } else {
+      stageFooter.innerHTML = '';
+      stageFooter.hidden = true;
+      stageFooter.setAttribute('aria-hidden', 'true');
+    }
+  }
+
   const fadeHtml = '<div class="ai-panel__scroll-fade" aria-hidden="true"></div>';
   const content = tabId === 'conditions' ? buildAiConditionsHtml() : '';
   const innerClass =
@@ -2378,6 +2449,169 @@ function bindResizeHandle() {
   });
 }
 
+function bindProtoNotesDrawer() {
+  const main = document.querySelector('.proto-main');
+  const drawer = document.getElementById('proto-notes-drawer');
+  if (!main || !drawer) return;
+
+  const trigger = main.querySelector('.proto-notes-trigger');
+  const closeBtn = drawer.querySelector('.proto-notes-drawer__close');
+  const panel = drawer.querySelector('.proto-notes-drawer__panel');
+
+  let closePanelTransitionHandler = null;
+  const removeClosePanelTransitionListener = () => {
+    if (panel && closePanelTransitionHandler) {
+      panel.removeEventListener('transitionend', closePanelTransitionHandler);
+      closePanelTransitionHandler = null;
+    }
+  };
+
+  const setOpen = (open) => {
+    if (open) {
+      removeClosePanelTransitionListener();
+      drawer.classList.remove('proto-notes-drawer--close-animating');
+      drawer.classList.add('proto-notes-drawer--open');
+      main.classList.add('proto-main--notes-drawer-open');
+      drawer.setAttribute('aria-hidden', 'false');
+      if (trigger) trigger.setAttribute('aria-expanded', 'true');
+      const ta = drawer.querySelector('.proto-notes-drawer__textarea');
+      (ta || closeBtn)?.focus({ preventScroll: true });
+      return;
+    }
+
+    if (!drawer.classList.contains('proto-notes-drawer--open')) return;
+
+    drawer.setAttribute('aria-hidden', 'true');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    trigger?.focus({ preventScroll: true });
+
+    const prefersReduced =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReduced || !panel) {
+      removeClosePanelTransitionListener();
+      drawer.classList.remove('proto-notes-drawer--open', 'proto-notes-drawer--close-animating');
+      main.classList.remove('proto-main--notes-drawer-open');
+      return;
+    }
+
+    drawer.classList.add('proto-notes-drawer--close-animating');
+    drawer.classList.remove('proto-notes-drawer--open');
+    main.classList.remove('proto-main--notes-drawer-open');
+
+    removeClosePanelTransitionListener();
+    closePanelTransitionHandler = (e) => {
+      if (e.target !== panel || e.propertyName !== 'transform') return;
+      drawer.classList.remove('proto-notes-drawer--close-animating');
+      removeClosePanelTransitionListener();
+    };
+    panel.addEventListener('transitionend', closePanelTransitionHandler);
+
+    window.setTimeout(() => {
+      if (drawer.classList.contains('proto-notes-drawer--close-animating')) {
+        drawer.classList.remove('proto-notes-drawer--close-animating');
+        removeClosePanelTransitionListener();
+      }
+    }, 500);
+  };
+
+  trigger?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    /* During exit animation --open is already false; click re-opens via setOpen(true). */
+    setOpen(!drawer.classList.contains('proto-notes-drawer--open'));
+  });
+
+  closeBtn?.addEventListener('click', () => setOpen(false));
+
+  const resizeBar = drawer.querySelector('.proto-notes-drawer__resize-bar');
+
+  const notesPanelMinH = () => 200;
+  const notesPanelMaxH = () => Math.min(560, window.innerHeight * 0.65);
+
+  const applyNotesPanelHeight = (h) => {
+    if (!panel) return;
+    const minH = notesPanelMinH();
+    const maxH = notesPanelMaxH();
+    const next = Math.round(Math.min(maxH, Math.max(minH, h)));
+    panel.style.height = `${next}px`;
+    panel.dataset.userHeight = String(next);
+  };
+
+  const startNotesResize = (e) => {
+    if (!panel || e.button !== 0) return;
+    e.preventDefault();
+    const startY = e.clientY;
+    const startH = panel.getBoundingClientRect().height;
+
+    const onMove = (ev) => {
+      const dy = startY - ev.clientY;
+      applyNotesPanelHeight(startH + dy);
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
+
+  resizeBar?.addEventListener('mousedown', startNotesResize);
+
+  resizeBar?.addEventListener(
+    'touchstart',
+    (e) => {
+      if (!panel || e.touches.length !== 1) return;
+      e.preventDefault();
+      const startY = e.touches[0].clientY;
+      const startH = panel.getBoundingClientRect().height;
+
+      const onTouchMove = (ev) => {
+        if (ev.touches.length !== 1) return;
+        const dy = startY - ev.touches[0].clientY;
+        applyNotesPanelHeight(startH + dy);
+      };
+      const onTouchEnd = () => {
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+        document.removeEventListener('touchcancel', onTouchEnd);
+      };
+      document.addEventListener('touchmove', onTouchMove, { passive: true });
+      document.addEventListener('touchend', onTouchEnd);
+      document.addEventListener('touchcancel', onTouchEnd);
+    },
+    { passive: false }
+  );
+
+  resizeBar?.addEventListener('keydown', (e) => {
+    if (!panel || !drawer.classList.contains('proto-notes-drawer--open')) return;
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const cur = panel.getBoundingClientRect().height;
+    const step = e.shiftKey ? 24 : 8;
+    applyNotesPanelHeight(e.key === 'ArrowUp' ? cur + step : cur - step);
+  });
+
+  window.addEventListener('resize', () => {
+    if (!panel?.dataset.userHeight) return;
+    const n = parseInt(panel.dataset.userHeight, 10);
+    if (!Number.isFinite(n)) return;
+    applyNotesPanelHeight(n);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (!drawer.classList.contains('proto-notes-drawer--open')) return;
+    e.preventDefault();
+    setOpen(false);
+  });
+}
+
 function bindBorrowerHeader() {
   const header = document.querySelector('.proto-borrower-header');
   if (!header) return;
@@ -2506,6 +2740,132 @@ function bindBorrowerHeader() {
           { transform: 'translateY(0)',    opacity: 1, offset: 1    },
         ], { duration: 340, easing: 'linear', fill: 'none' });
       };
+    });
+  }
+
+  // Stage picker (click label/pill → choose stage from list)
+  const stageEl = header.querySelector('.lp-stage');
+  if (stageEl && stageLabel) {
+    let activeStagePicker = null;
+
+    function closeStagePicker() {
+      if (!activeStagePicker) return;
+      const p = activeStagePicker;
+      activeStagePicker = null;
+
+      stageEl.animate([
+        { transform: 'scaleX(1)     scaleY(1)',    offset: 0,    easing: 'cubic-bezier(0.34, 1.48, 0.64, 1)' },
+        { transform: 'scaleX(1.08)  scaleY(0.88)', offset: 0.35, easing: 'cubic-bezier(0.34, 1.48, 0.64, 1)' },
+        { transform: 'scaleX(1)     scaleY(1)',    offset: 1                                                   },
+      ], { duration: 210, easing: 'linear', fill: 'none' });
+
+      const anim = p.animate([
+        { transform: 'scaleX(1)    scaleY(1)     translateY(0px)',  borderRadius: '16px',  offset: 0,    easing: 'cubic-bezier(0.4, 0, 1, 0.8)' },
+        { transform: 'scaleX(0.60) scaleY(0.08)  translateY(-3px)', borderRadius: '100px', offset: 0.75, easing: 'cubic-bezier(0.4, 0, 1, 0.8)' },
+        { transform: 'scaleX(0.44) scaleY(0.02)  translateY(-4px)', borderRadius: '100px', offset: 1                                              },
+      ], { duration: 180, easing: 'linear', fill: 'none' });
+      anim.onfinish = () => p.remove();
+    }
+
+    function openStagePicker() {
+      if (activeStagePicker) { closeStagePicker(); return; }
+
+      const picker = document.createElement('div');
+      picker.className = 'loans-dropdown loans-dropdown--status-menu';
+      picker.innerHTML = PROTO_PIPELINE_STAGES.map(s => {
+        const active = s === PROTO_PIPELINE_STAGES[protoBorrowerStageIndex] ? ' loans-dropdown__item--active' : '';
+        return `<div class="loans-dropdown__item${active}" data-stage="${s}">
+          <span class="loans-dropdown__item-label">${s}</span>
+        </div>`;
+      }).join('');
+
+      picker.style.position = 'fixed';
+      picker.style.zIndex = '9999';
+      document.body.appendChild(picker);
+      activeStagePicker = picker;
+
+      const rect = stageEl.getBoundingClientRect();
+      const trigCenterX = rect.width / 2;
+      picker.style.left = rect.left + 'px';
+      const pickerEstH = PROTO_PIPELINE_STAGES.length * 34 + 16;
+      const spaceBelow = window.innerHeight - rect.bottom;
+
+      if (spaceBelow < pickerEstH) {
+        picker.style.top    = 'auto';
+        picker.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
+        picker.style.transformOrigin = `${trigCenterX}px 100%`;
+      } else {
+        picker.style.top = (rect.bottom + 6) + 'px';
+        picker.style.transformOrigin = `${trigCenterX}px 0`;
+      }
+
+      // Trigger split squeeze
+      stageEl.animate([
+        { transform: 'scaleX(1)     scaleY(1)',    offset: 0,    easing: 'cubic-bezier(0.4, 0, 1, 0.8)'   },
+        { transform: 'scaleX(0.86)  scaleY(1.14)', offset: 0.18, easing: 'cubic-bezier(0.16, 1, 0.3, 1)'  },
+        { transform: 'scaleX(1)     scaleY(1)',    offset: 1                                                },
+      ], { duration: 360, easing: 'linear', fill: 'none' });
+
+      // Amoeba open
+      picker.animate([
+        { transform: 'scaleX(0.44) scaleY(0.02)  translateY(-4px)', borderRadius: '100px', offset: 0,    easing: 'cubic-bezier(0.12, 0, 0.36, 0)'  },
+        { transform: 'scaleX(0.72) scaleY(0.28)  translateY(-2px)', borderRadius: '80px',  offset: 0.22, easing: 'cubic-bezier(0.16, 1, 0.3, 1)'   },
+        { transform: 'scaleX(1.01) scaleY(1.03)  translateY(0px)',  borderRadius: '16px',  offset: 0.72, easing: 'cubic-bezier(0.16, 1, 0.3, 1)'   },
+        { transform: 'scaleX(1)    scaleY(1)      translateY(0px)',  borderRadius: '16px',  offset: 1                                                },
+      ], { duration: 390, easing: 'linear', fill: 'none' });
+
+      // mousedown so it fires before the outside-click listener
+      picker.addEventListener('mousedown', (e) => {
+        const btn = e.target.closest('[data-stage]');
+        if (!btn) return;
+        e.stopPropagation();
+        const newStage = btn.dataset.stage;
+        const newIdx   = PROTO_PIPELINE_STAGES.indexOf(newStage);
+        closeStagePicker();
+        if (newIdx === protoBorrowerStageIndex) return;
+
+        const labelExit = stageLabel.animate([
+          { transform: 'translateY(0)',    opacity: 1, offset: 0, easing: 'cubic-bezier(0.4, 0, 1, 0.8)' },
+          { transform: 'translateY(-8px)', opacity: 0, offset: 1 },
+        ], { duration: 180, easing: 'linear', fill: 'none' });
+
+        labelExit.onfinish = () => {
+          const oldW = stageEl.offsetWidth;
+          protoBorrowerStageIndex = newIdx;
+          stageLabel.textContent  = newStage;
+
+          const delta = stageEl.offsetWidth - oldW;
+          if (delta !== 0) {
+            stageEl.animate([
+              { transform: `translateX(${-delta}px)` },
+              { transform: 'translateX(0px)' },
+            ], {
+              duration: delta > 0 ? 320 : 220,
+              easing:   delta > 0 ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.4, 0, 1, 0.8)',
+              fill: 'none',
+            });
+          }
+
+          stageLabel.animate([
+            { transform: 'translateY(8px)',  opacity: 0, offset: 0,   easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+            { transform: 'translateY(-2px)', opacity: 1, offset: 0.7, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+            { transform: 'translateY(0)',    opacity: 1, offset: 1    },
+          ], { duration: 340, easing: 'linear', fill: 'none' });
+        };
+      });
+
+      setTimeout(() => {
+        document.addEventListener('click', (ev) => {
+          if (ev.target.closest('.lp-stage') || ev.target.closest('.ai-cond__status-picker')) return;
+          closeStagePicker();
+        }, { once: true, capture: true });
+      }, 0);
+    }
+
+    stageEl.addEventListener('click', (e) => {
+      if (e.target.closest('.lp-stage__btn')) return;
+      e.stopPropagation();
+      openStagePicker();
     });
   }
 
@@ -3468,6 +3828,7 @@ document.addEventListener('DOMContentLoaded', () => {
     new ResizeObserver(() => syncProtoBoardRightInset()).observe(protoCardEl);
   }
   bindBorrowerHeader();
+  bindProtoNotesDrawer();
   bindEditMode();
   bindFormInteractions();
   bindPropertyTabs();

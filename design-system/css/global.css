@@ -584,7 +584,8 @@
 /* Status filter menu — same dropdown component, label-only rows (no counts) */
 .loans-dropdown--status-menu {
   width: auto;
-  min-width: 168px;
+  min-width: 144px;
+  padding: 4px;
 }
 
 .loans-dropdown--status-menu .loans-dropdown__item {
