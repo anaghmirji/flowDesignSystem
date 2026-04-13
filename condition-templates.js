@@ -182,6 +182,7 @@ function getProductLabel(pid) {
 }
 
 let CT_SELECTED_PROD_ID = null;
+let CT_SELECTED_PROD_VIEW = null;
 
 // ─── Animation helpers ────────────────────────────────────────────────────────
 
@@ -233,6 +234,17 @@ function ct2InFade(el) {
   a.onfinish = () => { el.style.opacity = ''; el.style.transform = ''; };
 }
 
+// Slide up from bottom — true bottom sheet: panel rises from the card's bottom edge
+function ct2InSlideUp(el) {
+  el.style.transform = 'translateY(100%)';
+  const a = el.animate(
+    [{ transform: 'translateY(100%)' },
+     { transform: 'translateY(0%)' }],
+    { duration: 480, easing: CT2_EASE_ENTER, fill: 'none' }
+  );
+  a.onfinish = () => { el.style.transform = ''; };
+}
+
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 function buildLibItem(cond, isActive) {
@@ -244,12 +256,13 @@ function buildLibItem(cond, isActive) {
   </button>`;
 }
 
-function buildLibGroupHtml(group, conds, activeId) {
+function buildLibGroupHtml(group, conds, activeId, prodId) {
   if (!conds.length) return '';
   const items = conds.map(c => buildLibItem(c, c.id === activeId)).join('');
   const plusIcon = typeof iconSvg === 'function' ? iconSvg('plus') : '+';
-  return `<div class="ct2-lib__group" data-ct2-group="${group.id}">
-    <div class="ct2-lib__group-header">
+  const isActiveGroup = prodId && CT_SELECTED_PROD_VIEW === prodId;
+  return `<div class="ct2-lib__group${isActiveGroup ? ' ct2-lib__group--active' : ''}" data-ct2-group="${group.id}">
+    <div class="ct2-lib__group-header${prodId ? ' ct2-lib__group-header--clickable' : ''}" ${prodId ? `data-ct2-prod="${prodId}"` : ''}>
       <span class="ct2-lib__group-label">${group.label}</span>
       <button type="button" class="ct2-lib__group-add" aria-label="Add condition to ${group.label}">${plusIcon}</button>
     </div>
@@ -258,32 +271,44 @@ function buildLibGroupHtml(group, conds, activeId) {
 }
 
 function buildLibListHtml(activeId) {
-  const groupedIds = new Set(CT_CONDITION_GROUPS.map(g => g.id));
-  const grouped = CT_CONDITION_GROUPS.map(g =>
-    buildLibGroupHtml(g, CT_CONDITIONS.filter(c => c.group === g.id), activeId)
-  ).join('');
-  const ungrouped = CT_CONDITIONS
-    .filter(c => !c.group || !groupedIds.has(c.group))
-    .map(c => buildLibItem(c, c.id === activeId)).join('');
-  return grouped + ungrouped;
+  return CT_PRODUCTS.map(product => {
+    const conds = CT_CONDITIONS.filter(c =>
+      (c.products || []).some(p => p.id === product.id)
+    );
+    return buildLibGroupHtml(
+      { id: product.id, label: product.label },
+      conds,
+      activeId,
+      product.id
+    );
+  }).join('');
+}
+
+function buildProductList() {
+  return CT_PRODUCTS.map(p => {
+    const count = CT_CONDITIONS.filter(c => (c.products || []).some(pc => pc.id === p.id)).length;
+    const isActive = CT_SELECTED_PROD_VIEW === p.id;
+    return `<button type="button" class="ct2-prod-item${isActive ? ' ct2-prod-item--active' : ''}" data-ct2-prod="${p.id}">
+      <span class="ct2-prod-item__label">${p.label}</span>
+      ${count > 0 ? `<span class="ct2-prod-item__count">${count}</span>` : ''}
+    </button>`;
+  }).join('');
 }
 
 function buildSidebar(activeId) {
-  const items = buildLibListHtml(activeId);
-  const searchIcon = typeof iconSvg === 'function' ? iconSvg('magnifying-glass') : '';
-
+  const listIcon = typeof iconSvg === 'function' ? iconSvg('list-bullet') : '';
   return `<aside class="ct2-sidebar">
   <div class="ct2-sidebar__head">
     <span class="ct2-sidebar__title">Manage Conditions</span>
   </div>
   <div class="ct2-sidebar__body">
-    <div class="ct2-lib__list" data-ct2-lib-list>${items}</div>
+    <div class="ct2-prod-list" data-ct2-prod-list>${buildProductList()}</div>
   </div>
   <div class="ct2-sidebar__footer">
-    <div class="ct2-search">
-      <span class="ct2-search__icon" aria-hidden="true">${searchIcon}</span>
-      <input type="search" class="ct2-search__input" placeholder="Search…" data-ct2-search autocomplete="off" />
-    </div>
+    <button type="button" class="ct2-library-link${CT_SELECTED_PROD_VIEW === null ? ' ct2-library-link--active' : ''}" data-ct2-library>
+      <span class="ct2-library-link__icon" aria-hidden="true">${listIcon}</span>
+      <span>Library</span>
+    </button>
   </div>
 </aside>`;
 }
@@ -352,6 +377,58 @@ function buildCanvas() {
         ${entries}
       </div>
     </div>
+  </div>
+</div>`;
+}
+
+// ─── Product Stage View ───────────────────────────────────────────────────────
+
+function buildProductStageView(productId, selectedCondId) {
+  const product = CT_PRODUCTS.find(p => p.id === productId);
+  if (!product) return '';
+
+  // Collect conditions per stage for this product
+  const byStage = {};
+  CT_STAGES_V2.forEach(s => { byStage[s.id] = []; });
+  CT_CONDITIONS.forEach(c => {
+    const prodConfig = (c.products || []).find(p => p.id === productId);
+    if (prodConfig && byStage[prodConfig.dueBefore]) {
+      byStage[prodConfig.dueBefore].push(c);
+    }
+  });
+
+  const cols = CT_STAGES_V2.map((stage, i) => {
+    const conds = byStage[stage.id] || [];
+    const isLast = i === CT_STAGES_V2.length - 1;
+    const items = conds.map(c => {
+      const isActive = c.id === selectedCondId;
+      return `<button type="button" class="ct2-psv-item${isActive ? ' ct2-psv-item--active' : ''}" data-ct2-cid="${c.id}">
+        <span class="ct2-psv-item__dot ct2-psv-item__dot--${getConditionIconType(c)}"></span>
+        <span class="ct2-psv-item__name">${c.name}</span>
+      </button>`;
+    }).join('');
+
+    return `<div class="ct2-psv-col${isLast ? ' ct2-psv-col--last' : ''}">
+      <div class="ct2-psv-col__head">
+        <span class="ct2-psv-col__label">${stage.label}</span>
+        <div class="ct2-psv-col__tl">
+          <div class="ct2-psv-dot"></div>
+          ${!isLast ? '<div class="ct2-psv-line"></div>' : ''}
+        </div>
+      </div>
+      <div class="ct2-psv-col__body">
+        ${conds.length ? `<div class="ct2-psv-card">${items}</div>` : ''}
+        <button type="button" class="ct2-psv-add"
+          data-ct2-psv-add-stage="${stage.id}"
+          data-ct2-psv-add-prod="${productId}">Add Condition</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="ct2-prod-stage-view" data-ct2-prod-stage-view data-ct2-prod-id="${productId}">
+  <div class="ct2-prod-stage-view__inner">
+    <div class="ct2-psv-title">${product.label}</div>
+    <div class="ct2-psv-track">${cols}</div>
   </div>
 </div>`;
 }
@@ -713,6 +790,8 @@ function enterDetail(condId, root, selectedProdId) {
   if (!cond) return;
   CT_SELECTED_ID = condId;
   CT_SELECTED_PROD_ID = selectedProdId || null;
+  // Keep CT_SELECTED_PROD_VIEW so the back button returns to the right product
+  refreshProductList(root);
 
   root.querySelectorAll('.ct2-lib__item').forEach(b =>
     b.classList.toggle('ct2-lib__item--active', b.getAttribute('data-ct2-cid') === condId)
@@ -760,7 +839,8 @@ function selectProduct(prodId, root) {
 
 function enterCanvas(root) {
   CT_SELECTED_ID = null;
-  root.querySelectorAll('.ct2-lib__item').forEach(b => b.classList.remove('ct2-lib__item--active'));
+  CT_SELECTED_PROD_VIEW = null;
+  refreshProductList(root);
   // Remove any orphaned docclass menu from body
   document.querySelectorAll('.ct2-docclass-menu').forEach(m => m.remove());
 
@@ -777,9 +857,110 @@ function enterCanvas(root) {
   existing ? ct2OutBack(existing, showCanvas) : showCanvas();
 }
 
-function refreshLibList(root, activeId) {
-  const list = root.querySelector('[data-ct2-lib-list]');
-  if (list) list.innerHTML = buildLibListHtml(activeId);
+function enterProductView(productId, root) {
+  CT_SELECTED_PROD_VIEW = productId;
+  CT_SELECTED_ID = null;
+  refreshProductList(root);
+  document.querySelectorAll('.ct2-docclass-menu').forEach(m => m.remove());
+
+  const body = root.querySelector('[data-ct2-main-body]');
+
+  // If already showing a split-wrap, collapse the bottom in-place (card stays)
+  const splitWrap = body?.querySelector('[data-ct2-split]');
+  if (splitWrap) {
+    const top = splitWrap.querySelector('[data-ct2-split-top]');
+    if (top) top.innerHTML = buildProductStageView(productId, null);
+    const bottom = splitWrap.querySelector('[data-ct2-split-bottom]');
+    if (bottom) {
+      bottom.classList.remove('ct2-split-bottom--open');
+      setTimeout(() => { if (!bottom.classList.contains('ct2-split-bottom--open')) bottom.innerHTML = ''; }, 460);
+    }
+    return;
+  }
+
+  // Fresh render — wrap in split-wrap with collapsed bottom
+  const existing = body?.firstElementChild;
+  const showView = () => {
+    body.innerHTML = `<div class="ct2-split-wrap" data-ct2-split>
+      <div class="ct2-split-top" data-ct2-split-top>${buildProductStageView(productId, null)}</div>
+      <div class="ct2-split-divider"></div>
+      <div class="ct2-split-bottom" data-ct2-split-bottom></div>
+    </div>`;
+    const el = body.firstElementChild;
+    if (el) ct2InFade(el);
+  };
+  existing ? ct2Out(existing, showView) : showView();
+}
+
+function enterSplitView(condId, productId, root) {
+  const cond = CT_CONDITIONS.find(c => c.id === condId);
+  if (!cond) return;
+  CT_SELECTED_ID = condId;
+  CT_SELECTED_PROD_VIEW = productId;
+  CT_SELECTED_PROD_ID = null;
+  refreshProductList(root);
+  document.querySelectorAll('.ct2-docclass-menu').forEach(m => m.remove());
+
+  const body = root.querySelector('[data-ct2-main-body]');
+  const splitWrap = body?.querySelector('[data-ct2-split]');
+
+  if (splitWrap) {
+    // Update stage view to highlight selected condition
+    const top = splitWrap.querySelector('[data-ct2-split-top]');
+    if (top) top.innerHTML = buildProductStageView(productId, condId);
+
+    // Populate and expand bottom in-place
+    const bottom = splitWrap.querySelector('[data-ct2-split-bottom]');
+    if (bottom) {
+      const wasOpen = bottom.classList.contains('ct2-split-bottom--open');
+      bottom.innerHTML = buildDetail(cond, null);
+      bottom.querySelector('[data-ct2-back]')?.addEventListener('click', () => {
+        enterProductView(productId, root);
+      });
+      bindDetail(root);
+      bindDetailRight(root);
+      attachTooltips(bottom);
+
+      if (!wasOpen) {
+        bottom.offsetHeight; // force reflow so transition fires
+        bottom.classList.add('ct2-split-bottom--open');
+      } else {
+        ct2InFade(bottom.firstElementChild);
+      }
+    }
+    return;
+  }
+
+  // No split-wrap yet — create it fresh with bottom already expanding
+  const existing = body?.firstElementChild;
+  const showSplit = () => {
+    body.innerHTML = `<div class="ct2-split-wrap" data-ct2-split>
+      <div class="ct2-split-top" data-ct2-split-top>${buildProductStageView(productId, condId)}</div>
+      <div class="ct2-split-divider"></div>
+      <div class="ct2-split-bottom" data-ct2-split-bottom>${buildDetail(cond, null)}</div>
+    </div>`;
+    body.querySelector('[data-ct2-back]')?.addEventListener('click', () => {
+      enterProductView(productId, root);
+    });
+    bindDetail(root);
+    bindDetailRight(root);
+    attachTooltips(body);
+    const bottom = body.querySelector('[data-ct2-split-bottom]');
+    if (bottom) { bottom.offsetHeight; bottom.classList.add('ct2-split-bottom--open'); }
+  };
+  existing ? ct2Out(existing, showSplit) : showSplit();
+}
+
+function refreshProductList(root) {
+  const list = root.querySelector('[data-ct2-prod-list]');
+  if (list) list.innerHTML = buildProductList();
+  // also update library link active state
+  const libLink = root.querySelector('[data-ct2-library]');
+  if (libLink) libLink.classList.toggle('ct2-library-link--active', CT_SELECTED_PROD_VIEW === null && CT_SELECTED_ID === null);
+}
+
+function refreshLibList(root) {
+  refreshProductList(root);
 }
 
 function refreshDetailCenter(root) {
@@ -797,8 +978,6 @@ function refreshDetailCenter(root) {
   } else {
     center.querySelector('[data-ct2-center]')?.insertAdjacentHTML('beforeend', newPickerHtml);
   }
-  // Re-bind product stage dots
-  bindProductStages(root);
 }
 
 // ─── Detail event binding ─────────────────────────────────────────────────────
@@ -982,7 +1161,10 @@ function bindDetail(root) {
   if (!detail) return;
 
   // Back
-  detail.querySelector('[data-ct2-back]')?.addEventListener('click', () => enterCanvas(root));
+  detail.querySelector('[data-ct2-back]')?.addEventListener('click', () => {
+    if (CT_SELECTED_PROD_VIEW) enterProductView(CT_SELECTED_PROD_VIEW, root);
+    else enterCanvas(root);
+  });
 
   // Name field: pencil activates edit mode, blur exits it
   const nameField = detail.querySelector('[data-ct2-name-field]');
@@ -1349,33 +1531,41 @@ function bindCanvas(root) {
 function bindConditionTemplates(root) {
   if (!root) return;
 
-  // Search
-  root.querySelector('[data-ct2-search]')?.addEventListener('input', e => {
-    const q = e.target.value.trim().toLowerCase();
-    root.querySelectorAll('.ct2-lib__item').forEach(item => {
-      const name = item.querySelector('.ct2-lib__name')?.textContent.toLowerCase() || '';
-      item.style.display = !q || name.includes(q) ? '' : 'none';
-    });
-    root.querySelectorAll('.ct2-lib__group').forEach(group => {
-      const hasVisible = [...group.querySelectorAll('.ct2-lib__item')].some(i => i.style.display !== 'none');
-      group.style.display = hasVisible ? '' : 'none';
-    });
-  });
-
-  // Sidebar clicks
+  // Global click handler
   root.addEventListener('click', e => {
-    const libItem = e.target.closest('[data-ct2-cid]');
-    if (libItem && libItem.closest('.ct2-sidebar')) {
-      enterDetail(libItem.getAttribute('data-ct2-cid'), root);
+    // Condition item in stage view → split view
+    const condItem = e.target.closest('[data-ct2-cid]');
+    if (condItem && condItem.closest('[data-ct2-prod-stage-view]')) {
+      const stageView = condItem.closest('[data-ct2-prod-stage-view]');
+      const productId = stageView.getAttribute('data-ct2-prod-id') || CT_SELECTED_PROD_VIEW;
+      enterSplitView(condItem.getAttribute('data-ct2-cid'), productId, root);
       return;
     }
-    const groupAddBtn = e.target.closest('.ct2-lib__group-add');
-    if (groupAddBtn) {
-      const groupEl = groupAddBtn.closest('[data-ct2-group]');
-      const groupId = groupEl ? groupEl.getAttribute('data-ct2-group') : null;
+
+    // Product item in sidebar → show stage view
+    const prodBtn = e.target.closest('[data-ct2-prod]');
+    if (prodBtn && prodBtn.closest('.ct2-sidebar')) {
+      enterProductView(prodBtn.getAttribute('data-ct2-prod'), root);
+      return;
+    }
+
+    // Library link → show activity log
+    if (e.target.closest('[data-ct2-library]')) {
+      enterCanvas(root);
+      return;
+    }
+
+    // Stage view "Add Condition" button → new condition for that stage/product
+    const psvAddBtn = e.target.closest('[data-ct2-psv-add-prod]');
+    if (psvAddBtn) {
+      const stage = psvAddBtn.getAttribute('data-ct2-psv-add-stage');
+      const prod  = psvAddBtn.getAttribute('data-ct2-psv-add-prod');
       const id = `c${Date.now()}`;
-      CT_CONDITIONS.push({ id, name: 'New Condition', conditionType: 'document_upload', products: [], group: groupId });
-      refreshLibList(root, id);
+      CT_CONDITIONS.push({
+        id, name: 'New Condition', conditionType: 'document_upload',
+        products: [{ id: prod, dueBefore: stage, type: 'always', rules: [] }],
+      });
+      refreshProductList(root);
       enterDetail(id, root);
     }
   });

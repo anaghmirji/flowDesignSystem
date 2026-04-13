@@ -1812,7 +1812,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border: none;
   background: transparent;
   box-shadow: none;
-  border-radius: 100px;
+  border-radius: 20px;
   transform: none;
   transform-origin: right center;
   backface-visibility: hidden;
@@ -1834,7 +1834,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   /* Hide native scrollbar (dark track was visible on the right while expanding) */
   scrollbar-width: none;
   -ms-overflow-style: none;
-  border-radius: 16px;
+  border-radius: 20px;
   border: 0.5px solid var(--accent-black-12, #e0e0e0);
   background: var(--accent-white-100, #fff);
   box-shadow:
@@ -1954,7 +1954,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  /* Close = instant hide so collapse reads as the shell shrinking into the pill, not a content fade. */
+  /* Close = instant hide so collapse reads as the shell shrinking into the pill (fade + morph timings fight). */
   transition: none;
 }
 
@@ -1976,25 +1976,34 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   overflow: hidden;
 }
 
-.proto-form-index__head {
-  flex-shrink: 0;
-  padding: 10px 12px 8px;
-}
-
-.proto-form-index__heading {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--accent-black-80, #333);
-  line-height: 1.25;
-}
-
 .proto-form-index__nav {
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 10px 0 12px;
+  padding: 16px 0 16px;
+}
+
+/* Open (not mid-exit): full visibility; slight delayed ease on enter to match the panel fade. */
+.proto-form-index--open:not(.proto-form-index--closing) .proto-form-index__nav {
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 0.24s cubic-bezier(0.33, 1, 0.32, 1) 0.08s,
+    transform 0.24s cubic-bezier(0.33, 1, 0.32, 1) 0.08s;
+}
+
+/* Exit: fade + slide toward the right handle (orchestrated via .proto-form-index--closing in prototype.js). */
+.proto-form-index--open.proto-form-index--closing .proto-form-index__panel {
+  pointer-events: none;
+}
+
+.proto-form-index--open.proto-form-index--closing .proto-form-index__nav {
+  opacity: 0;
+  transform: translateX(20px);
+  pointer-events: none;
+  transition:
+    opacity 0.28s ease-out,
+    transform 0.28s ease-out;
 }
 
 .proto-form-index__group {
@@ -2006,14 +2015,43 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   margin-top: 14px;
 }
 
-.proto-form-index__group-label {
+.proto-form-index__group-heading {
   margin: 0 0 6px;
+  padding: 0;
+  font: inherit;
+}
+
+.proto-form-index__group-label {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--accent-black-50, #808080);
   line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 2px;
+  transition:
+    color 0.12s var(--ease-smooth, ease),
+    transform 0.12s var(--ease-smooth, ease);
+}
+
+.proto-form-index__group-label:hover,
+.proto-form-index__group-label:focus-visible {
+  color: var(--accent-black-70, #555);
+  transform: translateX(2px);
+}
+
+.proto-form-index__group-label:focus-visible {
+  outline: 2px solid var(--accent-blue-60, #66b8ff);
+  outline-offset: 1px;
 }
 
 .proto-form-index__sub {
@@ -2041,11 +2079,15 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   text-align: left;
   cursor: pointer;
   border-radius: 4px;
+  transition:
+    color 0.12s var(--ease-smooth, ease),
+    transform 0.12s var(--ease-smooth, ease);
 }
 
 .proto-form-index__link:hover,
 .proto-form-index__link:focus-visible {
   color: var(--accent-black-80, #333);
+  transform: translateX(2px);
 }
 
 .proto-form-index__link:focus-visible {
@@ -2077,9 +2119,20 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 @media (prefers-reduced-motion: reduce) {
   .proto-form-index__morph,
   .proto-form-index__panel,
+  .proto-form-index__nav,
   .proto-form-index__pill {
     transition-duration: 0.01ms !important;
     transition-delay: 0s !important;
+  }
+
+  .proto-form-index__link:hover,
+  .proto-form-index__link:focus-visible {
+    transform: none;
+  }
+
+  .proto-form-index__group-label:hover,
+  .proto-form-index__group-label:focus-visible {
+    transform: none;
   }
 
   /* Do not use transform: none !important here — it overrides hover scale. Keep motion minimal via instant transform steps. */
@@ -5052,6 +5105,286 @@ body.proto-ct-modal-open {
   text-overflow: ellipsis;
   line-height: 1.4;
 }
+
+/* ── Product list (sidebar) ──────────────────────────────────────────────── */
+.ct2-prod-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+}
+.ct2-prod-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  color: var(--accent-black-80, #333);
+  transition: background 0.1s;
+  box-sizing: border-box;
+}
+.ct2-prod-item:hover { background: rgba(0,0,0,0.04); }
+.ct2-prod-item--active {
+  background: rgba(0,136,255,0.08);
+  color: var(--accent-blue-100, #0088ff);
+}
+.ct2-prod-item--active:hover { background: rgba(0,136,255,0.12); }
+.ct2-prod-item__label { font-weight: var(--font-medium, 500); }
+.ct2-prod-item__count {
+  font-size: 11px;
+  color: var(--accent-black-30, #b2b2b2);
+  font-weight: normal;
+}
+.ct2-prod-item--active .ct2-prod-item__count { color: rgba(0,136,255,0.5); }
+
+/* ── Library link (sidebar footer) ──────────────────────────────────────── */
+.ct2-library-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--accent-black-50, #808080);
+  transition: background 0.1s, color 0.1s;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+}
+.ct2-library-link:hover { background: rgba(0,0,0,0.04); color: var(--accent-black-80, #333); }
+.ct2-library-link--active { color: var(--accent-blue-100, #0088ff); }
+.ct2-library-link--active:hover { background: rgba(0,136,255,0.08); }
+.ct2-library-link__icon { display: flex; align-items: center; }
+.ct2-library-link__icon svg { width: 14px; height: 14px; }
+
+/* ── Product Stage View ──────────────────────────────────────────────────── */
+.ct2-prod-stage-view {
+  height: 100%;
+  overflow: auto;
+  padding: 16px 0;
+  box-sizing: border-box;
+}
+.ct2-prod-stage-view__inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  min-width: max-content;
+  background: var(--accent-white-100, #fff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 20px;
+}
+.ct2-psv-title {
+  font-size: 16px;
+  font-weight: var(--font-medium, 500);
+  color: var(--accent-black-100, #000);
+  flex-shrink: 0;
+}
+.ct2-psv-track {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+.ct2-psv-col {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 180px;
+  max-width: 280px;
+}
+.ct2-psv-col--last {
+  flex: 0 0 auto;
+  min-width: 140px;
+}
+.ct2-psv-col__head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 12px;
+  margin-bottom: 10px;
+}
+.ct2-psv-col--last .ct2-psv-col__head {
+  padding-right: 0;
+}
+.ct2-psv-col__label {
+  font-size: 12px;
+  color: var(--accent-black-100, #000);
+}
+.ct2-psv-col__tl {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.ct2-psv-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-blue-80, #33a0ff);
+}
+.ct2-psv-line {
+  flex: 1;
+  height: 0.5px;
+  background: var(--accent-blue-80, #33a0ff);
+}
+.ct2-psv-col__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 12px;
+}
+.ct2-psv-col--last .ct2-psv-col__body {
+  padding-right: 0;
+}
+.ct2-psv-card {
+  background: var(--accent-white-100, #fff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ct2-psv-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  border-bottom: 0.5px solid var(--accent-black-8, #ebebeb);
+  cursor: pointer;
+  text-align: left;
+  font-size: 12px;
+  color: var(--accent-black-80, #333);
+  transition: background 0.1s;
+  box-sizing: border-box;
+}
+.ct2-psv-item:last-child { border-bottom: none; }
+.ct2-psv-item:hover { background: rgba(0,0,0,0.04); }
+.ct2-psv-item__dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.ct2-psv-item__dot--always    { background: var(--accent-black-40, #999); }
+.ct2-psv-item__dot--triggered { background: var(--accent-blue-100, #0088ff); }
+.ct2-psv-item__name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ct2-psv-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 16px;
+  background: rgba(0,0,0,0.04);
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--accent-black-100, #000);
+  transition: background 0.1s;
+  box-sizing: border-box;
+}
+.ct2-psv-add:hover { background: rgba(0,0,0,0.08); }
+
+/* ── Split view ─────────────────────────────────────────────────────────── */
+.ct2-split-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 16px;
+  background: var(--accent-white-100, #fff);
+  border: 0.5px solid var(--accent-black-12, #e0e0e0);
+  border-radius: 20px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.ct2-split-top {
+  flex: 1 1 0;
+  overflow: auto;
+  min-height: 0;
+}
+/* Strip the individual white card from stage view in split mode */
+.ct2-split-top .ct2-prod-stage-view {
+  padding: 0;
+  height: 100%;
+  overflow: visible;
+}
+.ct2-split-top .ct2-prod-stage-view__inner {
+  background: none;
+  border: none;
+  border-radius: 0;
+  gap: 14px;
+  padding: 16px 20px;
+}
+.ct2-split-top .ct2-psv-title {
+  display: none;
+}
+.ct2-split-top .ct2-psv-col__head {
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.ct2-split-top .ct2-psv-item {
+  padding: 7px 10px;
+}
+.ct2-split-top .ct2-psv-add {
+  padding: 7px 12px;
+  font-size: 11px;
+}
+.ct2-split-divider {
+  flex-shrink: 0;
+  height: 0.5px;
+  background: var(--accent-black-12, #e0e0e0);
+  opacity: 0;
+  transition: opacity 0.44s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ct2-split-wrap:has(.ct2-split-bottom--open) .ct2-split-divider {
+  opacity: 1;
+}
+.ct2-split-bottom {
+  flex: 0 0 0px;
+  overflow: hidden;
+  transition: flex-basis 0.44s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ct2-split-bottom--open {
+  flex-basis: 68%;
+  overflow: auto;
+}
+/* Strip the white card from detail in split mode */
+.ct2-split-bottom .ct2-detail-wrap {
+  height: 100%;
+}
+.ct2-split-bottom .ct2-white-card {
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  height: 100%;
+}
+
+/* Active condition in stage view */
+.ct2-psv-item--active {
+  background: rgba(0,136,255,0.08);
+  color: var(--accent-blue-100, #0088ff);
+}
+.ct2-psv-item--active .ct2-psv-item__dot--always,
+.ct2-psv-item--active .ct2-psv-item__dot--triggered {
+  background: var(--accent-blue-100, #0088ff);
+}
+.ct2-psv-item--active:hover { background: rgba(0,136,255,0.12); }
 
 /* ── Detail (Mode 2) ─────────────────────────────────────────────────────── */
 .ct2-detail {
