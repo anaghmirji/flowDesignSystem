@@ -50,6 +50,17 @@ const CT_DOC_CLASSES = [
   { value: 'BUDGET_CSV',               label: 'Budget (.CSV)',                category: 'Budget' },
 ];
 
+/** Party / role this condition applies to (workflow assignment) */
+const CT_ROLE_TYPES = [
+  { id: 'borrower',      label: 'Borrower' },
+  { id: 'co_borrower',   label: 'Co-borrower' },
+  { id: 'broker',        label: 'Broker / correspondent' },
+  { id: 'processor',     label: 'Loan processor' },
+  { id: 'underwriter',   label: 'Underwriter' },
+  { id: 'closing_agent', label: 'Closing / title' },
+  { id: 'internal',      label: 'Internal (any role)' },
+];
+
 const CT_RULE_ATTRIBUTES = [
   { value: 'employment_type', label: 'Employment Type' },
   { value: 'loan_type',       label: 'Loan Type' },
@@ -77,9 +88,11 @@ const CT_RULE_VALUES = {
 // products: array of { id, dueBefore, type, rules } — per-product config
 // conditionType: 'document_upload' | 'order_service' | 'verification' | 'internal_task'
 // docClass: CT_DOC_CLASSES value — only present when conditionType === 'document_upload'
+// roleType: CT_ROLE_TYPES id — which party this condition is assigned to
 let CT_CONDITIONS = [
   {
     id: 'c1', name: 'Sign Purchase Agreement', group: 'agreements',
+    roleType: 'borrower',
     conditionType: 'document_upload', docClass: 'PURCHASE_CONTRACT',
     description: 'Please upload a fully executed purchase agreement signed by all parties.',
     products: [
@@ -89,6 +102,7 @@ let CT_CONDITIONS = [
   },
   {
     id: 'c2', name: 'Upload W2', group: 'income',
+    roleType: 'borrower',
     conditionType: 'document_upload', docClass: 'W2',
     description: 'Please provide your most recent W-2 form.',
     products: [
@@ -98,6 +112,7 @@ let CT_CONDITIONS = [
   },
   {
     id: 'c3', name: 'Business Tax Returns', group: 'income',
+    roleType: 'borrower',
     conditionType: 'document_upload', docClass: 'BANK_STATEMENT_BUSINESS',
     products: [
       { id: 'fix-flip', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'employment_type', op: 'is', val: 'Self-Employed' }] },
@@ -106,12 +121,14 @@ let CT_CONDITIONS = [
   },
   {
     id: 'c4', name: 'Title Search', group: 'property',
+    roleType: 'internal',
     conditionType: 'order_service',
     description: 'Order a preliminary title report from an approved title company.',
     products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'closing', type: 'always', rules: [] })),
   },
   {
     id: 'c5', name: 'Appraisal Report', group: 'property',
+    roleType: 'internal',
     conditionType: 'order_service',
     description: 'Order a full appraisal from an AMC-approved appraiser.',
     products: [
@@ -122,14 +139,364 @@ let CT_CONDITIONS = [
   },
   {
     id: 'c6', name: 'Proof of Insurance', group: 'property',
+    roleType: 'borrower',
     conditionType: 'document_upload', docClass: 'INSURANCE_HOI',
     products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'closing', type: 'always', rules: [] })),
   },
   {
     id: 'c7', name: 'Bank Statements (3mo)', group: 'income',
+    roleType: 'borrower',
     conditionType: 'document_upload', docClass: 'BANK_STATEMENT_INDIVIDUAL',
     products: [
       { id: 'bridge', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'loan_type', op: 'is', val: 'Bridge' }] },
+    ],
+  },
+  // ── Identity & Agreements ──────────────────────────────────────────────────
+  {
+    id: 'c8', name: 'Government-Issued ID', group: 'identity',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'GOVT_ID',
+    description: 'Upload a valid government-issued photo ID for all borrowers.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'application', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c9', name: 'Entity Operating Agreement', group: 'agreements',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'OPERATING_AGREEMENT',
+    description: 'Provide the current operating agreement for the borrowing entity.',
+    products: [
+      { id: 'fix-flip',     dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
+      { id: 'bridge',       dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
+      { id: 'dscr',         dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
+      { id: 'construction', dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
+    ],
+  },
+  {
+    id: 'c10', name: 'Articles of Incorporation', group: 'agreements',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'ARTICLES_OF_INC',
+    description: 'Upload the articles of incorporation for the borrowing corporation.',
+    products: [
+      { id: 'fix-flip', dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'Corp' }] },
+      { id: 'bridge',   dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'Corp' }] },
+    ],
+  },
+  {
+    id: 'c11', name: 'Borrower Authorization Form', group: 'agreements',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'BORROWER_AUTH',
+    description: 'Sign and return the borrower authorization to release information.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'application', type: 'always', rules: [] })),
+  },
+  // ── Income & Employment ────────────────────────────────────────────────────
+  {
+    id: 'c12', name: 'Personal Tax Returns (2yr)', group: 'income',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'TAX_RETURN_PERSONAL',
+    description: 'Provide the last two years of signed personal federal tax returns.',
+    products: [
+      { id: 'fix-flip', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'employment_type', op: 'is', val: 'Self-Employed' }] },
+      { id: 'bridge',   dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'employment_type', op: 'is', val: 'Self-Employed' }] },
+      { id: 'dscr',     dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'employment_type', op: 'is', val: 'Self-Employed' }] },
+    ],
+  },
+  {
+    id: 'c13', name: 'Profit & Loss Statement', group: 'income',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'PL_STATEMENT',
+    description: 'CPA-prepared P&L for the current year, dated within 60 days.',
+    products: [
+      { id: 'fix-flip', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'employment_type', op: 'is', val: 'Self-Employed' }] },
+      { id: 'dscr',     dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'employment_type', op: 'is', val: 'Self-Employed' }] },
+    ],
+  },
+  {
+    id: 'c14', name: 'Pay Stubs (30 days)', group: 'income',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'PAY_STUB',
+    description: 'Upload the most recent 30 days of pay stubs from your employer.',
+    products: [
+      { id: 'fix-flip', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'employment_type', op: 'is', val: 'Salaried' }] },
+      { id: 'bridge',   dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'employment_type', op: 'is', val: 'Salaried' }] },
+    ],
+  },
+  {
+    id: 'c15', name: 'VOE – Verbal Verification', group: 'income',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Complete verbal verification of employment with the borrower\'s employer.',
+    products: [
+      { id: 'fix-flip', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'employment_type', op: 'is', val: 'Salaried' }] },
+      { id: 'bridge',   dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'employment_type', op: 'is', val: 'Salaried' }] },
+    ],
+  },
+  {
+    id: 'c16', name: 'DSCR Rent Schedule', group: 'income',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'RENT_SCHEDULE',
+    description: 'Provide a current rent schedule or signed leases for all units.',
+    products: [
+      { id: 'dscr',       dueBefore: 'underwriting', type: 'always', rules: [] },
+      { id: 'rental-5plus', dueBefore: 'underwriting', type: 'always', rules: [] },
+    ],
+  },
+  // ── Assets & Funds ─────────────────────────────────────────────────────────
+  {
+    id: 'c17', name: 'Proof of Down Payment', group: 'assets',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'DOWN_PAYMENT_PROOF',
+    description: 'Provide documentation showing the source of down payment funds.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'underwriting', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c18', name: 'Gift Letter', group: 'assets',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'GIFT_LETTER',
+    description: 'If any funds are gifted, provide a signed gift letter and proof of transfer.',
+    products: [
+      { id: 'fix-flip', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'funds_source', op: 'is', val: 'Gift' }] },
+      { id: 'bridge',   dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'funds_source', op: 'is', val: 'Gift' }] },
+    ],
+  },
+  {
+    id: 'c19', name: 'Retirement Account Statement', group: 'assets',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'RETIREMENT_STATEMENT',
+    description: 'Provide the most recent quarterly statement for retirement accounts.',
+    products: [
+      { id: 'dscr',     dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'reserve_source', op: 'is', val: 'Retirement' }] },
+      { id: 'bridge',   dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'reserve_source', op: 'is', val: 'Retirement' }] },
+    ],
+  },
+  // ── Property ───────────────────────────────────────────────────────────────
+  {
+    id: 'c20', name: 'Scope of Work', group: 'property',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'SCOPE_OF_WORK',
+    description: 'Submit a detailed scope of work and rehab budget for the project.',
+    products: [
+      { id: 'fix-flip',     dueBefore: 'application', type: 'always', rules: [] },
+      { id: 'construction', dueBefore: 'application', type: 'always', rules: [] },
+    ],
+  },
+  {
+    id: 'c21', name: 'Property Photos', group: 'property',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'PROPERTY_PHOTOS',
+    description: 'Upload current interior and exterior photos of the subject property.',
+    products: [
+      { id: 'fix-flip', dueBefore: 'application', type: 'always', rules: [] },
+      { id: 'bridge',   dueBefore: 'application', type: 'always', rules: [] },
+    ],
+  },
+  {
+    id: 'c22', name: 'Environmental Site Assessment', group: 'property',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Order Phase I ESA for commercial or mixed-use properties.',
+    products: [
+      { id: 'bridge',       dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'property_type', op: 'is', val: 'Commercial' }] },
+      { id: 'construction', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'property_type', op: 'is', val: 'Commercial' }] },
+    ],
+  },
+  {
+    id: 'c23', name: 'Survey Report', group: 'property',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Order an ALTA/NSPS land survey from a licensed surveyor.',
+    products: [
+      { id: 'fix-flip', dueBefore: 'closing', type: 'triggered', rules: [{ attr: 'property_type', op: 'is', val: 'Land' }] },
+      { id: 'bridge',   dueBefore: 'closing', type: 'triggered', rules: [{ attr: 'property_type', op: 'is', val: 'Land' }] },
+    ],
+  },
+  {
+    id: 'c24', name: 'Flood Zone Determination', group: 'property',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Complete FEMA flood zone determination for the subject property.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'underwriting', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c25', name: 'Flood Insurance Policy', group: 'property',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'INSURANCE_FLOOD',
+    description: 'Provide a flood insurance policy if the property is in a FEMA flood zone.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'closing', type: 'triggered', rules: [{ attr: 'flood_zone', op: 'is', val: 'Yes' }] })),
+  },
+  {
+    id: 'c26', name: "Builder's Risk Insurance", group: 'property',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'INSURANCE_BUILDERS_RISK',
+    description: "Upload a builder's risk or course-of-construction insurance policy.",
+    products: [
+      { id: 'fix-flip',     dueBefore: 'closing', type: 'always', rules: [] },
+      { id: 'construction', dueBefore: 'closing', type: 'always', rules: [] },
+    ],
+  },
+  {
+    id: 'c27', name: 'Property Tax Statement', group: 'property',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'TAX_STATEMENT',
+    description: 'Upload the most recent property tax bill for the subject property.',
+    products: [
+      { id: 'dscr',       dueBefore: 'underwriting', type: 'always', rules: [] },
+      { id: 'rental-5plus', dueBefore: 'underwriting', type: 'always', rules: [] },
+    ],
+  },
+  // ── Title & Closing ────────────────────────────────────────────────────────
+  {
+    id: 'c28', name: 'Preliminary Title Report', group: 'title',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Obtain a preliminary title report and review for encumbrances.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'underwriting', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c29', name: 'Title Insurance Commitment', group: 'title',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Secure lender title insurance commitment from an approved title company.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'closing', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c30', name: 'Closing Disclosure Review', group: 'title',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Prepare and deliver closing disclosure to borrower 3 business days prior.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'closing', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c31', name: 'Wire Instructions Verified', group: 'title',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Verbally verify wire instructions with title company prior to funding.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'funded', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c32', name: 'Executed Settlement Statement', group: 'title',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'SETTLEMENT_STMT',
+    description: 'Upload the fully executed HUD-1 or ALTA settlement statement.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'funded', type: 'always', rules: [] })),
+  },
+  // ── Credit ─────────────────────────────────────────────────────────────────
+  {
+    id: 'c33', name: 'Credit Report Pull', group: 'credit',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Pull tri-merge credit report for all borrowers and guarantors.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'application', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c34', name: 'Credit Explanation Letter', group: 'credit',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'CREDIT_LETTER',
+    description: 'Provide a written explanation for any derogatory credit items.',
+    products: [
+      { id: 'fix-flip', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'derog_credit', op: 'is', val: 'Yes' }] },
+      { id: 'bridge',   dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'derog_credit', op: 'is', val: 'Yes' }] },
+      { id: 'dscr',     dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'derog_credit', op: 'is', val: 'Yes' }] },
+    ],
+  },
+  {
+    id: 'c35', name: 'Bankruptcy Discharge Documents', group: 'credit',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'BANKRUPTCY_DOCS',
+    description: 'Provide full bankruptcy discharge papers if applicable.',
+    products: [
+      { id: 'fix-flip', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'prior_bankruptcy', op: 'is', val: 'Yes' }] },
+      { id: 'bridge',   dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'prior_bankruptcy', op: 'is', val: 'Yes' }] },
+    ],
+  },
+  // ── Construction ───────────────────────────────────────────────────────────
+  {
+    id: 'c36', name: 'Construction Contract', group: 'construction',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'CONSTRUCTION_CONTRACT',
+    description: 'Upload a signed fixed-price construction contract with the GC.',
+    products: [
+      { id: 'construction', dueBefore: 'application', type: 'always', rules: [] },
+      { id: 'fix-flip',     dueBefore: 'application', type: 'triggered', rules: [{ attr: 'rehab_budget', op: 'gt', val: '50000' }] },
+    ],
+  },
+  {
+    id: 'c37', name: 'GC License & Insurance', group: 'construction',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'GC_LICENSE',
+    description: 'Provide GC license, liability insurance, and workers\' comp certificates.',
+    products: [
+      { id: 'construction', dueBefore: 'underwriting', type: 'always', rules: [] },
+    ],
+  },
+  {
+    id: 'c38', name: 'Building Permits', group: 'construction',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'BUILDING_PERMITS',
+    description: 'Upload all required building permits pulled for the project.',
+    products: [
+      { id: 'construction', dueBefore: 'underwriting', type: 'always', rules: [] },
+      { id: 'fix-flip',     dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'permit_required', op: 'is', val: 'Yes' }] },
+    ],
+  },
+  {
+    id: 'c39', name: 'Draw Schedule', group: 'construction',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'DRAW_SCHEDULE',
+    description: 'Submit a detailed draw schedule aligned to construction milestones.',
+    products: [
+      { id: 'construction', dueBefore: 'application', type: 'always', rules: [] },
+    ],
+  },
+  {
+    id: 'c40', name: 'Construction Progress Inspection', group: 'construction',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Order third-party inspection to verify construction progress before each draw.',
+    products: [
+      { id: 'construction', dueBefore: 'funded', type: 'always', rules: [] },
+    ],
+  },
+  // ── Post-Close ─────────────────────────────────────────────────────────────
+  {
+    id: 'c41', name: 'Recorded Deed of Trust', group: 'post-close',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Confirm recorded deed of trust received from county recorder.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'post-close', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c42', name: 'Final Title Policy', group: 'post-close',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Obtain final ALTA lender title policy from title company.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'post-close', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c43', name: 'Hazard Insurance Policy', group: 'post-close',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'INSURANCE_HAZARD',
+    description: 'Confirm lender is named as additional insured on hazard policy.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'post-close', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c44', name: 'Collateral File Review', group: 'post-close',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Complete collateral file review and ship to custodian within 10 days.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'post-close', type: 'always', rules: [] })),
+  },
+  // ── Compliance ─────────────────────────────────────────────────────────────
+  {
+    id: 'c45', name: 'OFAC / AML Screening', group: 'compliance',
+    roleType: 'internal', conditionType: 'order_service',
+    description: 'Run OFAC and AML screening for all borrowers, guarantors, and entities.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'application', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c46', name: 'Patriot Act Certification', group: 'compliance',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'PATRIOT_ACT',
+    description: 'Collect completed Patriot Act customer identification documentation.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'application', type: 'always', rules: [] })),
+  },
+  {
+    id: 'c47', name: 'Beneficial Ownership Certification', group: 'compliance',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'BENEFICIAL_OWNERSHIP',
+    description: 'Complete FinCEN beneficial ownership certification for legal entity borrowers.',
+    products: [
+      { id: 'fix-flip', dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is_not', val: 'Individual' }] },
+      { id: 'bridge',   dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is_not', val: 'Individual' }] },
+      { id: 'dscr',     dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is_not', val: 'Individual' }] },
+    ],
+  },
+  // ── DSCR / Rental ──────────────────────────────────────────────────────────
+  {
+    id: 'c48', name: 'Signed Lease Agreements', group: 'rental',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'LEASE_AGREEMENTS',
+    description: 'Provide all current executed leases for the subject property.',
+    products: [
+      { id: 'dscr',       dueBefore: 'underwriting', type: 'always', rules: [] },
+      { id: 'rental-5plus', dueBefore: 'underwriting', type: 'always', rules: [] },
+    ],
+  },
+  {
+    id: 'c49', name: '12-Month Operating Statement', group: 'rental',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'OPERATING_STMT_12MO',
+    description: 'Provide a trailing 12-month income and expense statement for the property.',
+    products: [
+      { id: 'dscr',       dueBefore: 'underwriting', type: 'always', rules: [] },
+      { id: 'rental-5plus', dueBefore: 'underwriting', type: 'always', rules: [] },
+    ],
+  },
+  {
+    id: 'c50', name: 'Property Management Agreement', group: 'rental',
+    roleType: 'borrower', conditionType: 'document_upload', docClass: 'MGMT_AGREEMENT',
+    description: 'Upload the executed property management agreement if professionally managed.',
+    products: [
+      { id: 'dscr',       dueBefore: 'closing', type: 'triggered', rules: [{ attr: 'mgmt_type', op: 'is', val: 'Professional' }] },
+      { id: 'rental-5plus', dueBefore: 'closing', type: 'triggered', rules: [{ attr: 'mgmt_type', op: 'is', val: 'Professional' }] },
     ],
   },
 ];
@@ -381,6 +748,113 @@ function buildCanvas() {
 </div>`;
 }
 
+// ─── Condition Library ────────────────────────────────────────────────────────
+
+const CT_TYPE_LABELS = {
+  document_upload: 'Document upload',
+  order_service:   'Order service',
+  task:            'Task',
+};
+
+const CT_ROLE_LABELS = {
+  borrower: 'Borrower',
+  internal: 'Internal',
+  both:     'Both',
+};
+
+function buildLibraryRows(query) {
+  const q = (query || '').toLowerCase().trim();
+  const filtered = q
+    ? CT_CONDITIONS.filter(c => c.name.toLowerCase().includes(q) ||
+        (CT_TYPE_LABELS[c.conditionType] || '').toLowerCase().includes(q) ||
+        (CT_ROLE_LABELS[c.roleType] || '').toLowerCase().includes(q) ||
+        (c.products || []).some(p => {
+          const prod = CT_PRODUCTS.find(x => x.id === p.id);
+          return prod?.label.toLowerCase().includes(q);
+        }))
+    : CT_CONDITIONS;
+
+  if (!filtered.length) {
+    return `<div class="ct2-lib__empty">No conditions match "<strong>${query}</strong>"</div>`;
+  }
+
+  return filtered.map(c => {
+    const typeLabel = CT_TYPE_LABELS[c.conditionType] || c.conditionType || '—';
+    const roleLabel = CT_ROLE_LABELS[c.roleType] || c.roleType || '—';
+    const prodTags = (c.products || []).map(p => {
+      const prod = CT_PRODUCTS.find(x => x.id === p.id);
+      const stage = getStageLabel(p.dueBefore);
+      return `<span class="ct2-lib__prod-tag">${prod?.label || p.id}<span class="ct2-lib__prod-stage">${stage}</span></span>`;
+    }).join('');
+
+    const typeIcon = c.conditionType === 'document_upload'
+      ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 1.5A.5.5 0 0 1 2.5 1h5l2.5 2.5V10.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-9Z" stroke="currentColor" stroke-width="1"/><path d="M7.5 1v2.5H10" stroke="currentColor" stroke-width="1"/></svg>`
+      : `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1"/><path d="M6 3.5v2.75L7.5 8" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>`;
+
+    return `<div class="ct2-lib__row" data-ct2-lib-cid="${c.id}">
+      <div class="ct2-lib__col ct2-lib__col--name">
+        <span class="ct2-lib__name">${c.name}</span>
+      </div>
+      <div class="ct2-lib__col ct2-lib__col--type">
+        <span class="ct2-lib__type-badge ct2-lib__type-badge--${c.conditionType}">${typeIcon}${typeLabel}</span>
+      </div>
+      <div class="ct2-lib__col ct2-lib__col--role">
+        <span class="ct2-lib__role-badge ct2-lib__role-badge--${c.roleType}">${roleLabel}</span>
+      </div>
+      <div class="ct2-lib__col ct2-lib__col--products">
+        <div class="ct2-lib__prod-list">${prodTags}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildLibrary() {
+  const searchIcon = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.25"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>`;
+  return `<div class="ct2-canvas" data-ct2-canvas>
+  <div class="ct2-lib-wrap">
+    <div class="ct2-lib-card">
+      <div class="ct2-lib-head">
+        <span class="ct2-lib-head__title">Condition Library</span>
+        <div class="ct2-lib-search-wrap">
+          <span class="ct2-lib-search__icon" aria-hidden="true">${searchIcon}</span>
+          <input type="text" class="ct2-lib-search" placeholder="Search by name, type, role or product…" data-ct2-lib-search>
+        </div>
+      </div>
+      <div class="ct2-lib-table-head">
+        <span class="ct2-lib__col ct2-lib__col--name">Name</span>
+        <span class="ct2-lib__col ct2-lib__col--type">Type</span>
+        <span class="ct2-lib__col ct2-lib__col--role">Assigned to</span>
+        <span class="ct2-lib__col ct2-lib__col--products">Products &amp; stage</span>
+      </div>
+      <div class="ct2-lib-rows" data-ct2-lib-rows>
+        ${buildLibraryRows('')}
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function bindLibrary(root) {
+  const searchInput = root.querySelector('[data-ct2-lib-search]');
+  const rowsContainer = root.querySelector('[data-ct2-lib-rows]');
+  if (!searchInput || !rowsContainer) return;
+
+  searchInput.addEventListener('input', () => {
+    rowsContainer.innerHTML = buildLibraryRows(searchInput.value);
+  });
+
+  // Click a row → open that condition in its first product's context
+  rowsContainer.addEventListener('click', e => {
+    const row = e.target.closest('[data-ct2-lib-cid]');
+    if (!row) return;
+    const condId = row.getAttribute('data-ct2-lib-cid');
+    const cond = CT_CONDITIONS.find(c => c.id === condId);
+    if (!cond || !cond.products?.length) return;
+    const firstProd = cond.products[0].id;
+    enterSplitView(condId, firstProd, root);
+  });
+}
+
 // ─── Product Stage View ───────────────────────────────────────────────────────
 
 function buildProductStageView(productId, selectedCondId) {
@@ -431,6 +905,57 @@ function buildProductStageView(productId, selectedCondId) {
     <div class="ct2-psv-track">${cols}</div>
   </div>
 </div>`;
+}
+
+// ─── Vertical Stage View (left panel of horizontal split) ────────────────────
+
+function buildVerticalStageView(productId, selectedCondId) {
+  const product = CT_PRODUCTS.find(p => p.id === productId);
+  if (!product) return '';
+
+  const byStage = {};
+  CT_STAGES_V2.forEach(s => { byStage[s.id] = []; });
+  CT_CONDITIONS.forEach(c => {
+    const prodConfig = (c.products || []).find(p => p.id === productId);
+    if (prodConfig && byStage[prodConfig.dueBefore]) {
+      byStage[prodConfig.dueBefore].push(c);
+    }
+  });
+
+  const stages = CT_STAGES_V2.map((stage, i) => {
+    const conds = byStage[stage.id] || [];
+    const isLast = i === CT_STAGES_V2.length - 1;
+    const items = conds.map(c => {
+      const isActive = c.id === selectedCondId;
+      return `<button type="button" class="ct2-vsv-item${isActive ? ' ct2-vsv-item--active' : ''}" data-ct2-cid="${c.id}" draggable="true">
+        <span class="ct2-vsv-item__drag-handle" aria-hidden="true"><svg width="10" height="14" viewBox="0 0 10 14" fill="none"><circle cx="3" cy="2.5" r="1.25" fill="currentColor"/><circle cx="7" cy="2.5" r="1.25" fill="currentColor"/><circle cx="3" cy="7" r="1.25" fill="currentColor"/><circle cx="7" cy="7" r="1.25" fill="currentColor"/><circle cx="3" cy="11.5" r="1.25" fill="currentColor"/><circle cx="7" cy="11.5" r="1.25" fill="currentColor"/></svg></span>
+        <span class="ct2-vsv-item__name">${c.name}</span>
+      </button>`;
+    }).join('');
+
+    return `<div class="ct2-vsv-stage${isLast ? ' ct2-vsv-stage--last' : ''}">
+      <div class="ct2-vsv-stage__rail">
+        <div class="ct2-vsv-stage__dot"></div>
+        ${!isLast ? '<div class="ct2-vsv-stage__line"></div>' : ''}
+      </div>
+      <div class="ct2-vsv-stage__content">
+        <span class="ct2-vsv-stage__label">${stage.label}</span>
+        <div class="ct2-vsv-stage__body" data-ct2-stage-body data-ct2-stage-id="${stage.id}">
+          ${items}
+          <button type="button" class="ct2-vsv-add" data-ct2-psv-add-stage="${stage.id}" data-ct2-psv-add-prod="${productId}">+ Add</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="ct2-hsplit-left__header"><h2 class="ct2-hsplit-left__title">All conditions for ${product.label}</h2></div>
+<div class="ct2-vsv" data-ct2-prod-stage-view data-ct2-prod-id="${productId}">${stages}</div>`;
+}
+
+function buildHSplitEmptyState() {
+  return `<div class="ct2-hsplit-empty">
+    <span class="ct2-hsplit-empty__label">Select a condition to edit</span>
+  </div>`;
 }
 
 // ─── Canvas track (kept for reference) ───────────────────────────────────────
@@ -597,10 +1122,31 @@ function buildConditionTypePicker(cond) {
   </div>`;
 }
 
+function buildRoleTypeField(cond) {
+  const current = cond.roleType && CT_ROLE_TYPES.some(r => r.id === cond.roleType)
+    ? cond.roleType
+    : 'borrower';
+  const selectedRole = CT_ROLE_TYPES.find(r => r.id === current) || CT_ROLE_TYPES[0];
+  const chevron = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `<div class="ct2-detail__section">
+    <div class="ct2-detail__label">Assigned to</div>
+    <div class="ct2-docclass-dropdown" data-ct2-role-dropdown>
+      <button type="button" class="ct2-docclass-trigger" data-ct2-role-trigger
+        aria-label="Assigned to" aria-haspopup="listbox" aria-expanded="false">
+        <span class="ct2-docclass-trigger__label" data-ct2-role-label>${selectedRole.label}</span>
+        <span class="ct2-docclass-trigger__icon" aria-hidden="true">${chevron}</span>
+      </button>
+    </div>
+  </div>`;
+}
+
 /** Center panel: name + condition type + product list */
-function buildDetailCenter(cond, selectedProdId) {
-  const backBtn = buildBtnPreviewHtml({ id: 's1', icons: ['chevron-left'] })
-    .replace('<button class="btn btn--s1" tabindex="-1"', '<button class="btn btn--s1" tabindex="-1" data-ct2-back aria-label="Back to canvas"');
+function buildDetailCenter(cond, selectedProdId, opts = {}) {
+  const showBackInHeader = opts.splitView !== true;
+  const backBtn = showBackInHeader
+    ? buildBtnPreviewHtml({ id: 's1', icons: ['chevron-left'] })
+        .replace('<button class="btn btn--s1" tabindex="-1"', '<button class="btn btn--s1" tabindex="-1" data-ct2-back aria-label="Back to canvas"')
+    : '';
   const prodRows = (cond.products || []).map(p =>
     buildProductRow(p, p.id === selectedProdId)
   ).join('');
@@ -626,6 +1172,8 @@ function buildDetailCenter(cond, selectedProdId) {
     spellcheck="false">${cond.subtitle || ''}</textarea>
 
   ${buildConditionTypePicker(cond)}
+
+  ${buildRoleTypeField(cond)}
 
   <div class="ct2-detail__section">
     <div class="ct2-detail__apply-label">Applies to</div>
@@ -749,13 +1297,13 @@ function buildRulesList(rules) {
   ).join('');
 }
 
-function buildDetail(cond, selectedProdId) {
+function buildDetail(cond, selectedProdId, detailOpts = {}) {
   const selProd = (cond.products || []).find(p => p.id === selectedProdId) || null;
 
   return `<div class="ct2-detail-wrap" data-ct2-detail>
   <div class="ct2-white-card">
     <div class="ct2-detail-cols">
-      ${buildDetailCenter(cond, selectedProdId)}
+      ${buildDetailCenter(cond, selectedProdId, detailOpts)}
       ${buildDetailRight(selProd)}
     </div>
   </div>
@@ -766,12 +1314,23 @@ function buildDetail(cond, selectedProdId) {
 
 function buildConditionTemplateModalDialogHtml() {
   const xIcon = typeof iconSvg === 'function' ? iconSvg('x-mark') : '×';
+  const firstProduct = CT_PRODUCTS[0];
+  const defaultBody = firstProduct
+    ? `<div class="ct2-hsplit-wrap" data-ct2-hsplit>
+        <div class="ct2-hsplit-left" data-ct2-hsplit-left>${buildVerticalStageView(firstProduct.id, null)}</div>
+        <div class="ct2-hsplit-divider" data-ct2-hsplit-divider role="separator" aria-orientation="vertical" aria-label="Resize stage list and detail"></div>
+        <div class="ct2-hsplit-right" data-ct2-hsplit-right>${buildHSplitEmptyState()}</div>
+      </div>`
+    : buildLibrary();
+
+  // Set initial selected state so sidebar highlights the first product
+  if (firstProduct) CT_SELECTED_PROD_VIEW = firstProduct.id;
 
   return `<div class="ct2-root" data-ct2-root>
   ${buildSidebar(null)}
   <div class="ct2-main" data-ct2-main>
     <div class="ct2-main__body" data-ct2-main-body>
-      ${buildCanvas()}
+      ${defaultBody}
     </div>
     <div class="ct2-main__footer">
       <button type="button" class="ct2-footer__btn ct2-footer__btn--ghost" data-ct-cancel>Cancel</button>
@@ -841,20 +1400,20 @@ function enterCanvas(root) {
   CT_SELECTED_ID = null;
   CT_SELECTED_PROD_VIEW = null;
   refreshProductList(root);
-  // Remove any orphaned docclass menu from body
   document.querySelectorAll('.ct2-docclass-menu').forEach(m => m.remove());
 
   const body = root.querySelector('[data-ct2-main-body]');
   const existing = body.firstElementChild;
 
-  const showCanvas = () => {
-    body.innerHTML = buildCanvas();
+  const showLibrary = () => {
+    body.innerHTML = buildLibrary();
+    bindLibrary(root);
     bindCanvas(root);
     const el = body.firstElementChild;
     if (el) ct2In(el, false);
   };
 
-  existing ? ct2OutBack(existing, showCanvas) : showCanvas();
+  existing ? ct2OutBack(existing, showLibrary) : showLibrary();
 }
 
 function enterProductView(productId, root) {
@@ -864,27 +1423,24 @@ function enterProductView(productId, root) {
   document.querySelectorAll('.ct2-docclass-menu').forEach(m => m.remove());
 
   const body = root.querySelector('[data-ct2-main-body]');
+  const hsplit = body?.querySelector('[data-ct2-hsplit]');
 
-  // If already showing a split-wrap, collapse the bottom in-place (card stays)
-  const splitWrap = body?.querySelector('[data-ct2-split]');
-  if (splitWrap) {
-    const top = splitWrap.querySelector('[data-ct2-split-top]');
-    if (top) top.innerHTML = buildProductStageView(productId, null);
-    const bottom = splitWrap.querySelector('[data-ct2-split-bottom]');
-    if (bottom) {
-      bottom.classList.remove('ct2-split-bottom--open');
-      setTimeout(() => { if (!bottom.classList.contains('ct2-split-bottom--open')) bottom.innerHTML = ''; }, 460);
-    }
+  if (hsplit) {
+    // Card stays — just refresh left nav and clear right panel
+    const left = hsplit.querySelector('[data-ct2-hsplit-left]');
+    if (left) left.innerHTML = buildVerticalStageView(productId, null);
+    const right = hsplit.querySelector('[data-ct2-hsplit-right]');
+    if (right) { right.innerHTML = buildHSplitEmptyState(); ct2InFade(right.firstElementChild); }
     return;
   }
 
-  // Fresh render — wrap in split-wrap with collapsed bottom
+  // Fresh render
   const existing = body?.firstElementChild;
   const showView = () => {
-    body.innerHTML = `<div class="ct2-split-wrap" data-ct2-split>
-      <div class="ct2-split-top" data-ct2-split-top>${buildProductStageView(productId, null)}</div>
-      <div class="ct2-split-divider"></div>
-      <div class="ct2-split-bottom" data-ct2-split-bottom></div>
+    body.innerHTML = `<div class="ct2-hsplit-wrap" data-ct2-hsplit>
+      <div class="ct2-hsplit-left" data-ct2-hsplit-left>${buildVerticalStageView(productId, null)}</div>
+      <div class="ct2-hsplit-divider" data-ct2-hsplit-divider role="separator" aria-orientation="vertical" aria-label="Resize stage list and detail"></div>
+      <div class="ct2-hsplit-right" data-ct2-hsplit-right>${buildHSplitEmptyState()}</div>
     </div>`;
     const el = body.firstElementChild;
     if (el) ct2InFade(el);
@@ -902,51 +1458,38 @@ function enterSplitView(condId, productId, root) {
   document.querySelectorAll('.ct2-docclass-menu').forEach(m => m.remove());
 
   const body = root.querySelector('[data-ct2-main-body]');
-  const splitWrap = body?.querySelector('[data-ct2-split]');
+  const hsplit = body?.querySelector('[data-ct2-hsplit]');
 
-  if (splitWrap) {
-    // Update stage view to highlight selected condition
-    const top = splitWrap.querySelector('[data-ct2-split-top]');
-    if (top) top.innerHTML = buildProductStageView(productId, condId);
+  if (hsplit) {
+    // Refresh left nav highlight
+    const left = hsplit.querySelector('[data-ct2-hsplit-left]');
+    if (left) left.innerHTML = buildVerticalStageView(productId, condId);
 
-    // Populate and expand bottom in-place
-    const bottom = splitWrap.querySelector('[data-ct2-split-bottom]');
-    if (bottom) {
-      const wasOpen = bottom.classList.contains('ct2-split-bottom--open');
-      bottom.innerHTML = buildDetail(cond, null);
-      bottom.querySelector('[data-ct2-back]')?.addEventListener('click', () => {
-        enterProductView(productId, root);
-      });
+    // Swap in editor on right — fade in
+    const right = hsplit.querySelector('[data-ct2-hsplit-right]');
+    if (right) {
+      right.innerHTML = buildDetail(cond, null, { splitView: true });
       bindDetail(root);
       bindDetailRight(root);
-      attachTooltips(bottom);
-
-      if (!wasOpen) {
-        bottom.offsetHeight; // force reflow so transition fires
-        bottom.classList.add('ct2-split-bottom--open');
-      } else {
-        ct2InFade(bottom.firstElementChild);
-      }
+      attachTooltips(right);
+      ct2InFade(right.firstElementChild);
     }
     return;
   }
 
-  // No split-wrap yet — create it fresh with bottom already expanding
+  // No card yet — create fresh
   const existing = body?.firstElementChild;
   const showSplit = () => {
-    body.innerHTML = `<div class="ct2-split-wrap" data-ct2-split>
-      <div class="ct2-split-top" data-ct2-split-top>${buildProductStageView(productId, condId)}</div>
-      <div class="ct2-split-divider"></div>
-      <div class="ct2-split-bottom" data-ct2-split-bottom>${buildDetail(cond, null)}</div>
+    body.innerHTML = `<div class="ct2-hsplit-wrap" data-ct2-hsplit>
+      <div class="ct2-hsplit-left" data-ct2-hsplit-left>${buildVerticalStageView(productId, condId)}</div>
+      <div class="ct2-hsplit-divider" data-ct2-hsplit-divider role="separator" aria-orientation="vertical" aria-label="Resize stage list and detail"></div>
+      <div class="ct2-hsplit-right" data-ct2-hsplit-right>${buildDetail(cond, null, { splitView: true })}</div>
     </div>`;
-    body.querySelector('[data-ct2-back]')?.addEventListener('click', () => {
-      enterProductView(productId, root);
-    });
     bindDetail(root);
     bindDetailRight(root);
     attachTooltips(body);
-    const bottom = body.querySelector('[data-ct2-split-bottom]');
-    if (bottom) { bottom.offsetHeight; bottom.classList.add('ct2-split-bottom--open'); }
+    const right = body.querySelector('[data-ct2-hsplit-right]');
+    if (right?.firstElementChild) ct2InFade(right.firstElementChild);
   };
   existing ? ct2Out(existing, showSplit) : showSplit();
 }
@@ -981,6 +1524,51 @@ function refreshDetailCenter(root) {
 }
 
 // ─── Detail event binding ─────────────────────────────────────────────────────
+
+function bindHSplitResize(root) {
+  if (!root || root._ct2HsplitResizeBound) return;
+  root._ct2HsplitResizeBound = true;
+
+  const MIN_LEFT = 160;
+  const MIN_RIGHT = 240;
+  const DIVIDER_SLOP = 8;
+
+  root.addEventListener('mousedown', e => {
+    const handle = e.target.closest('.ct2-hsplit-divider');
+    if (!handle || !root.contains(handle)) return;
+    e.preventDefault();
+    const wrap = handle.closest('[data-ct2-hsplit]');
+    const left = wrap?.querySelector('[data-ct2-hsplit-left]');
+    if (!wrap || !left) return;
+
+    const startX = e.clientX;
+    const startW = left.getBoundingClientRect().width;
+
+    wrap.classList.add('ct2-hsplit-wrap--resizing');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const onMove = ev => {
+      const wrapW = wrap.getBoundingClientRect().width;
+      const maxLeft = Math.max(MIN_LEFT, wrapW - MIN_RIGHT - DIVIDER_SLOP);
+      let nw = startW + (ev.clientX - startX);
+      nw = Math.min(maxLeft, Math.max(MIN_LEFT, nw));
+      left.style.flex = `0 0 ${nw}px`;
+      left.style.width = `${nw}px`;
+    };
+
+    const onUp = () => {
+      wrap.classList.remove('ct2-hsplit-wrap--resizing');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
 
 function bindRightResize(root) {
   const right = root.querySelector('[data-ct2-right]');
@@ -1160,13 +1748,13 @@ function bindDetail(root) {
   const detail = root.querySelector('[data-ct2-detail]');
   if (!detail) return;
 
-  // Back
-  detail.querySelector('[data-ct2-back]')?.addEventListener('click', () => {
+  // Back (center header in full detail, or left column in split view)
+  root.querySelector('[data-ct2-back]')?.addEventListener('click', () => {
     if (CT_SELECTED_PROD_VIEW) enterProductView(CT_SELECTED_PROD_VIEW, root);
     else enterCanvas(root);
   });
 
-  // Name field: pencil activates edit mode, blur exits it
+  // Name field: pencil activates edit mode; typing swaps pencil → blue checkmark
   const nameField = detail.querySelector('[data-ct2-name-field]');
   const nameInput = detail.querySelector('[data-ct2-name-input]');
   const nameSizer = detail.querySelector('.ct2-name-sizer');
@@ -1178,13 +1766,40 @@ function bindDetail(root) {
   };
   syncNameWidth();
 
+  const checkBtnHtml = `<button type="button" class="btn btn--s1 ct2-name-field__confirm" tabindex="0" data-ct2-name-confirm aria-label="Confirm name"><div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector"><svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip_checkmark_ct2)"><path d="M6.44546 14.017C6.73864 14.017 6.97045 13.8875 7.13409 13.6352L13.5773 3.48974C13.7 3.29202 13.7477 3.14202 13.7477 2.9852C13.7477 2.6102 13.5023 2.36475 13.1273 2.36475C12.8546 2.36475 12.7045 2.45338 12.5409 2.71247L6.41818 12.4693L3.24091 8.3102C3.07045 8.07156 2.9 7.97611 2.65455 7.97611C2.26591 7.97611 2 8.24202 2 8.61702C2 8.77384 2.06818 8.95111 2.19773 9.11472L5.73636 13.6215C5.94091 13.8875 6.15228 14.017 6.44546 14.017Z" fill="var(--accent-white-100,#fff)"></path></g><defs><clipPath id="clip_checkmark_ct2"><rect width="12" height="12.0341" fill="white" transform="translate(2 1.98297)"></rect></clipPath></defs></svg></div></div></div></button>`;
+
+  const pencilBtnHtml = buildBtnPreviewHtml({ id: 's1', icons: ['pencil'] })
+    .replace('<button class="btn btn--s1" tabindex="-1"', '<button class="btn btn--s1 ct2-name-field__edit" tabindex="0" data-ct2-name-edit aria-label="Edit name"');
+
+  const confirmEdit = () => {
+    nameField?.classList.remove('ct2-name-field--editing', 'ct2-name-field--dirty');
+    // Restore pencil button
+    const confirmBtn = nameField?.querySelector('[data-ct2-name-confirm]');
+    if (confirmBtn) {
+      confirmBtn.outerHTML = pencilBtnHtml;
+      nameField.querySelector('[data-ct2-name-edit]')?.addEventListener('click', () => {
+        nameField.classList.add('ct2-name-field--editing');
+        nameInput?.focus(); nameInput?.select();
+      });
+    }
+    // Sync left nav item name
+    const cond = CT_CONDITIONS.find(c => c.id === CT_SELECTED_ID);
+    if (cond) {
+      const navItem = root.querySelector(`[data-ct2-cid="${cond.id}"] .ct2-vsv-item__name`);
+      if (navItem) navItem.textContent = cond.name;
+    }
+  };
+
   detail.querySelector('[data-ct2-name-edit]')?.addEventListener('click', () => {
-    if (nameField) nameField.classList.add('ct2-name-field--editing');
-    nameInput?.focus();
+    nameField?.classList.add('ct2-name-field--editing');
+    nameInput?.focus(); nameInput?.select();
   });
 
-  nameInput?.addEventListener('blur', () => {
-    nameField?.classList.remove('ct2-name-field--editing');
+  nameInput?.addEventListener('blur', e => {
+    // Only auto-exit if not dirty (no changes made)
+    if (!nameField?.classList.contains('ct2-name-field--dirty')) {
+      nameField?.classList.remove('ct2-name-field--editing');
+    }
   });
 
   // Name input
@@ -1192,9 +1807,17 @@ function bindDetail(root) {
     const cond = CT_CONDITIONS.find(c => c.id === CT_SELECTED_ID);
     if (!cond) return;
     cond.name = e.target.value;
-    const libName = root.querySelector(`[data-ct2-cid="${cond.id}"] .ct2-lib__name`);
-    if (libName) libName.textContent = cond.name;
     syncNameWidth();
+
+    // First change: swap pencil → DS checkmark button
+    if (!nameField?.classList.contains('ct2-name-field--dirty')) {
+      nameField?.classList.add('ct2-name-field--dirty');
+      const editBtn = nameField?.querySelector('[data-ct2-name-edit]');
+      if (editBtn) {
+        editBtn.outerHTML = checkBtnHtml;
+        nameField.querySelector('[data-ct2-name-confirm]')?.addEventListener('click', confirmEdit, { once: true });
+      }
+    }
   });
 
   // Condition type card clicks
@@ -1313,6 +1936,94 @@ function bindDetail(root) {
         if (!document.body.contains(docclassDropdown)) {
           menu.remove();
           document.removeEventListener('click', onOutside);
+        }
+      }
+    });
+  }
+
+  // Applicable role — same trigger + body-fixed menu pattern as document class
+  const roleDropdown = detail.querySelector('[data-ct2-role-dropdown]');
+  if (roleDropdown) {
+    const trigger = roleDropdown.querySelector('[data-ct2-role-trigger]');
+    const label = roleDropdown.querySelector('[data-ct2-role-label]');
+
+    const roleMenu = document.createElement('div');
+    roleMenu.className = 'loans-dropdown ct2-docclass-menu';
+    roleMenu.style.display = 'none';
+
+    const buildRoleMenuItems = () => {
+      roleMenu.innerHTML = '';
+      const cond = CT_CONDITIONS.find(c => c.id === CT_SELECTED_ID);
+      const selectedId = (cond?.roleType && CT_ROLE_TYPES.some(r => r.id === cond.roleType))
+        ? cond.roleType
+        : 'borrower';
+      CT_ROLE_TYPES.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'loans-dropdown__item' + (r.id === selectedId ? ' loans-dropdown__item--active' : '');
+        item.dataset.ct2RoleItem = r.id;
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', r.id === selectedId ? 'true' : 'false');
+        const lbl = document.createElement('span');
+        lbl.className = 'loans-dropdown__item-label';
+        lbl.textContent = r.label;
+        item.appendChild(lbl);
+        roleMenu.appendChild(item);
+      });
+    };
+    buildRoleMenuItems();
+    document.body.appendChild(roleMenu);
+
+    const openRoleMenu = () => {
+      buildRoleMenuItems();
+      const r = trigger.getBoundingClientRect();
+      const menuTop = r.bottom + 4;
+      roleMenu.style.top = `${menuTop}px`;
+      roleMenu.style.left = `${r.left}px`;
+      roleMenu.style.width = `${r.width}px`;
+      roleMenu.style.minWidth = `${r.width}px`;
+      roleMenu.style.maxHeight = `${window.innerHeight - menuTop - 16}px`;
+      roleMenu.style.display = 'flex';
+      trigger.setAttribute('aria-expanded', 'true');
+      requestAnimationFrame(() => roleMenu.classList.add('ct2-docclass-menu--open'));
+      roleDropdown.classList.add('ct2-docclass-dropdown--open');
+    };
+    const closeRoleMenu = () => {
+      roleMenu.classList.remove('ct2-docclass-menu--open');
+      trigger.setAttribute('aria-expanded', 'false');
+      roleMenu.addEventListener('transitionend', () => {
+        if (!roleMenuOpen()) roleMenu.style.display = 'none';
+      }, { once: true });
+      roleDropdown.classList.remove('ct2-docclass-dropdown--open');
+    };
+    const roleMenuOpen = () => roleMenu.classList.contains('ct2-docclass-menu--open');
+
+    trigger.addEventListener('click', e => {
+      e.stopPropagation();
+      roleMenuOpen() ? closeRoleMenu() : openRoleMenu();
+    });
+
+    roleMenu.addEventListener('click', e => {
+      const item = e.target.closest('[data-ct2-role-item]');
+      if (!item) return;
+      const val = item.dataset.ct2RoleItem;
+      const cond = CT_CONDITIONS.find(c => c.id === CT_SELECTED_ID);
+      if (cond) cond.roleType = val;
+      const found = CT_ROLE_TYPES.find(r => r.id === val);
+      if (found && label) label.textContent = found.label;
+      roleMenu.querySelectorAll('[data-ct2-role-item]').forEach(el => {
+        const on = el.dataset.ct2RoleItem === val;
+        el.classList.toggle('loans-dropdown__item--active', on);
+        el.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      closeRoleMenu();
+    });
+
+    document.addEventListener('click', function onRoleOutside(e) {
+      if (!roleDropdown.contains(e.target) && !roleMenu.contains(e.target)) {
+        closeRoleMenu();
+        if (!document.body.contains(roleDropdown)) {
+          roleMenu.remove();
+          document.removeEventListener('click', onRoleOutside);
         }
       }
     });
@@ -1526,10 +2237,154 @@ function bindCanvas(root) {
   });
 }
 
+// ─── Drag-and-drop helpers ────────────────────────────────────────────────────
+
+let _ct2DragId = null;
+let _ct2DropLine = null;
+let _ct2DragFromHandle = false;
+
+function _ct2RemoveDropLine() {
+  if (_ct2DropLine && _ct2DropLine.parentNode) {
+    _ct2DropLine.parentNode.removeChild(_ct2DropLine);
+  }
+  _ct2DropLine = null;
+}
+
+function _ct2ShowDropLine(refEl, position) {
+  _ct2RemoveDropLine();
+  _ct2DropLine = document.createElement('div');
+  _ct2DropLine.className = 'ct2-vsv-drop-line';
+  _ct2DropLine.setAttribute('aria-hidden', 'true');
+  if (position === 'before') {
+    refEl.parentNode.insertBefore(_ct2DropLine, refEl);
+  } else if (position === 'after') {
+    refEl.parentNode.insertBefore(_ct2DropLine, refEl.nextSibling);
+  } else if (position === 'end') {
+    const addBtn = refEl.querySelector('.ct2-vsv-add');
+    if (addBtn) refEl.insertBefore(_ct2DropLine, addBtn);
+    else refEl.appendChild(_ct2DropLine);
+  }
+}
+
 // ─── Root binding ─────────────────────────────────────────────────────────────
 
 function bindConditionTemplates(root) {
   if (!root) return;
+
+  // Drag-and-drop for condition items in vertical stage view
+  // Track whether the mousedown that initiated the drag was on the handle
+  root.addEventListener('mousedown', e => {
+    _ct2DragFromHandle = !!e.target.closest('.ct2-vsv-item__drag-handle');
+  });
+
+  root.addEventListener('dragstart', e => {
+    const item = e.target.closest('.ct2-vsv-item[data-ct2-cid]');
+    if (!item) return;
+    // Only allow drag when grab started from the handle
+    if (!_ct2DragFromHandle) {
+      e.preventDefault();
+      return;
+    }
+    _ct2DragId = item.getAttribute('data-ct2-cid');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', _ct2DragId);
+    setTimeout(() => item.classList.add('ct2-vsv-item--dragging'), 0);
+  });
+
+  root.addEventListener('dragend', e => {
+    const item = e.target.closest('.ct2-vsv-item');
+    if (item) item.classList.remove('ct2-vsv-item--dragging');
+    _ct2RemoveDropLine();
+    _ct2DragId = null;
+  });
+
+  root.addEventListener('dragover', e => {
+    if (!_ct2DragId) return;
+    const left = root.querySelector('[data-ct2-hsplit-left]');
+    if (!left || !left.contains(e.target)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    const item = e.target.closest('.ct2-vsv-item[data-ct2-cid]');
+    if (item && item.getAttribute('data-ct2-cid') !== _ct2DragId) {
+      const rect = item.getBoundingClientRect();
+      _ct2ShowDropLine(item, e.clientY < rect.top + rect.height / 2 ? 'before' : 'after');
+      return;
+    }
+    const body = e.target.closest('[data-ct2-stage-body]');
+    if (body) {
+      _ct2ShowDropLine(body, 'end');
+    }
+  });
+
+  root.addEventListener('dragleave', e => {
+    const left = root.querySelector('[data-ct2-hsplit-left]');
+    if (left && !left.contains(e.relatedTarget)) {
+      _ct2RemoveDropLine();
+    }
+  });
+
+  root.addEventListener('drop', e => {
+    if (!_ct2DragId) return;
+    const left = root.querySelector('[data-ct2-hsplit-left]');
+    if (!left || !left.contains(e.target)) return;
+    e.preventDefault();
+
+    const productId = CT_SELECTED_PROD_VIEW;
+    const cond = CT_CONDITIONS.find(c => c.id === _ct2DragId);
+    if (!cond || !productId) return;
+
+    const item = e.target.closest('.ct2-vsv-item[data-ct2-cid]');
+    const body = e.target.closest('[data-ct2-stage-body]');
+
+    let targetStageId = null;
+    let targetCondId = null;
+    let insertBefore = true;
+
+    if (item && item.getAttribute('data-ct2-cid') !== _ct2DragId) {
+      const stageBody = item.closest('[data-ct2-stage-body]');
+      targetStageId = stageBody ? stageBody.getAttribute('data-ct2-stage-id') : null;
+      targetCondId = item.getAttribute('data-ct2-cid');
+      const rect = item.getBoundingClientRect();
+      insertBefore = e.clientY < rect.top + rect.height / 2;
+    } else if (body) {
+      targetStageId = body.getAttribute('data-ct2-stage-id');
+    }
+
+    if (!targetStageId) {
+      _ct2RemoveDropLine();
+      _ct2DragId = null;
+      return;
+    }
+
+    // Update condition's dueBefore for this product
+    const prodConfig = (cond.products || []).find(p => p.id === productId);
+    if (prodConfig) {
+      prodConfig.dueBefore = targetStageId;
+    } else {
+      cond.products = cond.products || [];
+      cond.products.push({ id: productId, dueBefore: targetStageId, type: 'always', rules: [] });
+    }
+
+    // Reorder CT_CONDITIONS array for correct visual ordering
+    if (targetCondId) {
+      const fromIdx = CT_CONDITIONS.findIndex(c => c.id === _ct2DragId);
+      const toIdx = CT_CONDITIONS.findIndex(c => c.id === targetCondId);
+      if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
+        const [removed] = CT_CONDITIONS.splice(fromIdx, 1);
+        const newToIdx = CT_CONDITIONS.findIndex(c => c.id === targetCondId);
+        CT_CONDITIONS.splice(insertBefore ? newToIdx : newToIdx + 1, 0, removed);
+      }
+    }
+
+    _ct2RemoveDropLine();
+    _ct2DragId = null;
+
+    // Refresh left panel
+    if (left) {
+      left.innerHTML = buildVerticalStageView(productId, CT_SELECTED_ID);
+    }
+  });
 
   // Global click handler
   root.addEventListener('click', e => {
@@ -1562,15 +2417,15 @@ function bindConditionTemplates(root) {
       const prod  = psvAddBtn.getAttribute('data-ct2-psv-add-prod');
       const id = `c${Date.now()}`;
       CT_CONDITIONS.push({
-        id, name: 'New Condition', conditionType: 'document_upload',
+        id, name: 'New Condition', roleType: 'borrower', conditionType: 'document_upload',
         products: [{ id: prod, dueBefore: stage, type: 'always', rules: [] }],
       });
-      refreshProductList(root);
-      enterDetail(id, root);
+      enterSplitView(id, prod, root);
     }
   });
 
   bindCanvas(root);
+  bindHSplitResize(root);
 }
 
 // ─── Standalone page ──────────────────────────────────────────────────────────
