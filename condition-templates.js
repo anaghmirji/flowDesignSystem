@@ -674,7 +674,7 @@ function buildSidebar(activeId) {
   <div class="ct2-sidebar__footer">
     <button type="button" class="ct2-library-link${CT_SELECTED_PROD_VIEW === null ? ' ct2-library-link--active' : ''}" data-ct2-library>
       <span class="ct2-library-link__icon" aria-hidden="true">${listIcon}</span>
-      <span>Library</span>
+      <span>See Conditions Library</span>
     </button>
   </div>
 </aside>`;
@@ -787,6 +787,22 @@ function buildLibraryRows(query) {
       return `<span class="ct2-lib__prod-tag">${prod?.label || p.id}<span class="ct2-lib__prod-stage">${stage}</span></span>`;
     }).join('');
 
+    const triggerPills = (c.products || []).map(p => {
+      const prod = CT_PRODUCTS.find(x => x.id === p.id);
+      const isTriggered = p.type === 'triggered' && p.rules && p.rules.length;
+      const pillClass = isTriggered ? 'ct2-lib__trig-pill--conditional' : 'ct2-lib__trig-pill--always';
+      const pillLabel = isTriggered ? 'Rules match' : 'Always';
+      if (isTriggered) {
+        const ruleSummary = p.rules.map(r => {
+          const attrLabel = (CT_RULE_ATTRIBUTES.find(a => a.value === r.attr) || {}).label || r.attr;
+          const opLabel = r.op === 'is' ? '=' : r.op === 'is_not' ? '≠' : r.op;
+          return `${attrLabel} ${opLabel} ${r.val}`;
+        }).join(' & ');
+        return `<span class="ct2-lib__trig-pill-wrap"><span class="ct2-lib__trig-pill ${pillClass}">${prod?.label || p.id}<span class="ct2-lib__trig-pill-type">· ${pillLabel}</span></span><div class="ct2-lib__trig-tooltip">${ruleSummary}</div></span>`;
+      }
+      return `<span class="ct2-lib__trig-pill ${pillClass}">${prod?.label || p.id}<span class="ct2-lib__trig-pill-type">· ${pillLabel}</span></span>`;
+    }).join('');
+
     const typeIcon = c.conditionType === 'document_upload'
       ? `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 1.5A.5.5 0 0 1 2.5 1h5l2.5 2.5V10.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-9Z" stroke="currentColor" stroke-width="1"/><path d="M7.5 1v2.5H10" stroke="currentColor" stroke-width="1"/></svg>`
       : `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1"/><path d="M6 3.5v2.75L7.5 8" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>`;
@@ -803,6 +819,9 @@ function buildLibraryRows(query) {
       </div>
       <div class="ct2-lib__col ct2-lib__col--products">
         <div class="ct2-lib__prod-list">${prodTags}</div>
+      </div>
+      <div class="ct2-lib__col ct2-lib__col--trigger">
+        <div class="ct2-lib__trig-list">${triggerPills}</div>
       </div>
     </div>`;
   }).join('');
@@ -825,6 +844,7 @@ function buildLibrary() {
         <span class="ct2-lib__col ct2-lib__col--type">Type</span>
         <span class="ct2-lib__col ct2-lib__col--role">Assigned to</span>
         <span class="ct2-lib__col ct2-lib__col--products">Products &amp; stage</span>
+        <span class="ct2-lib__col ct2-lib__col--trigger">Trigger</span>
       </div>
       <div class="ct2-lib-rows" data-ct2-lib-rows>
         ${buildLibraryRows('')}
@@ -939,17 +959,26 @@ function buildVerticalStageView(productId, selectedCondId) {
         ${!isLast ? '<div class="ct2-vsv-stage__line"></div>' : ''}
       </div>
       <div class="ct2-vsv-stage__content">
-        <span class="ct2-vsv-stage__label">${stage.label}</span>
-        <div class="ct2-vsv-stage__body" data-ct2-stage-body data-ct2-stage-id="${stage.id}">
-          ${items}
-          <button type="button" class="ct2-vsv-add" data-ct2-psv-add-stage="${stage.id}" data-ct2-psv-add-prod="${productId}">+ Add</button>
+        <button type="button" class="ct2-vsv-stage__header" data-ct2-stage-toggle aria-expanded="true">
+          <span class="ct2-vsv-stage__label">${stage.label}</span>
+          <span class="ct2-vsv-stage__chevron" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+        <span class="ct2-vsv-stage__collapsed-count">${conds.length} condition${conds.length !== 1 ? 's' : ''}</span>
+        <div class="ct2-vsv-stage__body-wrap">
+          <div class="ct2-vsv-stage__body" data-ct2-stage-body data-ct2-stage-id="${stage.id}">
+            ${items}
+            <button type="button" class="ct2-vsv-add" data-ct2-psv-add-stage="${stage.id}" data-ct2-psv-add-prod="${productId}">+ Add</button>
+          </div>
         </div>
       </div>
     </div>`;
   }).join('');
 
   return `<div class="ct2-hsplit-left__header"><h2 class="ct2-hsplit-left__title">All conditions for ${product.label}</h2></div>
-<div class="ct2-vsv" data-ct2-prod-stage-view data-ct2-prod-id="${productId}">${stages}</div>`;
+<div class="ct2-hsplit-left__scroll">
+<div class="ct2-vsv" data-ct2-prod-stage-view data-ct2-prod-id="${productId}">${stages}</div>
+</div>
+<div class="ct2-hsplit-left__footer" aria-hidden="true"></div>`;
 }
 
 function buildHSplitEmptyState() {
@@ -2266,6 +2295,214 @@ function _ct2ShowDropLine(refEl, position) {
   }
 }
 
+// ─── Add-condition popover + library picker ───────────────────────────────────
+
+function showAddPopover(anchorEl, stageId, prodId, root) {
+  document.querySelectorAll('.ct2-add-popover').forEach(p => p.remove());
+
+  // Keep the stage's "+ Add" button visible while popover is open
+  const stageEl = anchorEl.closest('.ct2-vsv-stage');
+  if (stageEl) stageEl.classList.add('ct2-vsv-stage--pop-open');
+
+  const listIcon = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="3" width="10" height="1.2" rx=".6" fill="currentColor"/><rect x="2" y="6.4" width="10" height="1.2" rx=".6" fill="currentColor"/><rect x="2" y="9.8" width="7" height="1.2" rx=".6" fill="currentColor"/></svg>`;
+  const plusIcon = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2.5v9M2.5 7h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+
+  const pop = document.createElement('div');
+  pop.className = 'ct2-add-popover';
+  pop.innerHTML = `
+    <button type="button" class="ct2-add-popover__opt" data-ct2-pop-existing>
+      <span class="ct2-add-popover__opt-icon">${listIcon}</span>
+      <span class="ct2-add-popover__opt-body">
+        <span class="ct2-add-popover__opt-label">Add from library</span>
+        <span class="ct2-add-popover__opt-hint">Browse &amp; select existing conditions</span>
+      </span>
+    </button>
+    <button type="button" class="ct2-add-popover__opt" data-ct2-pop-new>
+      <span class="ct2-add-popover__opt-icon">${plusIcon}</span>
+      <span class="ct2-add-popover__opt-body">
+        <span class="ct2-add-popover__opt-label">Create new</span>
+        <span class="ct2-add-popover__opt-hint">Start from a blank condition</span>
+      </span>
+    </button>`;
+  document.body.appendChild(pop);
+
+  const rect = anchorEl.getBoundingClientRect();
+  pop.style.top = `${rect.bottom + 6}px`;
+  pop.style.left = `${rect.left}px`;
+
+  requestAnimationFrame(() => {
+    const pw = pop.offsetWidth;
+    const ph = pop.offsetHeight;
+    let left = rect.left;
+    let top  = rect.bottom + 6;
+    if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+    if (top  + ph > window.innerHeight - 8) top = rect.top - ph - 6;
+    pop.style.left = `${left}px`;
+    pop.style.top  = `${top}px`;
+    pop.classList.add('ct2-add-popover--open');
+  });
+
+  const closePopover = () => {
+    pop.remove();
+    document.removeEventListener('click', dismiss, true);
+    if (stageEl) stageEl.classList.remove('ct2-vsv-stage--pop-open');
+  };
+
+  const dismiss = e => {
+    if (!pop.contains(e.target)) closePopover();
+  };
+
+  pop.querySelector('[data-ct2-pop-existing]').addEventListener('click', () => {
+    closePopover();
+    showLibraryPicker(stageId, prodId, root);
+  });
+
+  pop.querySelector('[data-ct2-pop-new]').addEventListener('click', () => {
+    closePopover();
+    const id = `c${Date.now()}`;
+    CT_CONDITIONS.push({
+      id, name: 'New Condition', roleType: 'borrower', conditionType: 'document_upload',
+      products: [{ id: prodId, dueBefore: stageId, type: 'always', rules: [] }],
+    });
+    enterSplitView(id, prodId, root);
+  });
+
+  setTimeout(() => document.addEventListener('click', dismiss, true), 0);
+}
+
+function buildLibraryPickerHtml(stageId, prodId) {
+  // Conditions already assigned to this product+stage
+  const existingIds = new Set(
+    CT_CONDITIONS
+      .filter(c => (c.products || []).some(p => p.id === prodId && p.dueBefore === stageId))
+      .map(c => c.id)
+  );
+
+  const stageLabel = getStageLabel(stageId);
+  const searchIcon = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="3.75" stroke="currentColor" stroke-width="1.2"/><path d="M8.75 8.75L11 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`;
+
+  const items = CT_CONDITIONS.map(c => {
+    const disabled = existingIds.has(c.id);
+    const typeLabel = CT_TYPE_LABELS[c.conditionType] || c.conditionType || '';
+    return `<label class="ct2-lp-item${disabled ? ' ct2-lp-item--disabled' : ''}" data-ct2-lp-item="${c.id}">
+      <input type="checkbox" class="ct2-lp-item__chk-native" data-ct2-lp-check="${c.id}" ${disabled ? 'disabled checked' : ''}>
+      <span class="ct2-lp-item__chk" aria-hidden="true"></span>
+      <span class="ct2-lp-item__name">${c.name}</span>
+      ${disabled
+        ? `<span class="ct2-lp-item__added-badge">Added</span>`
+        : `<span class="ct2-lp-item__type">${typeLabel}</span>`}
+    </label>`;
+  }).join('');
+
+  return `<div class="ct2-lib-picker" data-ct2-lib-picker data-ct2-lp-stage="${stageId}" data-ct2-lp-prod="${prodId}">
+  <div class="ct2-lib-picker__head">
+    <div class="ct2-lib-picker__head-left">
+      <span class="ct2-lib-picker__title">Add from library</span>
+      <span class="ct2-lib-picker__sub">Adding to ${stageLabel} stage</span>
+    </div>
+    <div class="ct2-lib-picker__search-pill">
+      <span class="ct2-lib-picker__search-icon">${searchIcon}</span>
+      <input type="text" class="ct2-lib-picker__search" placeholder="Search…" data-ct2-lp-search>
+    </div>
+  </div>
+  <div class="ct2-lib-picker__list" data-ct2-lp-list>${items}</div>
+  <div class="ct2-lib-picker__footer">
+    <span class="ct2-lp-count" data-ct2-lp-count>0 selected</span>
+    <button type="button" class="ct2-lib-picker__add-btn" data-ct2-lp-add disabled>Add to stage</button>
+  </div>
+</div>`;
+}
+
+function showLibraryPicker(stageId, prodId, root) {
+  // Make sure we're in split view (hsplit layout exists)
+  const body = root.querySelector('[data-ct2-main-body]');
+  let hsplit  = body?.querySelector('[data-ct2-hsplit]');
+
+  if (!hsplit) {
+    // Need to create the hsplit layout first
+    body.innerHTML = `<div class="ct2-hsplit-wrap" data-ct2-hsplit>
+      <div class="ct2-hsplit-left" data-ct2-hsplit-left>${buildVerticalStageView(prodId, null)}</div>
+      <div class="ct2-hsplit-divider" data-ct2-hsplit-divider role="separator" aria-orientation="vertical"></div>
+      <div class="ct2-hsplit-right" data-ct2-hsplit-right></div>
+    </div>`;
+    hsplit = body.querySelector('[data-ct2-hsplit]');
+  }
+
+  const right = hsplit.querySelector('[data-ct2-hsplit-right]');
+  if (!right) return;
+
+  right.innerHTML = buildLibraryPickerHtml(stageId, prodId);
+  const picker = right.firstElementChild;
+  if (picker) ct2InFade(picker);
+
+  bindLibraryPicker(right, stageId, prodId, root);
+}
+
+function bindLibraryPicker(container, stageId, prodId, root) {
+  const picker   = container.querySelector('[data-ct2-lib-picker]');
+  const list     = container.querySelector('[data-ct2-lp-list]');
+  const searchEl = container.querySelector('[data-ct2-lp-search]');
+  const countEl  = container.querySelector('[data-ct2-lp-count]');
+  const addBtn   = container.querySelector('[data-ct2-lp-add]');
+  if (!picker) return;
+
+  const getSelected = () => [...picker.querySelectorAll('.ct2-lp-item__chk-native:not(:disabled):checked')];
+
+  const updateCount = () => {
+    const n = getSelected().length;
+    countEl.textContent = n === 0 ? '0 selected' : `${n} condition${n !== 1 ? 's' : ''} selected`;
+    addBtn.disabled = n === 0;
+  };
+
+  // Search filter
+  searchEl?.addEventListener('input', () => {
+    const q = searchEl.value.toLowerCase().trim();
+    picker.querySelectorAll('[data-ct2-lp-item]').forEach(item => {
+      const name = item.querySelector('.ct2-lp-item__name')?.textContent.toLowerCase() || '';
+      item.style.display = (!q || name.includes(q)) ? '' : 'none';
+    });
+  });
+
+  // The label wraps the native input so clicking anywhere on the row already
+  // toggles it via browser default behaviour — just update the count after.
+  list?.addEventListener('change', e => {
+    if (e.target.closest('.ct2-lp-item__chk-native')) updateCount();
+  });
+
+  // Add selected to stage
+  addBtn?.addEventListener('click', () => {
+    const selected = getSelected();
+    const addedIds = [];
+
+    selected.forEach(chk => {
+      const condId = chk.dataset.ct2LpCheck;
+      const cond = CT_CONDITIONS.find(c => c.id === condId);
+      if (!cond) return;
+      const existing = (cond.products || []).find(p => p.id === prodId);
+      if (existing) {
+        existing.dueBefore = stageId;
+      } else {
+        cond.products = cond.products || [];
+        cond.products.push({ id: prodId, dueBefore: stageId, type: 'always', rules: [] });
+      }
+      addedIds.push(condId);
+    });
+
+    // Open the first added condition in split view
+    const firstId = addedIds[0];
+    if (firstId) {
+      enterSplitView(firstId, prodId, root);
+    } else {
+      // Nothing added — return right panel to empty state
+      const right = root.querySelector('[data-ct2-hsplit-right]');
+      if (right) {
+        right.innerHTML = buildHSplitEmptyState();
+        if (right.firstElementChild) ct2InFade(right.firstElementChild);
+      }
+    }
+  });
+}
+
 // ─── Root binding ─────────────────────────────────────────────────────────────
 
 function bindConditionTemplates(root) {
@@ -2388,6 +2625,17 @@ function bindConditionTemplates(root) {
 
   // Global click handler
   root.addEventListener('click', e => {
+    // Stage header → collapse/expand
+    const stageToggle = e.target.closest('[data-ct2-stage-toggle]');
+    if (stageToggle) {
+      const stage = stageToggle.closest('.ct2-vsv-stage');
+      if (stage) {
+        const collapsed = stage.classList.toggle('ct2-vsv-stage--collapsed');
+        stageToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      }
+      return;
+    }
+
     // Condition item in stage view → split view
     const condItem = e.target.closest('[data-ct2-cid]');
     if (condItem && condItem.closest('[data-ct2-prod-stage-view]')) {
@@ -2404,28 +2652,36 @@ function bindConditionTemplates(root) {
       return;
     }
 
-    // Library link → show activity log
+    // See Conditions Library → condition library panel
     if (e.target.closest('[data-ct2-library]')) {
       enterCanvas(root);
       return;
     }
 
-    // Stage view "Add Condition" button → new condition for that stage/product
+    // Stage view "+ Add" button → show quick-pick popover
     const psvAddBtn = e.target.closest('[data-ct2-psv-add-prod]');
     if (psvAddBtn) {
+      e.stopPropagation();
       const stage = psvAddBtn.getAttribute('data-ct2-psv-add-stage');
       const prod  = psvAddBtn.getAttribute('data-ct2-psv-add-prod');
-      const id = `c${Date.now()}`;
-      CT_CONDITIONS.push({
-        id, name: 'New Condition', roleType: 'borrower', conditionType: 'document_upload',
-        products: [{ id: prod, dueBefore: stage, type: 'always', rules: [] }],
-      });
-      enterSplitView(id, prod, root);
+      showAddPopover(psvAddBtn, stage, prod, root);
     }
   });
 
   bindCanvas(root);
   bindHSplitResize(root);
+  bindLeftScrollFade(root);
+}
+
+function bindLeftScrollFade(root) {
+  if (!root) return;
+  root.addEventListener('scroll', e => {
+    const scroll = e.target.closest('.ct2-hsplit-left__scroll');
+    if (!scroll) return;
+    const left = scroll.closest('.ct2-hsplit-left');
+    if (!left) return;
+    left.classList.toggle('ct2-hsplit-left--scrolled', scroll.scrollTop > 8);
+  }, true);
 }
 
 // ─── Standalone page ──────────────────────────────────────────────────────────
