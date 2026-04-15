@@ -657,13 +657,12 @@ function buildProtoFormIndexNavHtml() {
       <button type="button" class="proto-form-index__pill" data-proto-index-toggle aria-expanded="false" aria-controls="proto-form-index-panel" id="proto-form-index-trigger" title="Section index">
         <span class="proto-form-index__pill-visual" aria-hidden="true"></span>
       </button>
-      <div class="proto-form-index__panel" id="proto-form-index-panel" data-proto-index-panel role="region" aria-labelledby="proto-form-index-heading" aria-hidden="true">
-        <header class="proto-form-index__head">
-          <h2 class="proto-form-index__heading" id="proto-form-index-heading">Index</h2>
-        </header>
+      <div class="proto-form-index__panel" id="proto-form-index-panel" data-proto-index-panel role="region" aria-label="Section index" aria-hidden="true">
         <nav class="proto-form-index__nav" aria-label="Form sections">
           <section class="proto-form-index__group">
-            <h3 class="proto-form-index__group-label">Borrower Information</h3>
+            <h3 class="proto-form-index__group-heading">
+              <button type="button" class="proto-form-index__group-label" data-proto-index-jump="borrower">Borrower Information</button>
+            </h3>
             <div class="proto-form-index__sub">
               ${L('identity', 'Identity')}
               ${L('entity-details', 'Entity Details', ' proto-form-index__link--entity-only')}
@@ -672,7 +671,9 @@ function buildProtoFormIndexNavHtml() {
             </div>
           </section>
           <section class="proto-form-index__group">
-            <h3 class="proto-form-index__group-label">Properties</h3>
+            <h3 class="proto-form-index__group-heading">
+              <button type="button" class="proto-form-index__group-label" data-proto-index-jump="properties">Properties</button>
+            </h3>
             <div class="proto-form-index__sub">
               ${L('prop-location', 'Location')}
               ${L('prop-details', 'Property Details')}
@@ -681,7 +682,9 @@ function buildProtoFormIndexNavHtml() {
             </div>
           </section>
           <section class="proto-form-index__group">
-            <h3 class="proto-form-index__group-label">Loan Terms</h3>
+            <h3 class="proto-form-index__group-heading">
+              <button type="button" class="proto-form-index__group-label" data-proto-index-jump="loan-terms">Loan Terms</button>
+            </h3>
             <div class="proto-form-index__sub">
               ${L('loan-core', 'Core Terms')}
               ${L('loan-metrics', 'Calculated Metrics')}
@@ -3711,15 +3714,80 @@ function syncProtoFormIndexAttrs() {
   wrap.dataset.protoPropInvestment = showInv ? 'true' : 'false';
 }
 
+let protoFormIndexCloseCleanup = null;
+
+function clearProtoFormIndexClosePending() {
+  if (typeof protoFormIndexCloseCleanup === 'function') {
+    protoFormIndexCloseCleanup();
+    protoFormIndexCloseCleanup = null;
+  }
+}
+
+function finishProtoFormIndexClose(root, panel, btn) {
+  clearProtoFormIndexClosePending();
+  if (!root.classList.contains('proto-form-index--open')) return;
+  root.classList.remove('proto-form-index--closing', 'proto-form-index--open');
+  btn.setAttribute('aria-expanded', 'false');
+  panel.setAttribute('aria-hidden', 'true');
+  if ('inert' in panel) panel.inert = true;
+}
+
 function setProtoFormIndexOpen(open) {
   const root = document.querySelector('[data-proto-form-index]');
   const panel = document.getElementById('proto-form-index-panel');
   const btn = document.getElementById('proto-form-index-trigger');
   if (!root || !panel || !btn) return;
-  root.classList.toggle('proto-form-index--open', open);
-  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-  panel.setAttribute('aria-hidden', open ? 'false' : 'true');
-  if ('inert' in panel) panel.inert = !open;
+
+  if (open) {
+    clearProtoFormIndexClosePending();
+    root.classList.remove('proto-form-index--closing');
+    root.classList.add('proto-form-index--open');
+    btn.setAttribute('aria-expanded', 'true');
+    panel.setAttribute('aria-hidden', 'false');
+    if ('inert' in panel) panel.inert = false;
+    return;
+  }
+
+  if (!root.classList.contains('proto-form-index--open')) return;
+  if (root.classList.contains('proto-form-index--closing')) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    finishProtoFormIndexClose(root, panel, btn);
+    return;
+  }
+
+  root.classList.add('proto-form-index--closing');
+  if ('inert' in panel) panel.inert = true;
+
+  const nav = panel.querySelector('.proto-form-index__nav');
+  let fallbackId = null;
+  let finished = false;
+
+  const safeFinish = () => {
+    if (finished) return;
+    finished = true;
+    finishProtoFormIndexClose(root, panel, btn);
+  };
+
+  fallbackId = window.setTimeout(safeFinish, 400);
+
+  const onEnd = e => {
+    if (e.target !== nav) return;
+    if (e.propertyName !== 'opacity' && e.propertyName !== 'transform') return;
+    safeFinish();
+  };
+
+  if (nav) {
+    protoFormIndexCloseCleanup = () => {
+      if (fallbackId != null) window.clearTimeout(fallbackId);
+      nav.removeEventListener('transitionend', onEnd);
+    };
+    nav.addEventListener('transitionend', onEnd);
+  } else {
+    if (fallbackId != null) window.clearTimeout(fallbackId);
+    safeFinish();
+  }
 }
 
 function protoFormIndexScrollToSlug(slug) {
@@ -3745,7 +3813,7 @@ function updateProtoFormIndexActiveFromSlug(slug) {
   document.querySelectorAll('.proto-form-index__link--active').forEach(l => {
     l.classList.remove('proto-form-index__link--active');
   });
-  document.querySelector(`[data-proto-index-jump="${slug}"]`)?.classList.add('proto-form-index__link--active');
+  document.querySelector(`.proto-form-index__link[data-proto-index-jump="${slug}"]`)?.classList.add('proto-form-index__link--active');
 }
 
 let protoFormIndexListenersBound = false;
@@ -3757,7 +3825,10 @@ function bindProtoFormIndex() {
     if (e.target.closest('[data-proto-index-toggle]')) {
       e.preventDefault();
       const root = e.target.closest('[data-proto-form-index]');
-      const open = !root?.classList.contains('proto-form-index--open');
+      const isOpen = root?.classList.contains('proto-form-index--open');
+      const isClosing = root?.classList.contains('proto-form-index--closing');
+      /* During exit animation `--open` is still set; treat pill click as “stay open” (cancel close). */
+      const open = isClosing ? true : !isOpen;
       setProtoFormIndexOpen(open);
       return;
     }
