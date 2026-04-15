@@ -551,6 +551,11 @@ function getProductLabel(pid) {
 let CT_SELECTED_PROD_ID = null;
 let CT_SELECTED_PROD_VIEW = null;
 
+function markDirty(root) {
+  const main = root?.querySelector('[data-ct2-main]');
+  if (main) main.classList.add('ct2-main--dirty');
+}
+
 // ─── Animation helpers ────────────────────────────────────────────────────────
 
 const CT2_EASE_EXIT  = 'cubic-bezier(0.4, 0, 1, 0.8)';
@@ -1674,6 +1679,7 @@ function bindDetailRight(root) {
       if (!prod) return;
       const type = firesBtn.getAttribute('data-ct2-fires');
       prod.type = type;
+      markDirty(root);
       right.querySelectorAll('[data-ct2-fires]').forEach(b =>
         b.classList.toggle('ct2-fires__btn--active', b.getAttribute('data-ct2-fires') === type)
       );
@@ -1741,6 +1747,7 @@ function bindDetailRight(root) {
       if (!prod) return;
       prod.rules = prod.rules || [];
       prod.rules.push({ attr: 'employment_type', op: 'is', val: 'Salaried' });
+      markDirty(root);
       reRenderRules(right, prod.rules);
       return;
     }
@@ -1753,6 +1760,7 @@ function bindDetailRight(root) {
       if (!prod) return;
       const idx = parseInt(removeRule.getAttribute('data-ct2-rule-remove'), 10);
       prod.rules.splice(idx, 1);
+      markDirty(root);
       reRenderRules(right, prod.rules);
       return;
     }
@@ -1769,6 +1777,7 @@ function bindDetailRight(root) {
     prod.rules[idx].attr = attrSel.value;
     prod.rules[idx].op   = (CT_RULE_OPERATORS[attrSel.value] || [])[0]?.value || 'is';
     prod.rules[idx].val  = (CT_RULE_VALUES[attrSel.value] || [])[0] || '';
+    markDirty(root);
     reRenderRules(right, prod.rules);
   });
 }
@@ -1776,6 +1785,10 @@ function bindDetailRight(root) {
 function bindDetail(root) {
   const detail = root.querySelector('[data-ct2-detail]');
   if (!detail) return;
+
+  // Mark dirty on any field change in the detail panel
+  detail.addEventListener('input', () => markDirty(root));
+  detail.addEventListener('change', () => markDirty(root));
 
   // Back (center header in full detail, or left column in split view)
   root.querySelector('[data-ct2-back]')?.addEventListener('click', () => {
@@ -1859,6 +1872,7 @@ function bindDetail(root) {
     if (cond.conditionType === newType) return;
     cond.conditionType = newType;
     if (newType !== 'document_upload') delete cond.docClass;
+    markDirty(root);
 
     // Update active card
     detail.querySelectorAll('[data-ct2-type]').forEach(c => {
@@ -1950,7 +1964,7 @@ function bindDetail(root) {
       if (!item) return;
       const val = item.dataset.ct2DocclassItem;
       const cond = CT_CONDITIONS.find(c => c.id === CT_SELECTED_ID);
-      if (cond) cond.docClass = val;
+      if (cond) { cond.docClass = val; markDirty(root); }
       const found = CT_DOC_CLASSES.find(d => d.value === val);
       if (found && label) label.textContent = found.label;
       menu.querySelectorAll('[data-ct2-docclass-item]').forEach(el =>
@@ -2036,7 +2050,7 @@ function bindDetail(root) {
       if (!item) return;
       const val = item.dataset.ct2RoleItem;
       const cond = CT_CONDITIONS.find(c => c.id === CT_SELECTED_ID);
-      if (cond) cond.roleType = val;
+      if (cond) { cond.roleType = val; markDirty(root); }
       const found = CT_ROLE_TYPES.find(r => r.id === val);
       if (found && label) label.textContent = found.label;
       roleMenu.querySelectorAll('[data-ct2-role-item]').forEach(el => {
@@ -2143,6 +2157,7 @@ function bindDetail(root) {
           if (fireType === 'always') prod.rules = [];
           syncProdRowType(root, prod.id);
         });
+        markDirty(root);
         // Re-render the product list so mini-tracks and badges all reflect the new values
         reRenderProductSection(detail, cond, root);
       }
@@ -2189,6 +2204,7 @@ function bindDetail(root) {
       const pid = removeBtn.getAttribute('data-ct2-prod-remove');
       cond.products = cond.products.filter(p => p.id !== pid);
       if (CT_SELECTED_PROD_ID === pid) CT_SELECTED_PROD_ID = null;
+      markDirty(root);
       reRenderProductSection(detail, cond, root);
       return;
     }
@@ -2364,6 +2380,7 @@ function showAddPopover(anchorEl, stageId, prodId, root) {
       id, name: 'New Condition', roleType: 'borrower', conditionType: 'document_upload',
       products: [{ id: prodId, dueBefore: stageId, type: 'always', rules: [] }],
     });
+    markDirty(root);
     enterSplitView(id, prodId, root);
   });
 
@@ -2491,6 +2508,7 @@ function bindLibraryPicker(container, stageId, prodId, root) {
     // Open the first added condition in split view
     const firstId = addedIds[0];
     if (firstId) {
+      markDirty(root);
       enterSplitView(firstId, prodId, root);
     } else {
       // Nothing added — return right panel to empty state
@@ -2616,6 +2634,7 @@ function bindConditionTemplates(root) {
 
     _ct2RemoveDropLine();
     _ct2DragId = null;
+    markDirty(root);
 
     // Refresh left panel
     if (left) {
