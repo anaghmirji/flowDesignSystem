@@ -26,14 +26,14 @@
 @font-face {
   font-family: 'Circular Std';
   src: url('/fonts/CircularStd-Book.woff2') format('woff2');
-  font-weight: 400;
+  font-weight: var(--font-book);
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Circular Std';
   src: url('/fonts/CircularStd-Medium.woff2') format('woff2');
-  font-weight: 500;
+  font-weight: var(--font-medium);
   font-style: normal;
   font-display: swap;
 }
@@ -65,9 +65,36 @@
 
   /* ── Font weights — map to Circular Std named cuts ───────────────────────
      Book = 400, Medium = 500, Bold = 700                                   */
-  --font-book:   400;  /* Circular Std Book   */
-  --font-medium: 500;  /* Circular Std Medium */
-  --font-bold:   700;  /* Circular Std Bold   */
+  --font-book:     400;  /* Circular Std Book     */
+  --font-medium:   500;  /* Circular Std Medium   */
+  --font-semibold: 600;  /* Circular Std Semibold */
+  --font-bold:     700;  /* Circular Std Bold     */
+
+  /* ── Typography Scale ─────────────────────────────────────────────────────
+     Font sizes mapped to design usage (compact data-dense UI).               */
+  --font-size-2xs:   9px;   /* micro labels, tight badges                     */
+  --font-size-xs:    10px;   /* secondary meta, timestamps                     */
+  --font-size-xs2:   10.5px; /* between xs and sm — edge-case labels           */
+  --font-size-sm:    11px;   /* secondary body, captions                       */
+  --font-size-sm2:   11.5px; /* between sm and base — compact UI labels        */
+  --font-size-base:  12px;   /* primary body — most common                     */
+  --font-size-md:   13px;   /* slightly larger body                           */
+  --font-size-lg:   14px;   /* section titles, emphasis                       */
+  --font-size-title: 15px;  /* pill labels, sidebar titles                    */
+  --font-size-xl:   16px;   /* headers, modal titles                          */
+  --font-size-2xl:  24px;   /* large display headings                         */
+
+  /* ── Line Heights ─────────────────────────────────────────────────────────*/
+  --leading-collapse: 0;    /* icon buttons, layout collapse                  */
+  --leading-none:    1;     /* single-line chips, badges                      */
+  --leading-tight:   1.2;   /* headings                                       */
+  --leading-snug:    1.3;   /* subheadings, compact lists                     */
+  --leading-compact: 1.35;  /* tight body, truncated labels                   */
+  --leading-normal:  1.4;   /* body text                                      */
+  --leading-body:    1.45;  /* comfortable body, lists                        */
+  --leading-prose:   1.55;  /* textareas, long-form content                   */
+  --leading-relaxed: 1.6;   /* descriptive / help text                        */
+  --leading-spacious: 1.8;  /* badges, open vertical spacing                  */
 
   /* ── Accent / White ──────────────────────────────────────── */
   --accent-white-100: #ffffff;
@@ -336,8 +363,8 @@
 /* ── Label ── */
 .btn__label {
   font-family: 'Inter', -apple-system, sans-serif;
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   font-style: normal;
   line-height: normal;
   color: var(--accent-black-80, #333333);
@@ -410,8 +437,8 @@
 /* Placeholder text (static display) */
 .search-bar__placeholder {
   font-family: 'Circular Std', -apple-system, sans-serif;
-  font-size: 11px;
-  font-weight: 400;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-book);
   color: var(--accent-black-60, #666);
   white-space: nowrap;
   padding-left: 0;
@@ -421,8 +448,8 @@
 /* Value text (static filled display) */
 .search-bar__value {
   font-family: 'Circular Std', -apple-system, sans-serif;
-  font-size: 11px;
-  font-weight: 400;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-book);
   color: var(--accent-black-80, #333);
   white-space: nowrap;
   padding-left: 0;
@@ -437,8 +464,8 @@
   outline: none;
   background: transparent;
   font-family: 'Circular Std', -apple-system, sans-serif;
-  font-size: 11px;
-  font-weight: 400;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-book);
   color: var(--accent-black-80, #333);
   white-space: nowrap;
 }
@@ -496,8 +523,8 @@
 }
 
 .loans-pill__label {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-medium);
   color: var(--accent-black-80);
   white-space: nowrap;
 }
@@ -509,7 +536,7 @@
 }
 
 .loans-pill__count {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-60);
 }
 
@@ -571,13 +598,13 @@
 }
 
 .loans-dropdown__item-label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-80);
   white-space: nowrap;
 }
 
 .loans-dropdown__item-count {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-50);
 }
 
@@ -600,8 +627,8 @@
 
 .loans-dropdown__item-soon {
   margin-left: auto;
-  font-size: 10px;
-  font-weight: 500;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-medium);
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--accent-black-40);
@@ -639,7 +666,7 @@
 .lp-status__dot--red   { background: var(--accent-red-100); }
 
 .lp-status__label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-80);
   white-space: nowrap;
 }
@@ -675,7 +702,7 @@
 }
 
 .lp-stage__label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-80);
   white-space: nowrap;
   display: inline-block;
@@ -858,8 +885,8 @@
   background: var(--accent-black-80, #333);
   color: #fff;
   font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 400;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-book);
   white-space: nowrap;
   padding: 4px 8px;
   border-radius: 6px;
@@ -896,10 +923,10 @@
 }
 
 .assignees__initials {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-100, #000);
-  line-height: 1;
+  line-height: var(--leading-none);
   white-space: nowrap;
   font-family: var(--font-sans);
 }
@@ -914,8 +941,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 9px;
-  font-weight: 500;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-medium);
   color: var(--accent-black-60);
   flex-shrink: 0;
   margin-right: -8px;
@@ -1025,8 +1052,8 @@
 
 .assignees-dropdown__header {
   font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 12px;
+  font-weight: var(--font-medium);
+  font-size: var(--font-size-base);
   color: var(--accent-black-80, #333);
   padding: 8px 4px;
 }
@@ -1067,8 +1094,8 @@
 
 .assignees-dropdown__name {
   font-family: var(--font-sans);
-  font-weight: 400;
-  font-size: 12px;
+  font-weight: var(--font-book);
+  font-size: var(--font-size-base);
   color: var(--accent-black-80, #333);
   white-space: nowrap;
 }
@@ -1089,8 +1116,8 @@
 
 .assignees-dropdown__role-label {
   font-family: var(--font-sans);
-  font-weight: 400;
-  font-size: 10px;
+  font-weight: var(--font-book);
+  font-size: var(--font-size-xs);
   color: var(--accent-black-50, #808080);
   white-space: nowrap;
 }
@@ -1162,8 +1189,8 @@
 }
 
 .assignees-dropdown__add-text {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-60, #666);
 }
 
@@ -1231,8 +1258,8 @@
 
 .assignees-dropdown__search-placeholder {
   font-family: var(--font-sans);
-  font-weight: 400;
-  font-size: 11px;
+  font-weight: var(--font-book);
+  font-size: var(--font-size-sm);
   color: var(--accent-black-60, #666);
   white-space: nowrap;
 }
@@ -1257,8 +1284,8 @@
 
 .assignees-dropdown__suggested-label {
   font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 12px;
+  font-weight: var(--font-medium);
+  font-size: var(--font-size-base);
   color: var(--accent-black-60, #666);
 }
 
@@ -1271,8 +1298,8 @@
 /* Suggested role text — right-aligned, no role picker chevron */
 .assignees-dropdown__suggested-role {
   font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 400;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-book);
   color: var(--accent-black-40, #999);
   white-space: nowrap;
   flex-shrink: 0;
@@ -1333,8 +1360,8 @@
   padding: 8px;
   border-radius: 12px;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-80, #333);
   white-space: nowrap;
   width: 100%;
@@ -1430,8 +1457,8 @@
 }
 
 .sidebar-item__label {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-80, #333333);
   white-space: nowrap;
   line-height: normal;
@@ -1568,8 +1595,8 @@
 }
 
 .loan-list-item__name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-medium);
   color: var(--accent-black-80, #333);
   line-height: normal;
   white-space: nowrap;
@@ -1579,19 +1606,19 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-60, #666);
   white-space: nowrap;
   line-height: normal;
 }
 
-.loan-list-item__meta-amount { font-weight: 500; }
+.loan-list-item__meta-amount { font-weight: var(--font-medium); }
 .loan-list-item__meta-sep,
-.loan-list-item__meta-type   { font-weight: 400; }
+.loan-list-item__meta-type   { font-weight: var(--font-book); }
 
 .loan-list-item__time {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-60, #666);
   white-space: nowrap;
   line-height: normal;
@@ -1607,8 +1634,8 @@
 }
 
 .loan-list-item__badge {
-  font-size: 11px;
-  font-weight: 400;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-book);
   padding: 4px 8px;
   border-radius: 100px;
   white-space: nowrap;
@@ -1663,8 +1690,8 @@
 }
 
 .loan-stage-group__name {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-medium);
   color: var(--accent-black-60, #666);
   white-space: nowrap;
 }
@@ -1676,8 +1703,8 @@
 }
 
 .loan-stage-group__count {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-medium);
   color: var(--accent-black-60, #666);
 }
 
@@ -1859,8 +1886,8 @@
 }
 
 .proto-toggle__label {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: #1a1a1a;
   white-space: nowrap;
   overflow: hidden;

@@ -106,8 +106,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   width: 124px;
   padding: 0 12px;
   border-radius: 12px;
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-80, #333);
   background: var(--accent-bg-1, #fcfcfd);
   border: 0.5px solid transparent;
@@ -246,8 +246,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   user-select: none;
 }
 .board-view__pill-label {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-medium);
   color: var(--accent-black-80, #333);
   white-space: nowrap;
 }
@@ -257,7 +257,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   gap: 2px;
 }
 .board-view__pill-count {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-60, #666);
 }
 .board-view__pill-icon {
@@ -301,8 +301,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .board-col__name {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-medium);
   color: var(--accent-black-60, #666);
   white-space: nowrap;
 }
@@ -314,8 +314,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .board-col__count {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-medium);
   color: var(--accent-black-60, #666);
 }
 
@@ -826,7 +826,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .proto-notes-drawer__title {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--font-size-lg);
   font-family: var(--font-sans);
   font-weight: var(--font-medium, 500);
   line-height: normal;
@@ -863,10 +863,10 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   margin: 16px 0 0;
   padding: 12px;
   box-sizing: border-box;
-  font-size: 14px;
+  font-size: var(--font-size-lg);
   font-family: var(--font-sans);
-  font-weight: 400;
-  line-height: 1.45;
+  font-weight: var(--font-book);
+  line-height: var(--leading-body);
   color: var(--accent-black-80, #333);
   background: var(--accent-white-100, #fff);
   border: 0.5px solid var(--accent-black-12, #e0e0e0);
@@ -946,15 +946,15 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-borrower-header__name {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-medium);
   color: var(--accent-black-80, #333);
   white-space: nowrap;
 }
 
 .proto-borrower-header__address {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-60, #666);
   white-space: nowrap;
 }
@@ -1115,14 +1115,14 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ai-cond__section {
-  font-size: 14px;
+  font-size: var(--font-size-lg);
   font-family: var(--font-sans);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-80, #333);
 }
 
 .ai-cond__progress {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   color: var(--accent-black-50, #808080);
 }
@@ -1175,7 +1175,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ai-cond__label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   color: var(--accent-black-80, #333);
   white-space: nowrap;
@@ -1290,7 +1290,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   background: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   color: var(--accent-black-80, #333);
   text-align: left;
@@ -1314,9 +1314,9 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ai-cond__status-opt-tick {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: #22C55E;
-  line-height: 1;
+  line-height: var(--leading-none);
 }
 
 .ai-cond__status-dot {
@@ -1365,14 +1365,14 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .ai-cond__doc-row--submitted .ai-cond__doc-dot { background: #3b82f6; }
 
 .ai-cond__doc-text {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-sans);
   color: var(--accent-black-50, #808080);
   white-space: nowrap;
 }
 
 .ai-cond__review-btn {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   color: var(--accent-black-80, #333);
   background: var(--accent-white-100, #fff);
@@ -1398,21 +1398,21 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ai-cond__submitted-text {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-sans);
   color: var(--accent-black-50, #808080);
   white-space: nowrap;
 }
 
 .ai-cond__requested-text {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-sans);
   color: var(--accent-black-50, #808080);
   white-space: nowrap;
 }
 
 .ai-cond__rejected-text {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-sans);
   color: var(--accent-black-50, #808080);
   white-space: nowrap;
@@ -1432,10 +1432,10 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   display: block;
   background: var(--accent-black-80, #333);
   color: #fff;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-sans);
   white-space: normal;
-  line-height: 1.5;
+  line-height: var(--leading-relaxed);
   padding: 6px 8px;
   border-radius: 6px;
   pointer-events: none;
@@ -1478,7 +1478,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ai-cond__everyone-label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   color: var(--accent-black-60, #666);
   white-space: nowrap;
@@ -1558,9 +1558,9 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-sans);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: #fff;
   letter-spacing: 0.02em;
   object-fit: cover;
@@ -1590,10 +1590,10 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ai-cond__stage-bar__label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   color: var(--accent-black-80, #333);
-  line-height: 1;
+  line-height: var(--leading-none);
 }
 
 /* iOS-style toggle switch */
@@ -1658,7 +1658,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ai-panel__notes-label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-50, #808080);
 }
@@ -1740,18 +1740,18 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .proto-loan-stats__label {
   font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-50, #808080);
-  line-height: 1.3;
+  line-height: var(--leading-snug);
 }
 
 .proto-loan-stats__value {
   font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-medium);
   color: var(--accent-black-80, #333);
-  line-height: 1.3;
+  line-height: var(--leading-snug);
 }
 
 /* ── .proto-form-wrap + floating index (Figma 1028:10657) ───────────────────── */
@@ -2029,12 +2029,12 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border: none;
   background: none;
   font: inherit;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-semibold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--accent-black-50, #808080);
-  line-height: 1.3;
+  line-height: var(--leading-snug);
   text-align: left;
   cursor: pointer;
   border-radius: 2px;
@@ -2072,9 +2072,9 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border: none;
   background: none;
   font: inherit;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.3;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
+  line-height: var(--leading-snug);
   color: var(--accent-black-60, #666);
   text-align: left;
   cursor: pointer;
@@ -2096,7 +2096,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-form-index__link--active {
-  font-weight: 500;
+  font-weight: var(--font-medium);
   color: var(--accent-blue-80, #33a0ff);
 }
 
@@ -2197,14 +2197,14 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-section__title {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-medium);
   color: var(--accent-black-60, #666);
 }
 
 .proto-section__badge {
-  font-size: 10px;
-  font-weight: 400;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-book);
   color: var(--accent-black-40, #999);
   background: transparent;
   border-radius: 5px;
@@ -2296,11 +2296,11 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .proto-sub__label {
   width: 120px;
   flex-shrink: 0;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-medium);
   color: var(--accent-black-60, #666);
   padding-top: 8px;
-  line-height: 1.35;
+  line-height: var(--leading-compact);
 }
 
 /* kept for JS compatibility */
@@ -2329,23 +2329,23 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-section--sidebar .proto-section__title {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-medium);
   color: var(--accent-black-60, #666);
 }
 
 .proto-prop-head__sep {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-60, #666);
-  line-height: 1;
+  line-height: var(--leading-none);
 }
 
 .proto-prop-head__num {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-medium);
   color: var(--accent-black-60, #666);
-  line-height: 1;
+  line-height: var(--leading-none);
 }
 
 .proto-prop-layout {
@@ -2418,8 +2418,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-prop-item__addr {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-medium);
   color: var(--accent-black-80, #333);
   white-space: nowrap;
   overflow: hidden;
@@ -2427,15 +2427,15 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-prop-item__price {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-60, #666);
   white-space: nowrap;
 }
 
 .proto-prop-item__type {
-  font-size: 11px;
-  font-weight: 400;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-book);
   color: var(--accent-blue-80, #33a0ff);
   background: var(--accent-blue-20, #cce7ff);
   padding: 4px 8px;
@@ -2450,7 +2450,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   align-items: center;
   gap: 5px;
   padding: 7px 10px;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-blue-100, #0088ff);
   text-align: left;
   width: 100%;
@@ -2524,8 +2524,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-prop-badge--primary {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-medium);
   color: var(--accent-green-100, #34c759);
   background: var(--accent-green-8, #effbf2);
   border-radius: 6px;
@@ -2533,8 +2533,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-prop-action {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
 }
 
 .proto-prop-action--set-primary { color: var(--accent-blue-100, #0088ff); }
@@ -2560,10 +2560,10 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .proto-field--span-3 { grid-column: span 2; } /* treated as full-width in 2-col grid */
 
 .proto-field__label {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-medium);
   color: var(--accent-black-60, #666);
-  line-height: 1.3;
+  line-height: var(--leading-snug);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -2577,8 +2577,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   padding: 0 4px;
   background: transparent;
   border-radius: 3px;
-  font-size: 9px;
-  font-weight: 400;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-book);
   color: var(--accent-black-30, #b2b2b2);
   letter-spacing: 0;
 }
@@ -2590,10 +2590,10 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .proto-field__value {
   display: block;
   width: 100%;
-  font-size: 14px;
-  font-weight: 400;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-book);
   color: var(--accent-black-80, #333);
-  line-height: 1.4;
+  line-height: var(--leading-normal);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2682,8 +2682,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-toggle__label {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-100, #1a1a1a);
   white-space: nowrap;
   overflow: hidden;
@@ -2766,8 +2766,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-edit-bar__title {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-medium);
   color: var(--accent-black-80, #333);
 }
 
@@ -2828,11 +2828,11 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-overview-mode-trigger__label {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-book);
   color: var(--accent-black-80, #333);
   white-space: nowrap;
-  line-height: 1;
+  line-height: var(--leading-none);
 }
 
 .proto-overview-mode-trigger__chev {
@@ -2890,8 +2890,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .proto-field__input {
   display: none;
   font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 400;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-book);
   color: var(--accent-black-80, #333);
   background: var(--accent-white-100, #fff);
   border: 1px solid var(--accent-black-12, #e0e0e0);
@@ -2925,8 +2925,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .proto-field__select {
   display: none;
   font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 400;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-book);
   color: var(--accent-black-80, #333);
   background: var(--accent-white-100, #fff);
   border: 1px solid var(--accent-black-12, #e0e0e0);
@@ -2949,8 +2949,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 .proto-field__textarea {
   display: none;
   font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 400;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-book);
   color: var(--accent-black-80, #333);
   background: var(--accent-white-100, #fff);
   border: 1px solid var(--accent-black-12, #e0e0e0);
@@ -2959,7 +2959,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   width: 100%;
   resize: vertical;
   min-height: 76px;
-  line-height: 1.55;
+  line-height: var(--leading-prose);
   outline: none;
   transition: border-color 0.1s var(--ease-smooth, ease), box-shadow 0.1s var(--ease-smooth, ease);
   box-sizing: border-box;
@@ -2989,7 +2989,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .proto-field__currency-sign {
   padding: 0 4px 0 8px;
-  font-size: 13px;
+  font-size: var(--font-size-md);
   color: var(--accent-black-40, #999);
   flex-shrink: 0;
   user-select: none;
@@ -3013,7 +3013,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-notes__view {
-  font-size: 13px;
+  font-size: var(--font-size-md);
   color: var(--accent-black-30, #b2b2b2);
   font-style: italic;
   min-height: 24px;
@@ -3031,7 +3031,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .proto-notes__staff,
 .proto-notes__edited {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-30, #b2b2b2);
 }
 
@@ -3075,12 +3075,12 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   transform: translateY(0);
 }
 .proto-view-tooltip__text {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-60, #666);
 }
 .proto-view-tooltip__btn {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-medium);
   color: var(--accent-white-100, #fff);
   background: var(--accent-black-80, #333);
   border: none;
@@ -3119,14 +3119,14 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-party__name {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-medium);
   color: var(--accent-black-80, #333);
 }
 
 .proto-party__role {
-  font-size: 11px;
-  font-weight: 400;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-book);
   color: var(--accent-black-40, #999);
   background: var(--accent-bg-0, #f3f3f4);
   border-radius: 6px;
@@ -3141,7 +3141,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-party__detail {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-50, #808080);
 }
 
@@ -3160,11 +3160,11 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  font-size: 9px;
+  font-size: var(--font-size-2xs);
   font-style: italic;
   font-family: Georgia, 'Times New Roman', serif;
-  font-weight: 700;
-  line-height: 1;
+  font-weight: var(--font-bold);
+  line-height: var(--leading-none);
   color: var(--accent-black-30, #b2b2b2);
   background: var(--accent-black-8, #ebebeb);
   cursor: pointer;
@@ -3196,27 +3196,27 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border-radius: 12px;
   padding: 14px 16px;
   width: 288px;
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: var(--font-size-base);
+  line-height: var(--leading-body);
   border: 1px solid var(--accent-black-8, #e8e8ea);
 }
 
 .proto-info-tooltip__title {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-medium);
   color: var(--accent-black-90, #1c1c1e);
   margin-bottom: 8px;
 }
 
 .proto-info-tooltip__formula {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, 'SF Mono', 'Fira Code', monospace);
   color: var(--accent-black-40, #999);
   background: var(--accent-bg-0, #f3f3f4);
   border-radius: 6px;
   padding: 6px 8px;
   margin-bottom: 2px;
-  line-height: 1.6;
+  line-height: var(--leading-relaxed);
 }
 
 .proto-info-tooltip__section {
@@ -3226,8 +3226,8 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-info-tooltip__section-label {
-  font-size: 9px;
-  font-weight: 500;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-medium);
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--accent-black-30, #b2b2b2);
@@ -3243,7 +3243,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-info-tooltip__row-label {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-50, #808080);
   flex-shrink: 0;
 }
@@ -3256,31 +3256,31 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .proto-info-tooltip__row-val {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-medium);
   color: var(--accent-black-90, #1c1c1e);
   text-align: right;
 }
 
 .proto-info-tooltip__row-val.missing {
   color: var(--accent-red-70, #e53935);
-  font-weight: 400;
+  font-weight: var(--font-book);
 }
 
 .proto-info-tooltip__row-note {
-  font-size: 9px;
+  font-size: var(--font-size-2xs);
   color: var(--accent-black-30, #b2b2b2);
   font-style: italic;
 }
 
 .proto-info-tooltip__source-text {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-40, #999);
   font-style: italic;
 }
 
 .proto-info-tooltip__eater {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-50, #808080);
   padding: 3px 0 3px 14px;
   position: relative;
@@ -3291,7 +3291,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   position: absolute;
   left: 0;
   color: var(--accent-black-20, #ccc);
-  font-size: 10px;
+  font-size: var(--font-size-xs);
 }
 
 /* ── Loan Card Drag & Drop ─────────────────────────────────────────────────── */
@@ -3358,7 +3358,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ct-shell__back {
-  font-size: 13px;
+  font-size: var(--font-size-md);
   font-weight: var(--font-medium, 500);
   color: var(--accent-blue-100, #0088ff);
   text-decoration: none;
@@ -3369,7 +3369,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ct-shell__meta {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-40, #999);
 }
 
@@ -3398,7 +3398,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .ct-template__title {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--font-size-xl);
   font-weight: var(--font-medium, 500);
   color: var(--ct-title);
   font-family: var(--font-sans);
@@ -3487,7 +3487,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 /* Match .loans-pill__label */
 .ct-manage__sidebar-title {
-  font-size: 15px;
+  font-size: var(--font-size-title);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-80, #333);
   line-height: normal;
@@ -3506,7 +3506,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border: none;
   background: var(--accent-white-100);
   cursor: pointer;
-  line-height: 0;
+  line-height: var(--leading-collapse);
   color: var(--accent-black-80, #333);
 }
 
@@ -3578,7 +3578,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border: none;
   background: transparent;
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-book, 400);
   color: var(--accent-black-80, #333);
   line-height: normal;
@@ -3661,7 +3661,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   outline: none;
   background: transparent;
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-book, 400);
   color: var(--accent-black-80, #333);
 }
@@ -3716,7 +3716,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .ct-manage__editor-title {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--font-size-xl);
   font-weight: var(--font-medium, 500);
   color: var(--ct-title, var(--accent-black-100));
   font-family: var(--font-sans);
@@ -3750,7 +3750,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border: none;
   border-radius: 100px;
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-book, 400);
   line-height: normal;
   cursor: pointer;
@@ -3832,7 +3832,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ct-stage-head {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-book, 400);
   color: var(--ct-label);
   font-family: var(--font-sans);
@@ -3994,7 +3994,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ct-column__empty {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-book, 400);
   color: var(--accent-black-40, #999);
   font-family: var(--font-sans);
@@ -4015,7 +4015,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 }
 
 .ct-condition__text {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-book, 400);
   color: var(--ct-row-text);
   font-family: var(--font-sans);
@@ -4038,7 +4038,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   border-radius: 100px;
   background: var(--ct-pill);
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-book, 400);
   color: var(--ct-label);
   line-height: 15px;
@@ -4163,7 +4163,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   flex: 1 1 auto;
   min-width: 0;
   margin: 0;
-  font-size: 16px;
+  font-size: var(--font-size-xl);
   font-weight: var(--font-medium, 500);
   font-family: var(--font-sans);
   color: var(--ct-title, var(--accent-black-100));
@@ -4192,7 +4192,7 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
 
 .proto-ct-modal__fallback {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--font-size-md);
   color: var(--accent-black-50, #808080);
 }
 
@@ -4242,13 +4242,13 @@ body.proto-ct-modal-open {
 }
 
 .ctg-post__label {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-50, #888);
   white-space: nowrap;
   text-align: center;
   letter-spacing: 0.01em;
-  line-height: 1.2;
+  line-height: var(--leading-tight);
 }
 
 /* ── Lane (conditions between two posts) ── */
@@ -4290,27 +4290,27 @@ body.proto-ct-modal-open {
 }
 
 .ctg-lane__arrow {
-  font-size: 9px;
+  font-size: var(--font-size-2xs);
   color: var(--accent-blue-60, #4488ee);
-  line-height: 1;
+  line-height: var(--leading-none);
   flex-shrink: 0;
 }
 
 .ctg-lane__dest-name {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-60, #666);
-  line-height: 1.3;
+  line-height: var(--leading-snug);
 }
 
 .ctg-lane__count {
-  font-size: 9px;
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-40, #aaa);
   background: var(--accent-black-8, #ebebeb);
   border-radius: 100px;
   padding: 0 5px;
-  line-height: 1.8;
+  line-height: var(--leading-spacious);
   min-width: 14px;
   text-align: center;
 }
@@ -4359,7 +4359,7 @@ body.proto-ct-modal-open {
 }
 
 .ctg-lane__empty {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-book, 400);
   color: var(--accent-black-30, #bbb);
   padding: 12px;
@@ -4378,7 +4378,7 @@ body.proto-ct-modal-open {
   border-radius: 100px;
   background: var(--accent-black-4, rgba(0, 0, 0, 0.04));
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-book, 400);
   color: var(--accent-black-100, #000);
   cursor: pointer;
@@ -4442,7 +4442,7 @@ body.proto-ct-modal-open {
 
   .ct-row--cols .ct-column::before {
     content: attr(data-stage-label);
-    font-size: 12px;
+    font-size: var(--font-size-base);
     font-weight: var(--font-medium, 500);
     margin-bottom: 8px;
     color: var(--accent-black-80, #333);
@@ -4489,7 +4489,7 @@ body.proto-ct-modal-open {
 }
 
 .ct2-sidebar__title {
-  font-size: 16px;
+  font-size: var(--font-size-xl);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-80, #333);
 }
@@ -4547,7 +4547,7 @@ body.proto-ct-modal-open {
 }
 
 .ct2-lib__group-label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-60, #666);
   white-space: nowrap;
@@ -4609,23 +4609,23 @@ body.proto-ct-modal-open {
 }
 
 .ct2-lib__name {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-80, #333);
   font-weight: var(--font-book, 400);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.4;
+  line-height: var(--leading-normal);
 }
 
 .ct2-lib__desc {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-40, #999);
   font-weight: var(--font-book, 400);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.35;
+  line-height: var(--leading-compact);
 }
 
 /* ── Sidebar search ───────────────────────────────────────────────────────── */
@@ -4658,7 +4658,7 @@ body.proto-ct-modal-open {
   border: none;
   outline: none;
   background: transparent;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-80, #333);
   font-family: var(--font-sans);
 }
@@ -4721,7 +4721,7 @@ body.proto-ct-modal-open {
   height: 32px;
   padding: 0 16px;
   border-radius: 100px;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   cursor: pointer;
   transition: background 0.12s var(--ease-smooth, ease);
@@ -4795,8 +4795,8 @@ body.proto-ct-modal-open {
 .ct2-lib-head__title {
   flex: 1;
   min-width: 0;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-semibold);
   color: var(--accent-black-100, #111);
   white-space: nowrap;
 }
@@ -4817,7 +4817,7 @@ body.proto-ct-modal-open {
   border: none;
   background: none;
   outline: none;
-  font-size: 13px;
+  font-size: var(--font-size-md);
   color: var(--accent-black-80, #333);
   font-family: inherit;
 }
@@ -4832,8 +4832,8 @@ body.proto-ct-modal-open {
   gap: 12px;
 }
 .ct2-lib-table-head .ct2-lib__col {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-medium);
   color: var(--accent-black-40, #999);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -4860,8 +4860,8 @@ body.proto-ct-modal-open {
 .ct2-lib__col--products { flex: 1 1 0; }
 .ct2-lib__col--trigger  { flex: 0 0 160px; }
 .ct2-lib__name {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-medium);
   color: var(--accent-black-100, #111);
   white-space: nowrap;
   overflow: hidden;
@@ -4873,14 +4873,14 @@ body.proto-ct-modal-open {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 11.5px;
+  font-size: var(--font-size-sm2);
   color: var(--accent-black-60, #666);
   padding-top: 2px;
 }
 .ct2-lib__role-badge {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-60, #666);
-  font-weight: 400;
+  font-weight: var(--font-book);
 }
 .ct2-lib__prod-list {
   display: flex;
@@ -4891,7 +4891,7 @@ body.proto-ct-modal-open {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11.5px;
+  font-size: var(--font-size-sm2);
   color: var(--accent-black-60, #666);
   background: var(--accent-black-4, #f5f5f5);
   border-radius: 6px;
@@ -4900,7 +4900,7 @@ body.proto-ct-modal-open {
 }
 .ct2-lib__prod-stage {
   color: var(--accent-black-30, #b0b0b0);
-  font-size: 10.5px;
+  font-size: var(--font-size-xs2);
 }
 .ct2-lib__prod-stage::before { content: '·'; margin-right: 2px; }
 
@@ -4918,8 +4918,8 @@ body.proto-ct-modal-open {
   display: inline-flex;
   align-items: center;
   gap: 0;
-  font-size: 11.5px;
-  font-weight: 500;
+  font-size: var(--font-size-sm2);
+  font-weight: var(--font-medium);
   padding: 2px 8px;
   border-radius: 20px;
   white-space: nowrap;
@@ -4934,7 +4934,7 @@ body.proto-ct-modal-open {
   cursor: default;
 }
 .ct2-lib__trig-pill-type {
-  font-weight: 400;
+  font-weight: var(--font-book);
   margin-left: 3px;
 }
 .ct2-lib__trig-tooltip {
@@ -4945,8 +4945,8 @@ body.proto-ct-modal-open {
   z-index: 100;
   background: var(--accent-black-90, #1a1a1a);
   color: #fff;
-  font-size: 11.5px;
-  line-height: 1.5;
+  font-size: var(--font-size-sm2);
+  line-height: var(--leading-relaxed);
   padding: 7px 11px;
   border-radius: 8px;
   white-space: nowrap;
@@ -4970,7 +4970,7 @@ body.proto-ct-modal-open {
 
 .ct2-lib__empty {
   padding: 32px 20px;
-  font-size: 13px;
+  font-size: var(--font-size-md);
   color: var(--accent-black-40, #999);
   text-align: center;
 }
@@ -5024,8 +5024,8 @@ body.proto-ct-modal-open {
 }
 
 .ct2-log-head__title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-semibold);
   color: var(--accent-black-100, #111);
   letter-spacing: -0.01em;
 }
@@ -5040,8 +5040,8 @@ body.proto-ct-modal-open {
   border-radius: 20px;
   border: none;
   background: transparent;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-medium);
   color: var(--accent-black-40, #999);
   cursor: pointer;
   transition: background 0.12s ease, color 0.12s ease;
@@ -5075,17 +5075,17 @@ body.proto-ct-modal-open {
 }
 
 .ct2-log-stat__num {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-semibold);
   color: var(--accent-black-100, #111);
-  line-height: 1;
+  line-height: var(--leading-none);
   letter-spacing: -0.02em;
 }
 
 .ct2-log-stat__label {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-40, #999);
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .ct2-log-feed {
@@ -5104,7 +5104,7 @@ body.proto-ct-modal-open {
   background: var(--accent-black-12, #e0e0e0);
 }
 .ct2-log-divider__label {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-semibold, 600);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -5136,7 +5136,7 @@ body.proto-ct-modal-open {
 }
 
 .ct2-log-entry__cond {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-80, #333);
   background: none;
@@ -5144,7 +5144,7 @@ body.proto-ct-modal-open {
   padding: 0;
   cursor: pointer;
   text-align: left;
-  line-height: 1.4;
+  line-height: var(--leading-normal);
 }
 .ct2-log-entry__cond:hover {
   color: var(--accent-black-100, #111);
@@ -5161,26 +5161,26 @@ body.proto-ct-modal-open {
 }
 
 .ct2-log-entry__loan {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-40, #999);
-  line-height: 1.4;
+  line-height: var(--leading-normal);
 }
 
 .ct2-log-entry__sep {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-16, #d6d6d6);
 }
 
 .ct2-log-entry__loan-id {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-30, #b5b5b5);
   font-variant-numeric: tabular-nums;
 }
 
 .ct2-log-entry__time {
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-30, #b5b5b5);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -5218,7 +5218,7 @@ body.proto-ct-modal-open {
 }
 
 .ct2-post__label {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-50, #808080);
   white-space: nowrap;
@@ -5260,18 +5260,18 @@ body.proto-ct-modal-open {
   flex-shrink: 0;
 }
 .ct2-lane__arrow {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   color: var(--accent-black-40, #999);
 }
 .ct2-lane__dest-name {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-60, #666);
 }
 .ct2-lane__count {
   background: var(--accent-blue-100, #0088ff);
   color: var(--accent-white-100, #fff);
-  font-size: 9px;
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-medium, 500);
   border-radius: 100px;
   padding: 1px 5px;
@@ -5296,7 +5296,7 @@ body.proto-ct-modal-open {
 
 .ct2-lane__empty {
   padding: 14px 12px;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-30, #b2b2b2);
   text-align: center;
 }
@@ -5335,12 +5335,12 @@ body.proto-ct-modal-open {
 .ct2-canvas__row-icon--triggered { background: var(--accent-blue-100, #0088ff); }
 
 .ct2-canvas__row-name {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-80, #333);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.4;
+  line-height: var(--leading-normal);
 }
 
 /* ── Product list (sidebar) ──────────────────────────────────────────────── */
@@ -5362,7 +5362,7 @@ body.proto-ct-modal-open {
   border-radius: 16px;
   cursor: pointer;
   text-align: left;
-  font-size: 13px;
+  font-size: var(--font-size-md);
   color: var(--accent-black-80, #333);
   transition: background 0.1s;
   box-sizing: border-box;
@@ -5376,14 +5376,14 @@ body.proto-ct-modal-open {
 }
 .ct2-prod-item--active:hover { background: rgba(0, 0, 0, 0.04); }
 .ct2-prod-item__label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-regular, 400);
 }
 .ct2-prod-item--active .ct2-prod-item__label {
   font-weight: var(--font-medium, 500);
 }
 .ct2-prod-item__count {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-30, #b2b2b2);
   font-weight: normal;
 }
@@ -5400,7 +5400,7 @@ body.proto-ct-modal-open {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--font-size-md);
   color: var(--accent-black-50, #808080);
   transition: color 0.1s ease;
   box-sizing: border-box;
@@ -5440,7 +5440,7 @@ body.proto-ct-modal-open {
   border-radius: 20px;
 }
 .ct2-psv-title {
-  font-size: 16px;
+  font-size: var(--font-size-xl);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-100, #000);
   flex-shrink: 0;
@@ -5472,7 +5472,7 @@ body.proto-ct-modal-open {
   padding-right: 0;
 }
 .ct2-psv-col__label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-100, #000);
 }
 .ct2-psv-col__tl {
@@ -5518,7 +5518,7 @@ body.proto-ct-modal-open {
   border-bottom: 0.5px solid var(--accent-black-8, #ebebeb);
   cursor: pointer;
   text-align: left;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-80, #333);
   transition: background 0.1s;
   box-sizing: border-box;
@@ -5548,7 +5548,7 @@ body.proto-ct-modal-open {
   border: none;
   border-radius: 100px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-100, #000);
   transition: background 0.1s;
   box-sizing: border-box;
@@ -5653,9 +5653,9 @@ body.proto-ct-modal-open {
 }
 .ct2-hsplit-left__title {
   margin: 0;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.3;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-medium);
+  line-height: var(--leading-snug);
   color: var(--accent-black-60, #666);
   white-space: nowrap;
   overflow: hidden;
@@ -5713,7 +5713,7 @@ body.proto-ct-modal-open {
   height: 100%;
 }
 .ct2-hsplit-empty__label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-30, #b0b0b0);
   letter-spacing: 0.01em;
 }
@@ -5770,13 +5770,13 @@ body.proto-ct-modal-open {
   text-align: left;
 }
 .ct2-vsv-stage__label {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-semibold);
   color: var(--accent-black-50, #808080);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   padding-top: 1px;
-  line-height: 1.3;
+  line-height: var(--leading-snug);
   flex: 1;
 }
 .ct2-vsv-stage__chevron {
@@ -5813,7 +5813,7 @@ body.proto-ct-modal-open {
 /* Count shown when collapsed — hidden entirely (not just invisible) when expanded */
 .ct2-vsv-stage__collapsed-count {
   display: none;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-30, #b0b0b0);
   padding-bottom: 2px;
 }
@@ -5840,9 +5840,9 @@ body.proto-ct-modal-open {
 }
 .ct2-vsv-item--dragging { opacity: 0.3; }
 .ct2-vsv-item__name {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: inherit;
-  line-height: 1.3;
+  line-height: var(--leading-snug);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -5878,7 +5878,7 @@ body.proto-ct-modal-open {
   border-radius: 7px;
   border: none;
   background: none;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-30, #b0b0b0);
   cursor: pointer;
   text-align: left;
@@ -5947,15 +5947,15 @@ body.proto-ct-modal-open {
   gap: 1px;
 }
 .ct2-add-popover__opt-label {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-medium);
   color: var(--accent-black-100, #111);
-  line-height: 1.3;
+  line-height: var(--leading-snug);
 }
 .ct2-add-popover__opt-hint {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   color: var(--accent-black-40, #999);
-  line-height: 1.3;
+  line-height: var(--leading-snug);
 }
 
 /* ── Library picker (right panel) ────────────────────────────────────────── */
@@ -5992,12 +5992,12 @@ body.proto-ct-modal-open {
   min-width: 0;
 }
 .ct2-lib-picker__title {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-semibold);
   color: var(--accent-black-100, #111);
 }
 .ct2-lib-picker__sub {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-40, #999);
 }
 .ct2-lib-picker__search-pill {
@@ -6020,7 +6020,7 @@ body.proto-ct-modal-open {
   flex: 1;
   border: none;
   background: none;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-100, #111);
   outline: none;
   min-width: 0;
@@ -6028,7 +6028,7 @@ body.proto-ct-modal-open {
 .ct2-lib-picker__search::placeholder { color: var(--accent-black-40, #999); }
 .ct2-lib-picker__sub {
   display: block;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-40, #999);
   padding-left: 2px;
 }
@@ -6102,7 +6102,7 @@ body.proto-ct-modal-open {
 }
 .ct2-lp-item__name {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-90, #1a1a1a);
   min-width: 0;
   overflow: hidden;
@@ -6110,13 +6110,13 @@ body.proto-ct-modal-open {
   white-space: nowrap;
 }
 .ct2-lp-item__type {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   color: var(--accent-black-40, #999);
   flex-shrink: 0;
 }
 .ct2-lp-item__added-badge {
-  font-size: 10px;
-  font-weight: 500;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-medium);
   color: var(--accent-black-40, #999);
   background: var(--accent-black-06, #f0f0f0);
   border-radius: 5px;
@@ -6148,7 +6148,7 @@ body.proto-ct-modal-open {
   pointer-events: none;
 }
 .ct2-lp-count {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-40, #999);
 }
 .ct2-lib-picker__add-btn {
@@ -6158,8 +6158,8 @@ body.proto-ct-modal-open {
   border: none;
   background: var(--accent-blue-100, #0088ff);
   color: #fff;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-medium);
   cursor: pointer;
   transition: opacity 0.15s, background 0.15s;
 }
@@ -6171,7 +6171,7 @@ body.proto-ct-modal-open {
 .ct2-lib-picker__empty {
   text-align: center;
   padding: 32px 16px;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-30, #bbb);
 }
 
@@ -6217,7 +6217,7 @@ body.proto-ct-modal-open {
 }
 .ct2-split-top .ct2-psv-add {
   padding: 7px 12px;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
 }
 .ct2-split-divider {
   flex-shrink: 0;
@@ -6277,7 +6277,7 @@ body.proto-ct-modal-open {
   border: none;
   cursor: pointer;
   padding: 12px 16px 8px;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-60, #666);
   font-family: var(--font-sans);
   transition: color 0.12s var(--ease-smooth, ease);
@@ -6313,13 +6313,13 @@ body.proto-ct-modal-open {
 }
 
 .ct2-detail__label {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-40, #999);
 }
 
 .ct2-detail__hint {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-30, #b2b2b2);
   margin-top: -4px;
 }
@@ -6368,7 +6368,7 @@ body.proto-ct-modal-open {
 }
 
 .ct2-mini__label {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   color: var(--accent-black-50, #808080);
   white-space: nowrap;
   font-weight: var(--font-book, 400);
@@ -6394,7 +6394,7 @@ body.proto-ct-modal-open {
   border-radius: 100px;
   border: none;
   background: transparent;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   color: var(--accent-black-60, #666);
   cursor: pointer;
@@ -6430,7 +6430,7 @@ body.proto-ct-modal-open {
 .ct2-rule-row:last-child { border-bottom: none; }
 
 .ct2-rule-and {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-30, #b2b2b2);
   text-transform: uppercase;
@@ -6452,7 +6452,7 @@ body.proto-ct-modal-open {
   background-position: right 7px center;
   background-size: 10px 10px;
   padding: 5px 22px 5px 8px;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-sans);
   color: var(--accent-black-80, #333);
   cursor: pointer;
@@ -6468,7 +6468,7 @@ body.proto-ct-modal-open {
   border-radius: 8px;
   background: var(--accent-black-2, #fafafa);
   padding: 5px 8px;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-sans);
   color: var(--accent-black-80, #333);
   outline: none;
@@ -6508,7 +6508,7 @@ body.proto-ct-modal-open {
   background: none;
   border: none;
   padding: 4px 0;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-blue-100, #0088ff);
   font-family: var(--font-sans);
   cursor: pointer;
@@ -6573,10 +6573,10 @@ body.proto-ct-modal-open {
   border-radius: 10px;
   background: var(--accent-black-2, #fafafa);
   padding: 9px 12px;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   color: var(--accent-black-80, #333);
-  line-height: 1.55;
+  line-height: var(--leading-prose);
   resize: none;
   overflow: hidden;
   outline: none;
@@ -6649,7 +6649,7 @@ body.proto-ct-modal-open {
   border: none;
   background: var(--accent-black-8, #ebebeb);
   color: var(--accent-black-80, #333);
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   font-weight: var(--font-medium, 500);
   cursor: pointer;
@@ -6708,13 +6708,13 @@ body.proto-ct-modal-open {
   border: none;
   outline: none;
   background: transparent;
-  font-size: 14px;
+  font-size: var(--font-size-lg);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-80, #333);
   font-family: var(--font-sans);
   padding: 8px 0;
   box-sizing: border-box;
-  line-height: 1.4;
+  line-height: var(--leading-normal);
   transition: color 0.15s;
 }
 .ct2-name-field--editing .ct2-detail__name-input {
@@ -6724,10 +6724,10 @@ body.proto-ct-modal-open {
   position: absolute;
   visibility: hidden;
   white-space: pre;
-  font-size: 14px;
+  font-size: var(--font-size-lg);
   font-weight: var(--font-medium, 500);
   font-family: var(--font-sans);
-  line-height: 1.4;
+  line-height: var(--leading-normal);
   pointer-events: none;
 }
 .ct2-detail__name-input::placeholder { color: var(--accent-black-20, #ccc); }
@@ -6802,7 +6802,7 @@ body.proto-ct-modal-open {
 }
 
 .ct2-detail__apply-label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-40, #999);
 }
@@ -6811,7 +6811,7 @@ body.proto-ct-modal-open {
   flex-shrink: 0;
   border: none;
   background: transparent;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   color: var(--accent-black-40, #999);
   cursor: pointer;
@@ -6845,7 +6845,7 @@ body.proto-ct-modal-open {
 }
 
 .ct2-set-all-panel__field-label {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-40, #999);
   white-space: nowrap;
@@ -6865,7 +6865,7 @@ body.proto-ct-modal-open {
   background: var(--accent-white-100, #fff);
   border-radius: 100px;
   padding: 4px 12px;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-sans);
   color: var(--accent-black-60, #666);
   cursor: pointer;
@@ -6898,7 +6898,7 @@ body.proto-ct-modal-open {
   border: none;
   background: var(--accent-black-80, #333);
   color: var(--accent-white-100, #fff);
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   cursor: pointer;
   transition: background 0.12s var(--ease-smooth, ease);
@@ -6912,7 +6912,7 @@ body.proto-ct-modal-open {
   border: none;
   background: transparent;
   color: var(--accent-black-60, #666);
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   cursor: pointer;
   transition: background 0.12s var(--ease-smooth, ease);
@@ -6921,13 +6921,13 @@ body.proto-ct-modal-open {
 
 /* Right-panel section label */
 .ct2-detail__label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-40, #999);
 }
 
 .ct2-detail__sublabel {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-30, #b2b2b2);
   margin-top: -4px;
 }
@@ -6963,9 +6963,9 @@ body.proto-ct-modal-open {
   white-space: nowrap;
   background: rgba(30, 30, 30, 0.92);
   color: #fff;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-book, 400);
-  line-height: 1.4;
+  line-height: var(--leading-normal);
   padding: 5px 9px;
   border-radius: 6px;
   pointer-events: none;
@@ -7001,10 +7001,10 @@ body.proto-ct-modal-open {
 .ct2-type-card__icon svg { width: 16px; height: 16px; }
 
 .ct2-type-card__label {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-60, #666);
-  line-height: 1.3;
+  line-height: var(--leading-snug);
   white-space: nowrap;
 }
 .ct2-type-card--active .ct2-type-card__label {
@@ -7034,7 +7034,7 @@ body.proto-ct-modal-open {
   border-radius: 10px;
   background: var(--accent-white-100, #fff);
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: var(--font-size-lg);
   font-family: var(--font-sans);
   color: var(--accent-black-80, #333);
   cursor: pointer;
@@ -7087,7 +7087,7 @@ body.proto-ct-modal-open {
   border-top: 0.5px solid var(--accent-black-8, #ebebeb);
 }
 .ct2-docclass-menu__cat {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-40, #999);
   letter-spacing: 0.04em;
@@ -7132,10 +7132,10 @@ body.proto-ct-modal-open {
   border-radius: 10px;
   background: var(--accent-black-2, #fafafa);
   padding: 9px 12px;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-family: var(--font-sans);
   color: var(--accent-black-80, #333);
-  line-height: 1.55;
+  line-height: var(--leading-prose);
   resize: none;
   overflow: hidden;
   outline: none;
@@ -7190,20 +7190,20 @@ body.proto-ct-modal-open {
 }
 
 .ct2-prod-row__label {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-80, #333);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.2;
+  line-height: var(--leading-tight);
 }
 
 .ct2-prod-row__type {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-book, 400);
   color: var(--accent-black-50, #808080);
-  line-height: 1.2;
+  line-height: var(--leading-tight);
 }
 
 /* Chevron button — styled via .btn.btn--s1, custom overrides only */
@@ -7283,7 +7283,7 @@ body.proto-ct-modal-open {
   border-radius: 100px;
   border: 0.5px solid var(--accent-black-16, #d6d6d6);
   background: var(--accent-white-100, #fff);
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-60, #666);
   font-family: var(--font-sans);
   cursor: pointer;
@@ -7319,13 +7319,13 @@ body.proto-ct-modal-open {
   padding: 0 6px 10px;
 }
 .ct2-rst__track-title {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-semibold, 600);
   color: var(--accent-black-60, #666);
   letter-spacing: 0.01em;
 }
 .ct2-rst__track-hint {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-book, 400);
   color: var(--accent-black-40, #999);
 }
@@ -7380,11 +7380,11 @@ body.proto-ct-modal-open {
 }
 
 .ct2-rst__label {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-book, 400);
   color: var(--accent-black-50, #808080);
   text-align: center;
-  line-height: 1;
+  line-height: var(--leading-none);
   pointer-events: none;
   white-space: nowrap;
 }
@@ -7418,7 +7418,7 @@ body.proto-ct-modal-open {
   border-radius: 100px;
   border: none;
   background: transparent;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-sans);
   color: var(--accent-black-50, #808080);
   cursor: pointer;
@@ -7433,9 +7433,9 @@ body.proto-ct-modal-open {
 }
 
 .ct2-always-note {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-40, #999);
-  line-height: 1.5;
+  line-height: var(--leading-relaxed);
   padding: 10px 12px;
   background: var(--accent-black-2, #fafafa);
   border: 0.5px solid var(--accent-black-8, #ebebeb);
@@ -7466,7 +7466,7 @@ body.proto-ct-modal-open {
 .ct2-rule-row:last-child { border-bottom: none; }
 
 .ct2-rule-and {
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-30, #b2b2b2);
   text-transform: uppercase;
@@ -7488,7 +7488,7 @@ body.proto-ct-modal-open {
   background-position: right 7px center;
   background-size: 10px 10px;
   padding: 4px 22px 4px 7px;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-sans);
   color: var(--accent-black-80, #333);
   cursor: pointer;
@@ -7505,7 +7505,7 @@ body.proto-ct-modal-open {
   border-radius: 8px;
   background: var(--accent-black-2, #fafafa);
   padding: 4px 7px;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-sans);
   color: var(--accent-black-80, #333);
   outline: none;
@@ -7536,14 +7536,14 @@ body.proto-ct-modal-open {
 .ct2-add-rule {
   display: inline-flex; align-items: center;
   background: none; border: none; padding: 2px 0;
-  font-size: 11px; color: var(--accent-blue-100, #0088ff);
+  font-size: var(--font-size-sm); color: var(--accent-blue-100, #0088ff);
   font-family: var(--font-sans); cursor: pointer;
   transition: opacity 0.12s var(--ease-smooth, ease);
 }
 .ct2-add-rule:hover { opacity: 0.7; }
 
 .ct2-prod-row__badge {
-  font-size: 9px;
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-medium, 500);
   padding: 2px 6px;
   border-radius: 100px;
@@ -7610,12 +7610,12 @@ body.proto-ct-modal-open {
 }
 
 .ct2-pmini__label {
-  font-size: 9px;
+  font-size: var(--font-size-2xs);
   color: var(--accent-black-30, #b2b2b2);
   white-space: nowrap;
   text-align: center;
   font-weight: var(--font-book, 400);
-  line-height: 1;
+  line-height: var(--leading-none);
   transition: color 0.15s var(--ease-smooth, ease);
   max-width: 56px;
   overflow: hidden;
@@ -7639,7 +7639,7 @@ body.proto-ct-modal-open {
   display: inline-block;
   background: var(--accent-black-8, #ebebeb);
   color: var(--accent-black-60, #666);
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-medium, 500);
   padding: 2px 7px;
   border-radius: 100px;
@@ -7658,14 +7658,14 @@ body.proto-ct-modal-open {
   margin-bottom: 4px;
 }
 .ct2-right__header-label {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-weight: var(--font-medium, 500);
   color: var(--accent-black-40, #999);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 .ct2-right__header-product {
-  font-size: 12px;
+  font-size: var(--font-size-base);
   font-weight: var(--font-semibold, 600);
   color: var(--accent-black-80, #333);
 }
@@ -7676,10 +7676,10 @@ body.proto-ct-modal-open {
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--font-size-base);
   color: var(--accent-black-30, #b2b2b2);
   padding: 20px;
-  line-height: 1.6;
+  line-height: var(--leading-relaxed);
 }
 
 /* ── Right panel due-before badge ────────────────────────────────────────── */
@@ -7687,7 +7687,7 @@ body.proto-ct-modal-open {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--accent-black-40, #999);
   background: var(--accent-black-4, #f5f5f5);
   border: 0.5px solid var(--accent-black-8, #ebebeb);
