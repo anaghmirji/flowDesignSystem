@@ -10,6 +10,18 @@ const CT_STAGES_V2 = [
   { id: 'post-close',   label: 'Post-Close' },
 ];
 
+// Stage helpers — dueBefore is "required before X", sidebar shows condition under X-1
+function sidebarStageFor(dueBeforeId) {
+  const idx = CT_STAGES_V2.findIndex(s => s.id === dueBeforeId);
+  if (idx <= 0) return CT_STAGES_V2[0].id;
+  return CT_STAGES_V2[idx - 1].id;
+}
+function dueBeforeForSidebarStage(sidebarStageId) {
+  const idx = CT_STAGES_V2.findIndex(s => s.id === sidebarStageId);
+  if (idx < 0 || idx >= CT_STAGES_V2.length - 1) return CT_STAGES_V2[CT_STAGES_V2.length - 1].id;
+  return CT_STAGES_V2[idx + 1].id;
+}
+
 const CT_PRODUCTS = [
   { id: 'fix-flip',     label: 'Fix & Flip' },
   { id: 'bridge',       label: 'Bridge' },
@@ -96,8 +108,8 @@ let CT_CONDITIONS = [
     conditionType: 'document_upload', docClass: 'PURCHASE_CONTRACT',
     description: 'Please upload a fully executed purchase agreement signed by all parties.',
     products: [
-      { id: 'fix-flip', dueBefore: 'application', type: 'always',    rules: [] },
-      { id: 'bridge',   dueBefore: 'application', type: 'always',    rules: [] },
+      { id: 'fix-flip', dueBefore: 'underwriting', type: 'always',    rules: [] },
+      { id: 'bridge',   dueBefore: 'underwriting', type: 'always',    rules: [] },
     ],
   },
   {
@@ -156,17 +168,17 @@ let CT_CONDITIONS = [
     id: 'c8', name: 'Government-Issued ID', group: 'identity',
     roleType: 'borrower', conditionType: 'document_upload', docClass: 'GOVT_ID',
     description: 'Upload a valid government-issued photo ID for all borrowers.',
-    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'application', type: 'always', rules: [] })),
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'underwriting', type: 'always', rules: [] })),
   },
   {
     id: 'c9', name: 'Entity Operating Agreement', group: 'agreements',
     roleType: 'borrower', conditionType: 'document_upload', docClass: 'OPERATING_AGREEMENT',
     description: 'Provide the current operating agreement for the borrowing entity.',
     products: [
-      { id: 'fix-flip',     dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
-      { id: 'bridge',       dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
-      { id: 'dscr',         dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
-      { id: 'construction', dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
+      { id: 'fix-flip',     dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
+      { id: 'bridge',       dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
+      { id: 'dscr',         dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
+      { id: 'construction', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'LLC' }] },
     ],
   },
   {
@@ -174,15 +186,15 @@ let CT_CONDITIONS = [
     roleType: 'borrower', conditionType: 'document_upload', docClass: 'ARTICLES_OF_INC',
     description: 'Upload the articles of incorporation for the borrowing corporation.',
     products: [
-      { id: 'fix-flip', dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'Corp' }] },
-      { id: 'bridge',   dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'Corp' }] },
+      { id: 'fix-flip', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'Corp' }] },
+      { id: 'bridge',   dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is', val: 'Corp' }] },
     ],
   },
   {
     id: 'c11', name: 'Borrower Authorization Form', group: 'agreements',
     roleType: 'borrower', conditionType: 'document_upload', docClass: 'BORROWER_AUTH',
     description: 'Sign and return the borrower authorization to release information.',
-    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'application', type: 'always', rules: [] })),
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'underwriting', type: 'always', rules: [] })),
   },
   // ── Income & Employment ────────────────────────────────────────────────────
   {
@@ -262,8 +274,8 @@ let CT_CONDITIONS = [
     roleType: 'borrower', conditionType: 'document_upload', docClass: 'SCOPE_OF_WORK',
     description: 'Submit a detailed scope of work and rehab budget for the project.',
     products: [
-      { id: 'fix-flip',     dueBefore: 'application', type: 'always', rules: [] },
-      { id: 'construction', dueBefore: 'application', type: 'always', rules: [] },
+      { id: 'fix-flip',     dueBefore: 'underwriting', type: 'always', rules: [] },
+      { id: 'construction', dueBefore: 'underwriting', type: 'always', rules: [] },
     ],
   },
   {
@@ -271,8 +283,8 @@ let CT_CONDITIONS = [
     roleType: 'borrower', conditionType: 'document_upload', docClass: 'PROPERTY_PHOTOS',
     description: 'Upload current interior and exterior photos of the subject property.',
     products: [
-      { id: 'fix-flip', dueBefore: 'application', type: 'always', rules: [] },
-      { id: 'bridge',   dueBefore: 'application', type: 'always', rules: [] },
+      { id: 'fix-flip', dueBefore: 'underwriting', type: 'always', rules: [] },
+      { id: 'bridge',   dueBefore: 'underwriting', type: 'always', rules: [] },
     ],
   },
   {
@@ -359,7 +371,7 @@ let CT_CONDITIONS = [
     id: 'c33', name: 'Credit Report Pull', group: 'credit',
     roleType: 'internal', conditionType: 'order_service',
     description: 'Pull tri-merge credit report for all borrowers and guarantors.',
-    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'application', type: 'always', rules: [] })),
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'underwriting', type: 'always', rules: [] })),
   },
   {
     id: 'c34', name: 'Credit Explanation Letter', group: 'credit',
@@ -386,8 +398,8 @@ let CT_CONDITIONS = [
     roleType: 'borrower', conditionType: 'document_upload', docClass: 'CONSTRUCTION_CONTRACT',
     description: 'Upload a signed fixed-price construction contract with the GC.',
     products: [
-      { id: 'construction', dueBefore: 'application', type: 'always', rules: [] },
-      { id: 'fix-flip',     dueBefore: 'application', type: 'triggered', rules: [{ attr: 'rehab_budget', op: 'gt', val: '50000' }] },
+      { id: 'construction', dueBefore: 'underwriting', type: 'always', rules: [] },
+      { id: 'fix-flip',     dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'rehab_budget', op: 'gt', val: '50000' }] },
     ],
   },
   {
@@ -412,7 +424,7 @@ let CT_CONDITIONS = [
     roleType: 'borrower', conditionType: 'document_upload', docClass: 'DRAW_SCHEDULE',
     description: 'Submit a detailed draw schedule aligned to construction milestones.',
     products: [
-      { id: 'construction', dueBefore: 'application', type: 'always', rules: [] },
+      { id: 'construction', dueBefore: 'underwriting', type: 'always', rules: [] },
     ],
   },
   {
@@ -448,27 +460,33 @@ let CT_CONDITIONS = [
     description: 'Complete collateral file review and ship to custodian within 10 days.',
     products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'post-close', type: 'always', rules: [] })),
   },
+  {
+    id: 'c44a', name: 'Post-Close Document Audit', group: 'post-close',
+    roleType: 'internal', conditionType: 'internal_task',
+    description: 'Review the closed loan file for completeness and confirm all final documents are indexed correctly.',
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'post-close', type: 'always', rules: [] })),
+  },
   // ── Compliance ─────────────────────────────────────────────────────────────
   {
     id: 'c45', name: 'OFAC / AML Screening', group: 'compliance',
     roleType: 'internal', conditionType: 'order_service',
     description: 'Run OFAC and AML screening for all borrowers, guarantors, and entities.',
-    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'application', type: 'always', rules: [] })),
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'underwriting', type: 'always', rules: [] })),
   },
   {
     id: 'c46', name: 'Patriot Act Certification', group: 'compliance',
     roleType: 'borrower', conditionType: 'document_upload', docClass: 'PATRIOT_ACT',
     description: 'Collect completed Patriot Act customer identification documentation.',
-    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'application', type: 'always', rules: [] })),
+    products: CT_PRODUCTS.map(p => ({ id: p.id, dueBefore: 'underwriting', type: 'always', rules: [] })),
   },
   {
     id: 'c47', name: 'Beneficial Ownership Certification', group: 'compliance',
     roleType: 'borrower', conditionType: 'document_upload', docClass: 'BENEFICIAL_OWNERSHIP',
     description: 'Complete FinCEN beneficial ownership certification for legal entity borrowers.',
     products: [
-      { id: 'fix-flip', dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is_not', val: 'Individual' }] },
-      { id: 'bridge',   dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is_not', val: 'Individual' }] },
-      { id: 'dscr',     dueBefore: 'application', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is_not', val: 'Individual' }] },
+      { id: 'fix-flip', dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is_not', val: 'Individual' }] },
+      { id: 'bridge',   dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is_not', val: 'Individual' }] },
+      { id: 'dscr',     dueBefore: 'underwriting', type: 'triggered', rules: [{ attr: 'entity_type', op: 'is_not', val: 'Individual' }] },
     ],
   },
   // ── DSCR / Rental ──────────────────────────────────────────────────────────
@@ -550,11 +568,23 @@ function getProductLabel(pid) {
 
 let CT_SELECTED_PROD_ID = null;
 let CT_SELECTED_PROD_VIEW = null;
+let CT_ORIGINAL_SNAPSHOT = null;
 
-function markDirty(root) {
-  const main = root?.querySelector('[data-ct2-main]');
-  if (main) main.classList.add('ct2-main--dirty');
+function stableStringify(obj) {
+  if (obj === null || typeof obj !== 'object') return JSON.stringify(obj);
+  if (Array.isArray(obj)) return '[' + obj.map(stableStringify).join(',') + ']';
+  return '{' + Object.keys(obj).sort().map(k => JSON.stringify(k) + ':' + stableStringify(obj[k])).join(',') + '}';
 }
+
+function syncDirty(root) {
+  const cond = CT_CONDITIONS.find(c => c.id === CT_SELECTED_ID);
+  const main = root?.querySelector('[data-ct2-main]');
+  if (!main) return;
+  const isDirty = CT_ORIGINAL_SNAPSHOT !== null && (!cond || stableStringify(cond) !== CT_ORIGINAL_SNAPSHOT);
+  main.classList.toggle('ct2-main--dirty', isDirty);
+}
+
+function markDirty(root) { syncDirty(root); }
 
 // ─── Animation helpers ────────────────────────────────────────────────────────
 
@@ -803,9 +833,9 @@ function buildLibraryRows(query) {
           const opLabel = r.op === 'is' ? '=' : r.op === 'is_not' ? '≠' : r.op;
           return `${attrLabel} ${opLabel} ${r.val}`;
         }).join(' & ');
-        return `<span class="ct2-lib__trig-pill-wrap"><span class="ct2-lib__trig-pill ${pillClass}">${prod?.label || p.id}<span class="ct2-lib__trig-pill-type">· ${pillLabel}</span></span><div class="ct2-lib__trig-tooltip">${ruleSummary}</div></span>`;
+        return `<span class="ct2-lib__trig-pill-wrap"><span class="ct2-lib__trig-pill ${pillClass}">${pillLabel}<span class="ct2-lib__trig-pill-prod">· ${prod?.label || p.id}</span></span><div class="ct2-lib__trig-tooltip">${ruleSummary}</div></span>`;
       }
-      return `<span class="ct2-lib__trig-pill ${pillClass}">${prod?.label || p.id}<span class="ct2-lib__trig-pill-type">· ${pillLabel}</span></span>`;
+      return `<span class="ct2-lib__trig-pill ${pillClass}">${pillLabel}<span class="ct2-lib__trig-pill-prod">· ${prod?.label || p.id}</span></span>`;
     }).join('');
 
     const typeIcon = c.conditionType === 'document_upload'
@@ -833,15 +863,15 @@ function buildLibraryRows(query) {
 }
 
 function buildLibrary() {
-  const searchIcon = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.25"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>`;
+  const searchIcon = `<svg width="100%" height="100%" viewBox="0 0 13.2005 13.2005" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.6005 12.6005L9.13585 9.13585M9.13585 9.13585C10.0736 8.19814 10.6004 6.92632 10.6004 5.60019C10.6004 4.27406 10.0736 3.00224 9.13585 2.06452C8.19814 1.1268 6.92632 0.6 5.60019 0.6C4.27406 0.6 3.00224 1.1268 2.06452 2.06452C1.1268 3.00224 0.6 4.27406 0.6 5.60019C0.6 6.92632 1.1268 8.19814 2.06452 9.13585C3.00224 10.0736 4.27406 10.6004 5.60019 10.6004C6.92632 10.6004 8.19814 10.0736 9.13585 9.13585Z" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   return `<div class="ct2-canvas" data-ct2-canvas>
   <div class="ct2-lib-wrap">
     <div class="ct2-lib-card">
       <div class="ct2-lib-head">
         <span class="ct2-lib-head__title">Condition Library</span>
-        <div class="ct2-lib-search-wrap">
-          <span class="ct2-lib-search__icon" aria-hidden="true">${searchIcon}</span>
-          <input type="text" class="ct2-lib-search" placeholder="Search by name, type, role or product…" data-ct2-lib-search>
+        <div class="search-bar__input">
+          <div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector">${searchIcon}</div></div></div>
+          <input type="text" class="search-bar__field" placeholder="Search by name, type, role or product…" data-ct2-lib-search spellcheck="false" autocomplete="off">
         </div>
       </div>
       <div class="ct2-lib-table-head">
@@ -942,8 +972,9 @@ function buildVerticalStageView(productId, selectedCondId) {
   CT_STAGES_V2.forEach(s => { byStage[s.id] = []; });
   CT_CONDITIONS.forEach(c => {
     const prodConfig = (c.products || []).find(p => p.id === productId);
-    if (prodConfig && byStage[prodConfig.dueBefore]) {
-      byStage[prodConfig.dueBefore].push(c);
+    if (prodConfig) {
+      const sStage = sidebarStageFor(prodConfig.dueBefore);
+      if (byStage[sStage]) byStage[sStage].push(c);
     }
   });
 
@@ -983,13 +1014,28 @@ function buildVerticalStageView(productId, selectedCondId) {
 <div class="ct2-hsplit-left__scroll">
 <div class="ct2-vsv" data-ct2-prod-stage-view data-ct2-prod-id="${productId}">${stages}</div>
 </div>
-<div class="ct2-hsplit-left__footer" aria-hidden="true"></div>`;
+<div class="ct2-hsplit-left__footer">
+  <div class="search-bar__input">
+    <div class="btn__icon-wrap"><div class="btn__icon-inner"><div class="btn__icon-vector"><svg width="100%" height="100%" viewBox="0 0 13.2005 13.2005" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.6005 12.6005L9.13585 9.13585M9.13585 9.13585C10.0736 8.19814 10.6004 6.92632 10.6004 5.60019C10.6004 4.27406 10.0736 3.00224 9.13585 2.06452C8.19814 1.1268 6.92632 0.6 5.60019 0.6C4.27406 0.6 3.00224 1.1268 2.06452 2.06452C1.1268 3.00224 0.6 4.27406 0.6 5.60019C0.6 6.92632 1.1268 8.19814 2.06452 9.13585C3.00224 10.0736 4.27406 10.6004 5.60019 10.6004C6.92632 10.6004 8.19814 10.0736 9.13585 9.13585Z" stroke="var(--stroke-0,#333)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div></div></div>
+    <input type="text" class="search-bar__field" data-ct2-vsv-search placeholder="Search" spellcheck="false" autocomplete="off">
+  </div>
+</div>`;
 }
 
 function buildHSplitEmptyState() {
   return `<div class="ct2-hsplit-empty">
     <span class="ct2-hsplit-empty__label">Select a condition to edit</span>
   </div>`;
+}
+
+function refreshVerticalStageView(left, productId, selectedCondId) {
+  if (!left) return;
+  const scrollEl = left.querySelector('.ct2-hsplit-left__scroll');
+  const scrollTop = scrollEl ? scrollEl.scrollTop : 0;
+  left.innerHTML = buildVerticalStageView(productId, selectedCondId);
+  const nextScrollEl = left.querySelector('.ct2-hsplit-left__scroll');
+  if (nextScrollEl) nextScrollEl.scrollTop = scrollTop;
+  left.classList.toggle('ct2-hsplit-left--scrolled', scrollTop > 8);
 }
 
 // ─── Canvas track (kept for reference) ───────────────────────────────────────
@@ -1181,10 +1227,20 @@ function buildDetailCenter(cond, selectedProdId, opts = {}) {
     ? buildBtnPreviewHtml({ id: 's1', icons: ['chevron-left'] })
         .replace('<button class="btn btn--s1" tabindex="-1"', '<button class="btn btn--s1" tabindex="-1" data-ct2-back aria-label="Back to canvas"')
     : '';
-  const prodRows = (cond.products || []).map(p =>
-    buildProductRow(p, p.id === selectedProdId)
-  ).join('');
-  const selectedIds = (cond.products || []).map(p => p.id);
+  const allProds = cond.products || [];
+  const currentProd = allProds.find(p => p.id === selectedProdId) || allProds[0];
+  const currentProdId = currentProd?.id;
+  const otherProds = allProds.filter(p => p.id !== currentProdId);
+  const otherRows = otherProds.map(p => {
+    const label = getProductLabel(p.id);
+    const stageLabel = getStageLabel(p.dueBefore);
+    const typeLabel = p.type === 'triggered' ? 'Rule matches' : 'Always';
+    return `<div class="ct2-also-row" data-ct2-prod-row="${p.id}">
+      <span class="ct2-also-row__label">${label}</span>
+      <span class="ct2-also-row__meta">Before ${stageLabel} · ${typeLabel}</span>
+    </div>`;
+  }).join('');
+  const selectedIds = allProds.map(p => p.id);
 
   const pencilIcon = typeof iconSvg === 'function' ? iconSvg('pencil') : '';
 
@@ -1209,13 +1265,14 @@ function buildDetailCenter(cond, selectedProdId, opts = {}) {
 
   ${buildRoleTypeField(cond)}
 
-  <div class="ct2-detail__section">
-    <div class="ct2-detail__apply-label">Applies to</div>
-    <div class="ct2-prod-list" data-ct2-prod-list>
-      ${prodRows}
+  ${otherProds.length > 0 ? `<div class="ct2-also-section" data-ct2-also-section>
+    <button type="button" class="ct2-also-toggle" data-ct2-also-toggle aria-expanded="false">
+      Also applied to ${otherProds.length} other product${otherProds.length !== 1 ? 's' : ''}
+    </button>
+    <div class="ct2-also-list" data-ct2-also-list hidden>
+      ${otherRows}
     </div>
-    ${buildProductPicker(selectedIds)}
-  </div>
+  </div>` : ''}
 
   <div class="ct2-detail__msg-footer">
     <div class="ct2-detail__label">Message to recipient</div>
@@ -1231,9 +1288,10 @@ function buildDetailCenter(cond, selectedProdId, opts = {}) {
 function buildRightStageTrack(prod) {
   const inner = CT_STAGES_V2.map((stage, i) => {
     const isActive = stage.id === prod.dueBefore;
+    const isDisabled = i === 0; // Application: not selectable (dueBefore must be ≥ Underwriting)
     const line = i > 0 ? '<div class="ct2-rst__line"></div>' : '';
-    return `${line}<div class="ct2-rst__stop${isActive ? ' ct2-rst__stop--active' : ''}" data-ct2-rst-stop="${stage.id}">
-      <button type="button" class="ct2-rst__dot-btn" data-ct2-right-stage="${stage.id}" aria-label="Due before ${stage.label}">
+    return `${line}<div class="ct2-rst__stop${isActive ? ' ct2-rst__stop--active' : ''}${isDisabled ? ' ct2-rst__stop--disabled' : ''}" data-ct2-rst-stop="${stage.id}">
+      <button type="button" class="ct2-rst__dot-btn" data-ct2-right-stage="${stage.id}" aria-label="Due before ${stage.label}"${isDisabled ? ' disabled aria-disabled="true"' : ''}>
         <div class="ct2-rst__pip"></div>
       </button>
       <span class="ct2-rst__label">${stage.label}</span>
@@ -1265,7 +1323,7 @@ function buildDetailRight(prod) {
   return `<div class="ct2-detail-right" data-ct2-right data-ct2-right-prod="${prod.id}">
   <div class="ct2-right__resize-handle" data-ct2-resize-handle aria-hidden="true"></div>
   <div class="ct2-right__header">
-    <span class="ct2-right__header-label">Configuration for</span>
+    <span class="ct2-right__header-label">When should this condition trigger?</span>
     <span class="ct2-right__header-product">${productLabel}</span>
   </div>
   <div class="ct2-detail__section">
@@ -1332,6 +1390,12 @@ function buildRulesList(rules) {
 }
 
 function buildDetail(cond, selectedProdId, detailOpts = {}) {
+  const prodIds = (cond.products || []).map(p => p.id);
+  if (!selectedProdId) {
+    selectedProdId = (prodIds.includes(CT_SELECTED_PROD_VIEW) ? CT_SELECTED_PROD_VIEW : null)
+      || prodIds[0]
+      || null;
+  }
   const selProd = (cond.products || []).find(p => p.id === selectedProdId) || null;
 
   return `<div class="ct2-detail-wrap" data-ct2-detail>
@@ -1368,7 +1432,7 @@ function buildConditionTemplateModalDialogHtml() {
     </div>
     <div class="ct2-main__footer">
       <button type="button" class="ct2-footer__btn ct2-footer__btn--ghost" data-ct-cancel>Cancel</button>
-      <button type="button" class="ct2-footer__btn ct2-footer__btn--primary">Save Changes</button>
+      <button type="button" class="ct2-footer__btn ct2-footer__btn--primary" data-ct2-save>Save Changes</button>
     </div>
   </div>
 </div>`;
@@ -1382,7 +1446,12 @@ function enterDetail(condId, root, selectedProdId) {
   const cond = CT_CONDITIONS.find(c => c.id === condId);
   if (!cond) return;
   CT_SELECTED_ID = condId;
-  CT_SELECTED_PROD_ID = selectedProdId || null;
+  const prodIds = (cond.products || []).map(p => p.id);
+  CT_SELECTED_PROD_ID = selectedProdId
+    || (prodIds.includes(CT_SELECTED_PROD_VIEW) ? CT_SELECTED_PROD_VIEW : null)
+    || prodIds[0]
+    || null;
+  CT_ORIGINAL_SNAPSHOT = stableStringify(cond);
   // Keep CT_SELECTED_PROD_VIEW so the back button returns to the right product
   refreshProductList(root);
 
@@ -1433,6 +1502,7 @@ function selectProduct(prodId, root) {
 function enterCanvas(root) {
   CT_SELECTED_ID = null;
   CT_SELECTED_PROD_VIEW = null;
+  CT_ORIGINAL_SNAPSHOT = null;
   refreshProductList(root);
   document.querySelectorAll('.ct2-docclass-menu').forEach(m => m.remove());
 
@@ -1462,7 +1532,7 @@ function enterProductView(productId, root) {
   if (hsplit) {
     // Card stays — just refresh left nav and clear right panel
     const left = hsplit.querySelector('[data-ct2-hsplit-left]');
-    if (left) left.innerHTML = buildVerticalStageView(productId, null);
+    refreshVerticalStageView(left, productId, null);
     const right = hsplit.querySelector('[data-ct2-hsplit-right]');
     if (right) { right.innerHTML = buildHSplitEmptyState(); ct2InFade(right.firstElementChild); }
     return;
@@ -1488,6 +1558,7 @@ function enterSplitView(condId, productId, root) {
   CT_SELECTED_ID = condId;
   CT_SELECTED_PROD_VIEW = productId;
   CT_SELECTED_PROD_ID = null;
+  CT_ORIGINAL_SNAPSHOT = stableStringify(cond);
   refreshProductList(root);
   document.querySelectorAll('.ct2-docclass-menu').forEach(m => m.remove());
 
@@ -1497,7 +1568,7 @@ function enterSplitView(condId, productId, root) {
   if (hsplit) {
     // Refresh left nav highlight
     const left = hsplit.querySelector('[data-ct2-hsplit-left]');
-    if (left) left.innerHTML = buildVerticalStageView(productId, condId);
+    refreshVerticalStageView(left, productId, condId);
 
     // Swap in editor on right — fade in
     const right = hsplit.querySelector('[data-ct2-hsplit-right]');
@@ -1639,13 +1710,20 @@ function syncProdRowType(root, prodId) {
   const cond = CT_CONDITIONS.find(c => c.id === CT_SELECTED_ID);
   const prod = (cond?.products || []).find(p => p.id === prodId);
   if (!prod) return;
-  const row = root.querySelector(`[data-ct2-prod-row="${prodId}"]`);
-  if (!row) return;
-  const typeSpan = row.querySelector('.ct2-prod-row__type');
-  if (!typeSpan) return;
   const stageLabel = getStageLabel(prod.dueBefore);
   const typeLabel  = prod.type === 'triggered' ? 'Rule matches' : 'Always';
-  typeSpan.textContent = `Before ${stageLabel} · ${typeLabel}`;
+  const metaText   = `Before ${stageLabel} · ${typeLabel}`;
+  const row = root.querySelector(`[data-ct2-prod-row="${prodId}"]`);
+  const typeSpan = row?.querySelector('.ct2-prod-row__type');
+  if (typeSpan) typeSpan.textContent = metaText;
+  // Sync center trigger summary if this is the currently viewed prod
+  if (prodId === CT_SELECTED_PROD_ID) {
+    const summary = root.querySelector('[data-ct2-trigger-summary]');
+    if (summary) {
+      summary.querySelector('.ct2-trigger-summary__stage').textContent = `Before ${stageLabel}`;
+      summary.querySelector('.ct2-trigger-summary__type').textContent = typeLabel;
+    }
+  }
 }
 
 function bindDetailRight(root) {
@@ -1664,6 +1742,7 @@ function bindDetailRight(root) {
       if (!prod) return;
       const stageId = stageBtn.getAttribute('data-ct2-right-stage');
       prod.dueBefore = stageId;
+      markDirty(root);
       right.querySelectorAll('[data-ct2-rst-stop]').forEach(s =>
         s.classList.toggle('ct2-rst__stop--active', s.getAttribute('data-ct2-rst-stop') === stageId)
       );
@@ -1786,9 +1865,9 @@ function bindDetail(root) {
   const detail = root.querySelector('[data-ct2-detail]');
   if (!detail) return;
 
-  // Mark dirty on any field change in the detail panel
-  detail.addEventListener('input', () => markDirty(root));
-  detail.addEventListener('change', () => markDirty(root));
+  // Sync dirty state on any field change (fires after field-specific listeners update CT_CONDITIONS)
+  detail.addEventListener('input', () => syncDirty(root));
+  detail.addEventListener('change', () => syncDirty(root));
 
   // Back (center header in full detail, or left column in split view)
   root.querySelector('[data-ct2-back]')?.addEventListener('click', () => {
@@ -1871,8 +1950,14 @@ function bindDetail(root) {
     const newType = card.getAttribute('data-ct2-type');
     if (cond.conditionType === newType) return;
     cond.conditionType = newType;
-    if (newType !== 'document_upload') delete cond.docClass;
-    markDirty(root);
+    if (newType !== 'document_upload') {
+      delete cond.docClass;
+    } else {
+      // Restore original docClass if switching back
+      const snap = CT_ORIGINAL_SNAPSHOT ? JSON.parse(CT_ORIGINAL_SNAPSHOT) : null;
+      if (snap?.docClass) cond.docClass = snap.docClass;
+    }
+    syncDirty(root);
 
     // Update active card
     detail.querySelectorAll('[data-ct2-type]').forEach(c => {
@@ -2170,6 +2255,22 @@ function bindDetail(root) {
     }
   });
 
+  // "Also in N other products" toggle
+  detail.querySelector('[data-ct2-also-toggle]')?.addEventListener('click', e => {
+    const list = detail.querySelector('[data-ct2-also-list]');
+    if (!list) return;
+    const open = !list.hidden;
+    list.hidden = open;
+    e.currentTarget.setAttribute('aria-expanded', String(!open));
+    e.currentTarget.classList.toggle('ct2-also-toggle--open', !open);
+  });
+
+  // "Also in N products" row click → switch left sidebar to that product + open condition there
+  detail.querySelector('[data-ct2-also-list]')?.addEventListener('click', e => {
+    const row = e.target.closest('[data-ct2-prod-row]');
+    if (row) enterSplitView(CT_SELECTED_ID, row.getAttribute('data-ct2-prod-row'), root);
+  });
+
   // Product row click — select product (not via remove/stage buttons)
   detail.querySelector('[data-ct2-prod-list]')?.addEventListener('click', e => {
     if (e.target.closest('[data-ct2-prod-remove]') || e.target.closest('[data-ct2-prod-stage]')) return;
@@ -2425,7 +2526,7 @@ function buildLibraryPickerHtml(stageId, prodId) {
   <div class="ct2-lib-picker__list" data-ct2-lp-list>${items}</div>
   <div class="ct2-lib-picker__footer">
     <span class="ct2-lp-count" data-ct2-lp-count>0 selected</span>
-    <button type="button" class="ct2-lib-picker__add-btn" data-ct2-lp-add disabled>Add to stage</button>
+    <button type="button" class="ct2-lib-picker__add-btn" data-ct2-lp-add disabled>Add to ${stageLabel} stage</button>
   </div>
 </div>`;
 }
@@ -2525,6 +2626,74 @@ function bindLibraryPicker(container, stageId, prodId, root) {
 
 function bindConditionTemplates(root) {
   if (!root) return;
+  bindLeftSearch(root);
+
+  // Cancel — revert to snapshot and close footer
+  root.addEventListener('click', e => {
+    const btn = e.target.closest('[data-ct-cancel]');
+    if (!btn) return;
+    if (!CT_ORIGINAL_SNAPSHOT) return;
+    const idx = CT_CONDITIONS.findIndex(c => c.id === CT_SELECTED_ID);
+    if (idx !== -1) {
+      CT_CONDITIONS[idx] = JSON.parse(CT_ORIGINAL_SNAPSHOT);
+    }
+    const main = root.querySelector('[data-ct2-main]');
+    if (main) main.classList.remove('ct2-main--dirty');
+    // Re-render detail to reflect reverted state
+    const body = root.querySelector('[data-ct2-main-body]');
+    const hsplit = body?.querySelector('[data-ct2-hsplit]');
+    if (hsplit) {
+      const right = hsplit.querySelector('[data-ct2-hsplit-right]');
+      if (right) {
+        const cond = CT_CONDITIONS[idx];
+        right.innerHTML = buildDetail(cond, CT_SELECTED_PROD_ID, { splitView: true });
+        bindDetail(root);
+        bindDetailRight(root);
+      }
+    } else if (body?.querySelector('[data-ct2-detail]')) {
+      const cond = CT_CONDITIONS[idx];
+      body.innerHTML = buildDetail(cond, CT_SELECTED_PROD_ID);
+      bindDetail(root);
+    }
+    e.stopPropagation();
+  });
+
+  // Save Changes
+  root.addEventListener('click', e => {
+    const btn = e.target.closest('[data-ct2-save]');
+    if (!btn) return;
+    const cond = CT_CONDITIONS.find(c => c.id === CT_SELECTED_ID);
+    if (cond) CT_ORIGINAL_SNAPSHOT = stableStringify(cond);
+    btn.classList.add('ct2-footer__btn--saved');
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5L5.5 10L11 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Saved`;
+
+    // Refresh sidebar so condition appears in correct stage section
+    const left = root.querySelector('[data-ct2-hsplit-left]');
+    const prodId = CT_SELECTED_PROD_VIEW;
+    if (left && prodId) {
+      refreshVerticalStageView(left, prodId, CT_SELECTED_ID);
+      // Scroll to moved item + flash
+      requestAnimationFrame(() => {
+        const movedItem = left.querySelector(`.ct2-vsv-item[data-ct2-cid="${CT_SELECTED_ID}"]`);
+        if (movedItem) {
+          movedItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          movedItem.classList.add('ct2-vsv-item--flash');
+          movedItem.addEventListener('animationend', () => movedItem.classList.remove('ct2-vsv-item--flash'), { once: true });
+        }
+      });
+    }
+
+    setTimeout(() => {
+      const main = root.querySelector('[data-ct2-main]');
+      if (main) main.classList.remove('ct2-main--dirty');
+      // Reset button state so next dirty cycle shows "Save Changes" correctly
+      const saveBtn = root.querySelector('[data-ct2-save]');
+      if (saveBtn) {
+        saveBtn.classList.remove('ct2-footer__btn--saved');
+        saveBtn.textContent = 'Save Changes';
+      }
+    }, 2200);
+  });
 
   // Drag-and-drop for condition items in vertical stage view
   // Track whether the mousedown that initiated the drag was on the handle
@@ -2613,12 +2782,14 @@ function bindConditionTemplates(root) {
     }
 
     // Update condition's dueBefore for this product
+    // targetStageId is the sidebar section — dueBefore = the stage AFTER it
+    const newDueBefore = dueBeforeForSidebarStage(targetStageId);
     const prodConfig = (cond.products || []).find(p => p.id === productId);
     if (prodConfig) {
-      prodConfig.dueBefore = targetStageId;
+      prodConfig.dueBefore = newDueBefore;
     } else {
       cond.products = cond.products || [];
-      cond.products.push({ id: productId, dueBefore: targetStageId, type: 'always', rules: [] });
+      cond.products.push({ id: productId, dueBefore: newDueBefore, type: 'always', rules: [] });
     }
 
     // Reorder CT_CONDITIONS array for correct visual ordering
@@ -2638,7 +2809,18 @@ function bindConditionTemplates(root) {
 
     // Refresh left panel
     if (left) {
-      left.innerHTML = buildVerticalStageView(productId, CT_SELECTED_ID);
+      refreshVerticalStageView(left, productId, CT_SELECTED_ID);
+    }
+
+    // If the dragged condition is currently open in the right panel, update its stage track live
+    if (cond.id === CT_SELECTED_ID) {
+      const right = root.querySelector('[data-ct2-hsplit-right]');
+      const track = right?.querySelector('[data-ct2-rst-stop]')?.closest('.ct2-right-stage-track');
+      if (track) {
+        track.querySelectorAll('[data-ct2-rst-stop]').forEach(s =>
+          s.classList.toggle('ct2-rst__stop--active', s.getAttribute('data-ct2-rst-stop') === newDueBefore)
+        );
+      }
     }
   });
 
@@ -2690,6 +2872,25 @@ function bindConditionTemplates(root) {
   bindCanvas(root);
   bindHSplitResize(root);
   bindLeftScrollFade(root);
+}
+
+function bindLeftSearch(root) {
+  root.addEventListener('input', e => {
+    const input = e.target.closest('[data-ct2-vsv-search]');
+    if (!input) return;
+    const q = input.value.trim().toLowerCase();
+    const left = input.closest('[data-ct2-hsplit-left]');
+    if (!left) return;
+    left.querySelectorAll('.ct2-vsv-item[data-ct2-cid]').forEach(item => {
+      const name = item.querySelector('.ct2-vsv-item__name')?.textContent.toLowerCase() || '';
+      item.style.display = (!q || name.includes(q)) ? '' : 'none';
+    });
+    // Show/hide empty stage groups
+    left.querySelectorAll('.ct2-vsv-stage').forEach(stage => {
+      const visible = [...stage.querySelectorAll('.ct2-vsv-item[data-ct2-cid]')].some(i => i.style.display !== 'none');
+      stage.style.display = visible ? '' : 'none';
+    });
+  });
 }
 
 function bindLeftScrollFade(root) {

@@ -1710,8 +1710,7 @@ function bindConditionModal() {
   modal.addEventListener('click', e => {
     if (
       e.target.closest('[data-ct-modal-dismiss]') ||
-      e.target.closest('[data-ct-modal-close]') ||
-      e.target.closest('[data-ct-cancel]')
+      e.target.closest('[data-ct-modal-close]')
     ) {
       close();
     }
